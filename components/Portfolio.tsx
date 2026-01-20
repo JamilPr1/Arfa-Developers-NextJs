@@ -20,7 +20,7 @@ const projects = [
     id: 2,
     title: 'Healthcare Management System',
     type: 'Enterprise',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800',
+    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&auto=format&fit=crop&q=80',
     tech: ['Next.js', 'TypeScript', 'PostgreSQL'],
     description: 'HIPAA-compliant healthcare platform for patient management',
   },
@@ -148,12 +148,21 @@ export default function Portfolio() {
                     data-aos="fade-up"
                   >
                     <Box sx={{ position: 'relative', flex: 1 }}>
-                      <CardMedia
+                      <Box
                         component="img"
-                        height="250"
-                        image={project.image}
+                        src={project.image}
                         alt={project.title}
-                        sx={{ objectFit: 'cover', width: '100%' }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.src = 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&auto=format&fit=crop&q=80'
+                        }}
+                        sx={{ 
+                          objectFit: 'cover', 
+                          width: '100%',
+                          height: '250px',
+                          backgroundColor: '#f0f0f0',
+                          display: 'block',
+                        }}
                       />
                       <Box
                         sx={{
@@ -232,12 +241,21 @@ export default function Portfolio() {
                 }}
                 data-aos="fade-up"
               >
-                <CardMedia
+                <Box
                   component="img"
-                  height="200"
-                  image={project.image}
+                  src={project.image}
                   alt={project.title}
-                  sx={{ objectFit: 'cover' }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.src = 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&auto=format&fit=crop&q=80'
+                  }}
+                  sx={{ 
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '200px',
+                    backgroundColor: '#f0f0f0',
+                    display: 'block',
+                  }}
                 />
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>

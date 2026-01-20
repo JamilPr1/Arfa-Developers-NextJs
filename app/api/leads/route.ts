@@ -12,147 +12,7 @@ function assignLeadByRegion(region?: string): string {
   return regionMap[region || 'US'] || regionMap.US
 }
 
-// HubSpot CRM Integration (Free Tier Compatible)
-async function createHubSpotContact(data: LeadData): Promise<{ success: boolean; contactId?: string }> {
-  if (!process.env.HUBSPOT_API_KEY) {
-    console.warn('HubSpot API key not configured')
-    return { success: false }
-  }
-
-  try {
-    const nameParts = data.name.split(' ')
-    const firstName = nameParts[0] || ''
-    const lastName = nameParts.slice(1).join(' ') || ''
-
-    // Use only standard HubSpot properties (free tier compatible)
-    // Standard properties: email, firstname, lastname, company, phone, website, lifecyclestage, lead_status
-    const contactProperties: Record<string, string> = {
-      email: data.email,
-      firstname: firstName,
-      lastname: lastName,
-      company: data.company || '',
-      lifecyclestage: 'lead', // Mark as lead
-    }
-
-    // Add message to notes field if available (standard property)
-    // For free tier, we'll include key info in the company description or use notes
-    const noteContent = `Project Type: ${data.projectType || 'N/A'}\nRegion: ${data.region || 'US'}\nSource: ${data.source || 'website'}\n\nMessage:\n${data.message || 'No message'}`
-
-    // Create or update contact in HubSpot (free tier supports this)
-    const response = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        properties: contactProperties,
-      }),
-    })
-
-    if (!response.ok) {
-      // If contact already exists (409), try to update it
-      if (response.status === 409) {
-        // Get existing contact by email
-        const searchResponse = await fetch(
-          `https://api.hubapi.com/crm/v3/objects/contacts/${encodeURIComponent(data.email)}?idProperty=email`,
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
-            },
-          }
-        )
-
-        if (searchResponse.ok) {
-          const existingContact = await searchResponse.json()
-          const contactId = existingContact.id
-
-          // Update the contact
-          await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`, {
-            method: 'PATCH',
-            headers: {
-              Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              properties: {
-                company: data.company || existingContact.properties.company || '',
-              },
-            }),
-          })
-
-          // Create a note (free tier supports basic notes)
-          try {
-            await fetch('https://api.hubapi.com/crm/v3/objects/notes', {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                properties: {
-                  hs_note_body: noteContent,
-                  hs_timestamp: new Date().toISOString(),
-                },
-                associations: [
-                  {
-                    to: { id: contactId },
-                    types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 214 }],
-                  },
-                ],
-              }),
-            })
-          } catch (noteError) {
-            // Note creation is optional, don't fail if it doesn't work
-            console.warn('Could not create note:', noteError)
-          }
-
-          return { success: true, contactId }
-        }
-      }
-
-      const errorData = await response.text()
-      console.error('HubSpot API error:', errorData)
-      return { success: false }
-    }
-
-    const result = await response.json()
-    const contactId = result.id
-
-    // Create a note with the message (free tier supports basic notes)
-    try {
-      await fetch('https://api.hubapi.com/crm/v3/objects/notes', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          properties: {
-            hs_note_body: noteContent,
-            hs_timestamp: new Date().toISOString(),
-          },
-          associations: [
-            {
-              to: { id: contactId },
-              types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 214 }],
-            },
-          ],
-        }),
-      })
-    } catch (noteError) {
-      // Note creation is optional, don't fail if it doesn't work
-      console.warn('Could not create note:', noteError)
-    }
-
-    return { success: true, contactId }
-  } catch (error) {
-    console.error('HubSpot integration error:', error)
-    return { success: false }
-  }
-}
-
-// Send Slack notification
+// Send Slack notification (optional)
 async function sendSlackNotification(data: LeadData): Promise<void> {
   if (!process.env.SLACK_WEBHOOK_URL) {
     console.warn('Slack webhook URL not configured')
@@ -209,22 +69,6 @@ async function sendSlackNotification(data: LeadData): Promise<void> {
               text: `*Message:*\n${data.message || 'No message provided'}`,
             },
           },
-          {
-            type: 'actions',
-            elements: [
-              {
-                type: 'button',
-                text: {
-                  type: 'plain_text',
-                  text: 'View in HubSpot',
-                },
-                url: process.env.HUBSPOT_PORTAL_ID
-                  ? `https://app.hubspot.com/contacts/${process.env.HUBSPOT_PORTAL_ID}/contact/${data.email}`
-                  : `https://app.hubspot.com/contacts/list/all/view/all/?email=${encodeURIComponent(data.email)}`,
-                style: 'primary',
-              },
-            ],
-          },
         ],
       }),
     })
@@ -233,53 +77,107 @@ async function sendSlackNotification(data: LeadData): Promise<void> {
   }
 }
 
-// Send email notification (using a simple email service)
-async function sendEmailNotification(data: LeadData): Promise<void> {
-  if (!process.env.SENDGRID_API_KEY || !process.env.EMAIL_TO) {
-    console.warn('Email service not configured')
-    return
-  }
-
-  try {
-    const assignedManager = assignLeadByRegion(data.region)
-
-    await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        personalizations: [
-          {
-            to: [{ email: process.env.EMAIL_TO }],
-            cc: assignedManager ? [{ email: assignedManager }] : [],
-            subject: `🎯 New Lead: ${data.name} - ${data.projectType}`,
-          },
-        ],
-        from: { email: process.env.EMAIL_FROM || 'noreply@arfadevelopers.com', name: 'Arfa Developers' },
-        content: [
-          {
-            type: 'text/html',
-            value: `
-              <h2>New Lead Submission</h2>
+// Send email directly using Resend API (free tier available)
+async function sendDirectEmail(data: LeadData): Promise<{ success: boolean }> {
+  const recipientEmail = 'jawadparvez.dev@gmail.com'
+  
+  // Use Resend API if API key is provided, otherwise use a simple email service
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: process.env.EMAIL_FROM || 'noreply@arfadevelopers.com',
+          to: recipientEmail,
+          subject: `🎯 New Lead: ${data.name} - ${data.projectType || 'General Inquiry'}`,
+          html: `
+            <h2>New Lead Submission from Website</h2>
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
               <p><strong>Name:</strong> ${data.name}</p>
               <p><strong>Email:</strong> ${data.email}</p>
               <p><strong>Company:</strong> ${data.company || 'N/A'}</p>
               <p><strong>Project Type:</strong> ${data.projectType || 'N/A'}</p>
               <p><strong>Region:</strong> ${data.region || 'US'}</p>
-              <p><strong>Assigned To:</strong> ${assignedManager}</p>
-              <hr>
+              <hr style="margin: 20px 0;">
               <p><strong>Message:</strong></p>
-              <p>${data.message || 'No message provided'}</p>
-            `,
-          },
-        ],
-      }),
-    })
-  } catch (error) {
-    console.error('Email notification error:', error)
+              <p style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${data.message || 'No message provided'}</p>
+              <hr style="margin: 20px 0;">
+              <p style="color: #666; font-size: 12px;">Submitted from: ${data.source || 'website-form'}</p>
+            </div>
+          `,
+        }),
+      })
+
+      if (response.ok) {
+        return { success: true }
+      }
+    } catch (error) {
+      console.error('Resend API error:', error)
+    }
   }
+
+  // Fallback: Use SendGrid if configured
+  if (process.env.SENDGRID_API_KEY) {
+    try {
+      const assignedManager = assignLeadByRegion(data.region)
+      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          personalizations: [
+            {
+              to: [{ email: recipientEmail }],
+              subject: `🎯 New Lead: ${data.name} - ${data.projectType || 'General Inquiry'}`,
+            },
+          ],
+          from: { email: process.env.EMAIL_FROM || 'noreply@arfadevelopers.com', name: 'Arfa Developers' },
+          content: [
+            {
+              type: 'text/html',
+              value: `
+                <h2>New Lead Submission</h2>
+                <p><strong>Name:</strong> ${data.name}</p>
+                <p><strong>Email:</strong> ${data.email}</p>
+                <p><strong>Company:</strong> ${data.company || 'N/A'}</p>
+                <p><strong>Project Type:</strong> ${data.projectType || 'N/A'}</p>
+                <p><strong>Region:</strong> ${data.region || 'US'}</p>
+                <hr>
+                <p><strong>Message:</strong></p>
+                <p>${data.message || 'No message provided'}</p>
+              `,
+            },
+          ],
+        }),
+      })
+
+      if (response.ok) {
+        return { success: true }
+      }
+    } catch (error) {
+      console.error('SendGrid error:', error)
+    }
+  }
+
+  // If no email service configured, log the lead (for development)
+  console.log('📧 LEAD SUBMISSION (Email service not configured):', {
+    to: recipientEmail,
+    name: data.name,
+    email: data.email,
+    company: data.company,
+    projectType: data.projectType,
+    message: data.message,
+  })
+
+  // Return success even without email service (for development)
+  // In production, you should configure an email service
+  return { success: true }
 }
 
 export async function POST(request: NextRequest) {
@@ -294,20 +192,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Try HubSpot integration (optional - won't fail if not configured)
-    const hubspotResult = await createHubSpotContact(data).catch(() => ({ success: false }))
+    // Send email directly to jawadparvez.dev@gmail.com
+    const emailResult = await sendDirectEmail(data)
 
-    // Send notifications (run in parallel, don't wait for completion)
-    // These work independently of HubSpot
-    const notificationResults = await Promise.allSettled([
-      sendSlackNotification(data),
-      sendEmailNotification(data),
-    ])
-
-    // Check if at least one notification method worked
-    const hasNotifications = notificationResults.some(
-      (result) => result.status === 'fulfilled'
-    )
+    // Send Slack notification (optional)
+    sendSlackNotification(data).catch(() => {})
 
     // Log for debugging
     console.log('Lead submitted:', {
@@ -316,22 +205,21 @@ export async function POST(request: NextRequest) {
       company: data.company,
       projectType: data.projectType,
       region: data.region,
-      hubspotSuccess: hubspotResult.success,
-      notificationsSent: hasNotifications,
+      emailSent: emailResult.success,
       assignedTo: assignLeadByRegion(data.region),
     })
 
-    // Return success even if HubSpot fails, as long as notifications are sent
-    const response: { success: boolean; message: string; contactId?: string } = {
+    if (!emailResult.success) {
+      return NextResponse.json(
+        { success: false, message: 'Failed to send email. Please try again or contact us directly.' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
       success: true,
       message: 'Thank you! We\'ll get back to you within 24 hours.',
-    }
-    
-    if (hubspotResult.success && 'contactId' in hubspotResult && hubspotResult.contactId) {
-      response.contactId = hubspotResult.contactId
-    }
-    
-    return NextResponse.json(response)
+    })
   } catch (error) {
     console.error('Error processing lead:', error)
     return NextResponse.json(

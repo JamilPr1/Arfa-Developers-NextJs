@@ -5,6 +5,8 @@ import ThemeProvider from '@/components/ThemeProvider'
 import AOSInit from '@/components/AOSInit'
 import LiveChat from '@/components/LiveChat'
 import StructuredData from '@/components/StructuredData'
+import WhatsAppButton from '@/components/WhatsAppButton'
+import AIChatbot from '@/components/AIChatbot'
 import Script from 'next/script'
 
 const poppins = Poppins({
@@ -148,7 +150,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <AOSInit />
         <ThemeProvider>
           {children}
-          {/* Live Chat - Configure via environment variables */}
+          {/* WhatsApp Floating Button */}
+          <WhatsAppButton />
+          {/* AI Chatbot - Tawk.to or Crisp */}
+          <AIChatbot />
+          {/* Live Chat - Configure via environment variables (optional) */}
           {process.env.NEXT_PUBLIC_TIDIO_ID && (
             <LiveChat provider="tidio" id={process.env.NEXT_PUBLIC_TIDIO_ID} />
           )}
