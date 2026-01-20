@@ -168,7 +168,7 @@ export default function Testimonials() {
                   </Box>
                   <Rating value={testimonial.rating} readOnly sx={{ mb: 2 }} />
                   <Typography variant="body1" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                    "{testimonial.review}"
+                    &ldquo;{testimonial.review}&rdquo;
                   </Typography>
                 </CardContent>
               </Card>
