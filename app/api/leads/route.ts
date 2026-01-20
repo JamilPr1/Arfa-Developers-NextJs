@@ -294,16 +294,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create contact in HubSpot CRM
-    const hubspotResult = await createHubSpotContact(data)
+    // Try HubSpot integration (optional - won't fail if not configured)
+    const hubspotResult = await createHubSpotContact(data).catch(() => ({ success: false }))
 
     // Send notifications (run in parallel, don't wait for completion)
-    Promise.all([
+    // These work independently of HubSpot
+    const notificationResults = await Promise.allSettled([
       sendSlackNotification(data),
       sendEmailNotification(data),
-    ]).catch((error) => {
-      console.error('Notification error:', error)
-    })
+    ])
+
+    // Check if at least one notification method worked
+    const hasNotifications = notificationResults.some(
+      (result) => result.status === 'fulfilled'
+    )
 
     // Log for debugging
     console.log('Lead submitted:', {
@@ -313,14 +317,21 @@ export async function POST(request: NextRequest) {
       projectType: data.projectType,
       region: data.region,
       hubspotSuccess: hubspotResult.success,
+      notificationsSent: hasNotifications,
       assignedTo: assignLeadByRegion(data.region),
     })
 
-    return NextResponse.json({
+    // Return success even if HubSpot fails, as long as notifications are sent
+    const response: { success: boolean; message: string; contactId?: string } = {
       success: true,
       message: 'Thank you! We\'ll get back to you within 24 hours.',
-      contactId: hubspotResult.contactId,
-    })
+    }
+    
+    if (hubspotResult.success && 'contactId' in hubspotResult && hubspotResult.contactId) {
+      response.contactId = hubspotResult.contactId
+    }
+    
+    return NextResponse.json(response)
   } catch (error) {
     console.error('Error processing lead:', error)
     return NextResponse.json(

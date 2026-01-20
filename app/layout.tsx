@@ -4,6 +4,7 @@ import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
 import AOSInit from '@/components/AOSInit'
 import LiveChat from '@/components/LiveChat'
+import StructuredData from '@/components/StructuredData'
 import Script from 'next/script'
 
 const poppins = Poppins({
@@ -21,8 +22,8 @@ const roboto = Roboto({
 })
 
 export const metadata: Metadata = {
-  title: 'Arfa Developers - Web Development Agency USA, UK, Qatar, KSA | Custom Web Apps',
-  description: 'Leading web development agency serving US, UK, Qatar, and Saudi Arabia. Custom web applications, mobile apps, and enterprise solutions. Free consultation available.',
+  title: 'Arfa Developers - Top Web Development Agency USA, UK, Qatar, KSA | Custom Web Apps & Software Solutions',
+  description: 'Expert web development agency serving USA, UK, Qatar, and Saudi Arabia. We rescue failed projects from freelancers and build custom web applications, mobile apps, and enterprise software. Free consultation available. 200+ projects rescued.',
   keywords: [
     'web development agency USA',
     'custom web apps US',
@@ -32,21 +33,64 @@ export const metadata: Metadata = {
     'web development company',
     'mobile app development',
     'enterprise software solutions',
+    'rescue failed projects',
+    'fix broken websites',
+    'web app development',
+    'custom software development',
+    'full stack development',
+    'react development',
+    'next.js development',
+    'node.js development',
+    'web development services',
+    'software development company',
+    'app development agency',
+    'ecommerce development',
+    'SaaS development',
   ],
   authors: [{ name: 'Arfa Developers' }],
+  creator: 'Arfa Developers',
+  publisher: 'Arfa Developers',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
-    title: 'Arfa Developers - Web Solutions That Scale Globally',
-    description: 'From Startups to Enterprises – We Build Web Solutions That Scale Globally',
+    title: 'Arfa Developers - Web Solutions That Scale Globally | Rescue Failed Projects',
+    description: 'Expert web development agency rescuing 200+ failed projects from freelancers. Custom web apps, mobile apps, and enterprise solutions for USA, UK, Qatar, and Saudi Arabia. Free consultation.',
     type: 'website',
     locale: 'en_US',
+    url: 'https://arfadevelopers.com',
+    siteName: 'Arfa Developers',
+    images: [
+      {
+        url: 'https://arfadevelopers.com/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Arfa Developers - Web Development Agency',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Arfa Developers - Web Solutions That Scale Globally',
-    description: 'From Startups to Enterprises – We Build Web Solutions That Scale Globally',
+    description: 'Expert web development agency rescuing failed projects. Custom web apps, mobile apps, and enterprise solutions. Free consultation.',
+    images: ['https://arfadevelopers.com/og-image.jpg'],
   },
   alternates: {
     canonical: 'https://arfadevelopers.com',
+  },
+  category: 'Technology',
+  classification: 'Web Development Services',
+  other: {
+    'geo.region': 'US-UK-QA-SA',
+    'geo.placename': 'United States, United Kingdom, Qatar, Saudi Arabia',
   },
 }
 
@@ -57,6 +101,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <StructuredData />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#1E3A8A" />
+        <meta name="format-detection" content="telephone=no" />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body className={`${poppins.variable} ${roboto.variable}`}>
         {/* Google Tag Manager */}
         <Script
