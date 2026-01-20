@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -23,36 +23,58 @@ interface ExitIntentPopupProps {
 export default function ExitIntentPopup({ onClose, onScheduleConsultation }: ExitIntentPopupProps) {
   const [email, setEmail] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const hasShownRef = useRef(false)
 
   useEffect(() => {
+    // This component is client-only, but guard anyway
+    if (typeof window === 'undefined') return
+
+    hasShownRef.current = window.localStorage.getItem('exitIntentPopupShown') === 'true'
+    if (hasShownRef.current) return
+
+    const markShownAndOpen = () => {
+      if (hasShownRef.current) return
+      hasShownRef.current = true
+      window.localStorage.setItem('exitIntentPopupShown', 'true')
+      setShowForm(true)
+    }
+
     // Track exit intent (mouse leaving viewport)
     const handleMouseLeave = (e: MouseEvent) => {
       if (e.clientY <= 0) {
-        setShowForm(true)
+        markShownAndOpen()
       }
     }
 
-    // Also show after 20 seconds
-    const timer = setTimeout(() => {
-      setShowForm(true)
+    // Also show after 20 seconds (only once)
+    const timer = window.setTimeout(() => {
+      markShownAndOpen()
     }, 20000)
 
     document.addEventListener('mouseleave', handleMouseLeave)
 
     return () => {
       document.removeEventListener('mouseleave', handleMouseLeave)
-      clearTimeout(timer)
+      window.clearTimeout(timer)
     }
   }, [])
 
   const handleClose = () => {
     setShowForm(false)
+    hasShownRef.current = true
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('exitIntentPopupShown', 'true')
+    }
     onClose()
   }
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (email) {
+      hasShownRef.current = true
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('exitIntentPopupShown', 'true')
+      }
       // Redirect to Calendly or open consultation form
       onScheduleConsultation()
       handleClose()
