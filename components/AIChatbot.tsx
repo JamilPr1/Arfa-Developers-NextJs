@@ -15,6 +15,75 @@ export default function AIChatbot() {
       ;(window as any).Tawk_API = (window as any).Tawk_API || {}
       ;(window as any).Tawk_LoadStart = new Date()
 
+      // Customize Tawk.to widget using API
+      ;(window as any).Tawk_API.onLoad = function () {
+        // Customize widget appearance after it loads
+        const customizeWidget = () => {
+          // Find the widget bubble
+          const widget = document.querySelector('#tawkchat-container')
+          if (widget) {
+            // Customize bubble text
+            const bubble = widget.querySelector('.tawk-bubble') as HTMLElement | null
+            if (bubble) {
+              const textElement = bubble.querySelector('.tawk-bubble-text, .tawk-bubble-text-wrapper') as HTMLElement | null
+              if (textElement) {
+                // Replace "We Are Here!" with custom text
+                const currentText = textElement.textContent || ''
+                if (currentText.includes('We Are Here') || currentText.includes('we are here') || currentText.trim() === '') {
+                  textElement.textContent = '💬 Need Help?'
+                  textElement.style.color = '#FFFFFF'
+                  textElement.style.fontWeight = '600'
+                  textElement.style.fontSize = '14px'
+                }
+              }
+              
+              // Style the bubble
+              bubble.style.background = 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)'
+              bubble.style.borderRadius = '25px'
+              bubble.style.boxShadow = '0 4px 12px rgba(30, 58, 138, 0.3)'
+              bubble.style.padding = '12px 20px'
+            }
+          }
+        }
+
+        // Try to customize immediately and after delays
+        customizeWidget()
+        setTimeout(customizeWidget, 500)
+        setTimeout(customizeWidget, 1500)
+        setTimeout(customizeWidget, 3000)
+      }
+
+      // Add custom CSS to style the widget
+      const style = document.createElement('style')
+      style.id = 'tawk-custom-styles'
+      style.textContent = `
+        /* Customize Tawk.to widget appearance */
+        #tawkchat-container {
+          bottom: 20px !important;
+          right: 20px !important;
+          z-index: 999 !important;
+        }
+        #tawkchat-container .tawk-bubble {
+          background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%) !important;
+          border-radius: 25px !important;
+          box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+          padding: 12px 20px !important;
+          border: none !important;
+        }
+        #tawkchat-container .tawk-bubble-text,
+        #tawkchat-container .tawk-bubble-text-wrapper {
+          color: #FFFFFF !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          font-family: 'Poppins', sans-serif !important;
+        }
+        /* Hide emoji if present in default text */
+        #tawkchat-container .tawk-bubble-text::before {
+          display: none !important;
+        }
+      `
+      document.head.appendChild(style)
+
       // Tawk.to script
       const script = document.createElement('script')
       script.async = true
