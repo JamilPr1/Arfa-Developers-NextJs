@@ -142,62 +142,77 @@ export default function Portfolio() {
                       position: 'relative',
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      '&:hover .overlay': {
-                        opacity: 1,
-                      },
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                     data-aos="fade-up"
                   >
-                    <CardMedia
-                      component="img"
-                      height="250"
-                      image={project.image}
-                      alt={project.title}
-                      sx={{ objectFit: 'cover' }}
-                    />
-                    <Box
-                      className="overlay"
-                      sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))',
-                        opacity: 0,
-                        transition: 'opacity 0.3s ease',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-end',
-                        p: 2,
-                        color: 'white',
-                      }}
-                    >
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                        {project.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mb: 2 }}>
-                        {project.description}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        {project.tech.map((tech) => (
-                          <Chip
-                            key={tech}
-                            label={tech}
-                            size="small"
-                            sx={{
-                              background: 'rgba(255,255,255,0.2)',
-                              color: 'white',
-                            }}
-                          />
-                        ))}
+                    <Box sx={{ position: 'relative', flex: 1 }}>
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={project.image}
+                        alt={project.title}
+                        sx={{ objectFit: 'cover', width: '100%' }}
+                      />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+                          p: 2,
+                          color: 'white',
+                          zIndex: 2,
+                        }}
+                      >
+                        <Typography 
+                          variant="h6" 
+                          sx={{ 
+                            fontWeight: 600, 
+                            mb: 1,
+                            color: 'white',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                          }}
+                        >
+                          {project.title}
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            mb: 2,
+                            color: 'rgba(255,255,255,0.95)',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                          }}
+                        >
+                          {project.description}
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                          {project.tech.map((tech) => (
+                            <Chip
+                              key={tech}
+                              label={tech}
+                              size="small"
+                              sx={{
+                                background: 'rgba(255,255,255,0.25)',
+                                color: 'white',
+                                fontWeight: 500,
+                                backdropFilter: 'blur(4px)',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                              }}
+                            />
+                          ))}
+                        </Box>
                       </Box>
                     </Box>
-                    <CardContent>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                        {project.title}
-                      </Typography>
-                      <Chip label={project.type} size="small" color="primary" />
+                    <CardContent sx={{ pt: 1, pb: 2 }}>
+                      <Chip 
+                        label={project.type} 
+                        size="small" 
+                        color="primary"
+                        sx={{ fontWeight: 600 }}
+                      />
                     </CardContent>
                   </Card>
                 </motion.div>
