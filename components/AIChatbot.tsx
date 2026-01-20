@@ -19,17 +19,55 @@ export default function AIChatbot() {
       ;(window as any).Tawk_API.onLoad = function () {
         // Customize widget appearance after it loads
         const customizeWidget = () => {
-          // Find the widget bubble
-          const widget = document.querySelector('#tawkchat-container')
+          // Find the widget bubble - try multiple selectors
+          const widget = document.querySelector('#tawkchat-container') || document.querySelector('[id*="tawk"]')
           if (widget) {
-            // Customize bubble text
-            const bubble = widget.querySelector('.tawk-bubble') as HTMLElement | null
+            // Customize bubble text - try multiple selectors
+            const bubbleEl = widget.querySelector('.tawk-bubble') || 
+                          widget.querySelector('[class*="bubble"]') ||
+                          widget.querySelector('[class*="tawk"]')
+            const bubble = bubbleEl as HTMLElement | null
+            
             if (bubble) {
-              const textElement = bubble.querySelector('.tawk-bubble-text, .tawk-bubble-text-wrapper') as HTMLElement | null
+              // Find text element with multiple selectors
+              const textSelectors = [
+                '.tawk-bubble-text',
+                '.tawk-bubble-text-wrapper',
+                '[class*="bubble-text"]',
+                '[class*="widget-text"]',
+                'span',
+                'div'
+              ]
+              
+              let textElement: HTMLElement | null = null
+              for (const selector of textSelectors) {
+                const found = bubble.querySelector(selector) as HTMLElement | null
+                if (found && (found.textContent || found.innerText)) {
+                  textElement = found
+                  break
+                }
+              }
+              
+              // If no text element found, use bubble itself
+              if (!textElement) {
+                textElement = bubble
+              }
+              
               if (textElement) {
-                // Replace "We Are Here!" with custom text
-                const currentText = textElement.textContent || ''
-                if (currentText.includes('We Are Here') || currentText.includes('we are here') || currentText.trim() === '') {
+                // Always replace text regardless of current content
+                const currentText = textElement.textContent || textElement.innerText || ''
+                
+                // Replace any variation of "We Are Here" or set default text
+                if (currentText.toLowerCase().includes('we are here') || 
+                    currentText.toLowerCase().includes('we\'re here') ||
+                    currentText.trim() === '' ||
+                    currentText.length < 5) {
+                  textElement.textContent = '💬 Need Help?'
+                  textElement.style.color = '#FFFFFF'
+                  textElement.style.fontWeight = '600'
+                  textElement.style.fontSize = '14px'
+                } else if (!currentText.includes('Need Help')) {
+                  // Force change if it's not our custom text
                   textElement.textContent = '💬 Need Help?'
                   textElement.style.color = '#FFFFFF'
                   textElement.style.fontWeight = '600'
@@ -46,11 +84,29 @@ export default function AIChatbot() {
           }
         }
 
-        // Try to customize immediately and after delays
+        // Try to customize immediately and after delays (more attempts)
         customizeWidget()
-        setTimeout(customizeWidget, 500)
+        setTimeout(customizeWidget, 300)
+        setTimeout(customizeWidget, 800)
         setTimeout(customizeWidget, 1500)
-        setTimeout(customizeWidget, 3000)
+        setTimeout(customizeWidget, 2500)
+        setTimeout(customizeWidget, 4000)
+        
+        // Also use MutationObserver to catch dynamic changes
+        const observer = new MutationObserver(() => {
+          customizeWidget()
+        })
+        
+        setTimeout(() => {
+          const widget = document.querySelector('#tawkchat-container')
+          if (widget) {
+            observer.observe(widget, {
+              childList: true,
+              subtree: true,
+              characterData: true
+            })
+          }
+        }, 1000)
       }
 
       // Add custom CSS to style the widget
@@ -71,15 +127,33 @@ export default function AIChatbot() {
           border: none !important;
         }
         #tawkchat-container .tawk-bubble-text,
-        #tawkchat-container .tawk-bubble-text-wrapper {
+        #tawkchat-container .tawk-bubble-text-wrapper,
+        #tawkchat-container [class*="bubble-text"],
+        #tawkchat-container [class*="widget-text"],
+        #tawkchat-container .tawk-bubble span,
+        #tawkchat-container .tawk-bubble div {
           color: #FFFFFF !important;
           font-weight: 600 !important;
           font-size: 14px !important;
           font-family: 'Poppins', sans-serif !important;
         }
-        /* Hide emoji if present in default text */
-        #tawkchat-container .tawk-bubble-text::before {
+        /* Force text content using CSS (if possible) */
+        #tawkchat-container .tawk-bubble::after {
+          content: '💬 Need Help?' !important;
+          color: #FFFFFF !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+        }
+        /* Hide original text if needed */
+        #tawkchat-container .tawk-bubble-text:not(:empty) {
           display: none !important;
+        }
+        #tawkchat-container .tawk-bubble-text:empty::after {
+          content: '💬 Need Help?' !important;
+          display: block !important;
+          color: #FFFFFF !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
         }
       `
       document.head.appendChild(style)
