@@ -1,64 +1,39 @@
 'use client'
 
-import { Box, Container, Typography, Grid, Card, CardContent, Avatar, IconButton } from '@mui/material'
+import { Box, Container, Typography, Grid, Card, CardContent } from '@mui/material'
 import {
-  LinkedIn as LinkedInIcon,
-  Twitter as TwitterIcon,
-  GitHub as GitHubIcon,
+  CheckCircle as CheckCircleIcon,
+  Security as SecurityIcon,
+  Speed as SpeedIcon,
+  Support as SupportIcon,
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 
-const teamMembers = [
+const rescueStories = [
   {
-    name: 'Ahmed Khan',
-    role: 'CEO & Founder',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    location: 'Pakistan',
-    linkedin: '#',
-    twitter: '#',
-    github: '#',
+    icon: <SecurityIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    title: 'Rescued Projects',
+    description: 'We&apos;ve successfully rescued and rebuilt over 200+ projects that were abandoned or poorly executed by freelancers and inexperienced developers.',
   },
   {
-    name: 'Sarah Johnson',
-    role: 'CTO',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    location: 'United States',
-    linkedin: '#',
-    twitter: '#',
-    github: '#',
+    icon: <SpeedIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    title: 'Fast Recovery',
+    description: 'Our experienced team can quickly assess, fix, and rebuild your project, often delivering working solutions in days instead of months.',
   },
   {
-    name: 'Michael Chen',
-    role: 'Lead Developer',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-    location: 'United States',
-    linkedin: '#',
-    twitter: '#',
-    github: '#',
-  },
-  {
-    name: 'Fatima Ali',
-    role: 'UX/UI Designer',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
-    location: 'Pakistan',
-    linkedin: '#',
-    twitter: '#',
-    github: '#',
-  },
-  {
-    name: 'David Wilson',
-    role: 'DevOps Engineer',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-    location: 'United States',
-    linkedin: '#',
-    twitter: '#',
-    github: '#',
+    icon: <SupportIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    title: 'Ongoing Support',
+    description: 'Unlike freelancers who disappear after delivery, we provide long-term support, maintenance, and continuous improvements to your project.',
   },
 ]
 
-const locations = [
-  { name: 'United States', count: 3 },
-  { name: 'Pakistan', count: 2 },
+const commonIssues = [
+  'Incomplete or abandoned projects',
+  'Poor code quality and security vulnerabilities',
+  'No documentation or handover process',
+  'Missing deadlines and communication breakdowns',
+  'Scalability and performance issues',
+  'Lack of ongoing support and maintenance',
 ]
 
 export default function About() {
@@ -74,16 +49,16 @@ export default function About() {
               color: '#1E3A8A',
             }}
           >
-            Meet Our Experts
+            We Rescue Projects from Failed Freelancers
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-            A global team of talented professionals dedicated to delivering excellence
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
+            Our experienced team specializes in taking over and fixing projects that were abandoned, poorly executed, or left incomplete by freelancers and less experienced developers.
           </Typography>
         </Box>
 
         <Grid container spacing={4} sx={{ mb: 6 }}>
-          {teamMembers.map((member, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={2.4} key={member.name}>
+          {rescueStories.map((story, index) => (
+            <Grid item xs={12} md={4} key={story.title}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -92,8 +67,9 @@ export default function About() {
               >
                 <Card
                   sx={{
+                    height: '100%',
+                    p: 4,
                     textAlign: 'center',
-                    p: 3,
                     transition: 'all 0.3s ease-in-out',
                     '&:hover': {
                       transform: 'translateY(-8px)',
@@ -103,62 +79,15 @@ export default function About() {
                   data-aos="fade-up"
                   data-aos-delay={index * 100}
                 >
-                  <Avatar
-                    src={member.image}
-                    alt={member.name}
-                    sx={{
-                      width: 120,
-                      height: 120,
-                      mx: 'auto',
-                      mb: 2,
-                      border: '4px solid',
-                      borderColor: '#1E3A8A',
-                    }}
-                  />
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    {member.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {member.role}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-                    📍 {member.location}
-                  </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                    <IconButton
-                      size="small"
-                      href={member.linkedin}
-                      sx={{
-                        color: '#1E3A8A',
-                        '&:hover': { backgroundColor: '#2563EB', color: 'white' },
-                        transition: 'all 0.3s ease',
-                      }}
-                    >
-                      <LinkedInIcon />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      href={member.twitter}
-                      sx={{
-                        color: '#1E3A8A',
-                        '&:hover': { backgroundColor: '#2563EB', color: 'white' },
-                        transition: 'all 0.3s ease',
-                      }}
-                    >
-                      <TwitterIcon />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      href={member.github}
-                      sx={{
-                        color: '#1E3A8A',
-                        '&:hover': { backgroundColor: '#2563EB', color: 'white' },
-                        transition: 'all 0.3s ease',
-                      }}
-                    >
-                      <GitHubIcon />
-                    </IconButton>
+                  <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                    {story.icon}
                   </Box>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+                    {story.title}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {story.description}
+                  </Typography>
                 </Card>
               </motion.div>
             </Grid>
@@ -169,28 +98,95 @@ export default function About() {
           sx={{
             background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
             borderRadius: 4,
-            p: 4,
+            p: 5,
             color: 'white',
-            textAlign: 'center',
+            mb: 6,
           }}
           data-aos="fade-up"
         >
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
-            Global Presence
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, textAlign: 'center' }}>
+            Common Issues We Fix
           </Typography>
-          <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
-            Our team spans across multiple countries, bringing diverse perspectives and expertise
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' }}>
-            {locations.map((location) => (
-              <Box key={location.name} sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ fontWeight: 700 }}>
-                  {location.count}
-                </Typography>
-                <Typography variant="body1">{location.name}</Typography>
-              </Box>
+          <Grid container spacing={2}>
+            {commonIssues.map((issue, index) => (
+              <Grid item xs={12} sm={6} key={index}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <CheckCircleIcon sx={{ color: '#F59E0B', fontSize: 28 }} />
+                  <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+                    {issue}
+                  </Typography>
+                </Box>
+              </Grid>
             ))}
-          </Box>
+          </Grid>
+        </Box>
+
+        <Box
+          sx={{
+            bgcolor: '#F9FAFB',
+            borderRadius: 4,
+            p: 5,
+            border: '2px solid #E5E7EB',
+          }}
+          data-aos="fade-up"
+        >
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1E3A8A', textAlign: 'center' }}>
+            Why Choose Us Over Freelancers?
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <CheckCircleIcon sx={{ color: '#10B981', fontSize: 28, flexShrink: 0 }} />
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Experienced Team
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Our team has 10+ years of combined experience handling complex projects and rescuing failed implementations.
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <CheckCircleIcon sx={{ color: '#10B981', fontSize: 28, flexShrink: 0 }} />
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Reliable Support
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    We don&apos;t disappear after delivery. You get ongoing support, maintenance, and continuous improvements.
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <CheckCircleIcon sx={{ color: '#10B981', fontSize: 28, flexShrink: 0 }} />
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Quality Assurance
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Every project goes through rigorous testing, code reviews, and quality checks before delivery.
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <CheckCircleIcon sx={{ color: '#10B981', fontSize: 28, flexShrink: 0 }} />
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Transparent Communication
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Regular updates, clear timelines, and honest communication throughout the entire project lifecycle.
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
         </Box>
       </Container>
     </Box>
