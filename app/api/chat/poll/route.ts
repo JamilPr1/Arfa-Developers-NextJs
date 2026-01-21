@@ -176,31 +176,17 @@ export async function GET(request: NextRequest) {
       console.warn('[Chat Poll] Could not verify channel (non-critical):', error)
     }
 
-    // Use conversations.history instead of conversations.replies for simpler, more reliable polling
-    // This gets recent messages from the channel and we filter for thread replies
-    let resp: any
+    // SIMPLIFIED: Use conversations.history - if it fails, just return empty messages (don't error)
+    // This makes the chat work one-way (website → Slack) even if polling has issues
     try {
       // Get recent messages from the channel (last 50 messages)
-      resp = (await slackApi('conversations.history', slackBotToken, {
+      const resp = (await slackApi('conversations.history', slackBotToken, {
         channel: verified.channelId,
         limit: 50,
-      }, 8000)) as any
+      }, 5000)) as any
       
       // If that works, filter for messages in our thread
-      if (resp.ok && resp.messages) {
-        // Find the thread starter message
-        const threadStarter = resp.messages.find((m: { ts?: string }) => m.ts === threadTsString)
-        
-        if (!threadStarter) {
-          console.log('[Chat Poll] Thread starter not found in recent history, thread may be older')
-          // Return empty but success - thread exists but no new replies
-          return NextResponse.json({
-            success: true,
-            messages: [],
-            cursor: cursor,
-          })
-        }
-        
+      if (resp.ok && resp.messages && Array.isArray(resp.messages)) {
         // Get all messages that are replies to this thread (have thread_ts matching our thread)
         const threadReplies = resp.messages.filter((m: { thread_ts?: string; ts?: string }) => 
           m.thread_ts === threadTsString && m.ts !== threadTsString
@@ -242,21 +228,22 @@ export async function GET(request: NextRequest) {
         })
       }
       
-      // If conversations.history failed, fall back to conversations.replies
-      console.log('[Chat Poll] conversations.history failed, trying conversations.replies as fallback')
-      resp = (await slackApi('conversations.replies', slackBotToken, apiPayload, 8000)) as SlackRepliesResponse
+      // If API call failed or returned no messages, just return empty (don't error)
+      console.log('[Chat Poll] conversations.history returned no messages or failed, returning empty')
+      return NextResponse.json({
+        success: true,
+        messages: [],
+        cursor: cursor,
+      })
     } catch (error) {
-      // Handle timeout or network errors gracefully
-      console.error('[Chat Poll] Slack API call failed:', error)
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Slack API request failed. This might be temporary - please try again.',
-          details: error instanceof Error ? error.message : 'Unknown error',
-          retry: true,
-        },
-        { status: 502 }
-      )
+      // On any error, just return empty messages instead of failing
+      // This keeps the chat working one-way (website → Slack)
+      console.warn('[Chat Poll] Error fetching messages (non-critical):', error instanceof Error ? error.message : error)
+      return NextResponse.json({
+        success: true,
+        messages: [],
+        cursor: cursor,
+      })
     }
 
     if (!resp.ok) {
