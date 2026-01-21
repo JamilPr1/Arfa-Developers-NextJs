@@ -155,6 +155,8 @@ export default function SlackChatWidget() {
           success: data.success,
           messageCount: data.messages?.length || 0,
           cursor: data.cursor || 'none',
+          error: data.error || 'none',
+          warning: data.warning || 'none',
           messages: data.messages?.map((m: any) => ({ 
             id: m.id, 
             text: m.text?.substring(0, 50), 
@@ -162,6 +164,21 @@ export default function SlackChatWidget() {
           })) || [],
           fullResponse: data,
         })
+        
+        // If backend returned an error (even though success: true), log it
+        if (data.error) {
+          console.error(`[Chat Widget] ⚠️ Backend returned error:`, {
+            error: data.error,
+            warning: data.warning,
+            message: 'This means the Slack API call failed. Check Vercel logs for details.',
+          })
+          
+          // If it's a scope error, show it clearly
+          if (data.error === 'missing_scope' || data.error === 'invalid_arguments') {
+            console.error(`[Chat Widget] 🚨 CRITICAL: Bot missing channels:history scope!`)
+            console.error(`[Chat Widget] 🚨 Fix: https://api.slack.com/apps → Your App → OAuth & Permissions → Add channels:history → Reinstall → Update token`)
+          }
+        }
         
         if (!data?.success) {
           const errorMsg = data?.error || 'Unknown error'
