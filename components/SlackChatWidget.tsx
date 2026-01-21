@@ -71,37 +71,74 @@ export default function SlackChatWidget() {
 
     const poll = async () => {
       if (!chatTokenRef.current) {
-        console.log('[Chat Widget] No token available for polling')
+        console.log('[Chat Widget] ❌ No token available for polling')
         return
       }
       
       pollAttempts++
+      const pollStartTime = Date.now()
+      
+      console.log(`[Chat Widget] 🔄 Poll attempt #${pollAttempts} starting...`, {
+        hasToken: !!chatTokenRef.current,
+        tokenLength: chatTokenRef.current.length,
+        cursor: pollCursorRef.current || 'none',
+        timestamp: new Date().toISOString(),
+        currentMessages: messages.length,
+      })
       
       // Add a delay for the first few polls to give Slack time to index the thread
       if (pollAttempts <= 3) {
-        await new Promise(resolve => setTimeout(resolve, 2000 * pollAttempts))
+        const delay = 2000 * pollAttempts
+        console.log(`[Chat Widget] ⏳ Waiting ${delay}ms before poll (attempt ${pollAttempts})`)
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
       
       try {
         const params = new URLSearchParams({
           token: chatTokenRef.current,
         })
-        if (pollCursorRef.current) params.set('cursor', pollCursorRef.current)
+        if (pollCursorRef.current) {
+          params.set('cursor', pollCursorRef.current)
+          console.log(`[Chat Widget] 📍 Using cursor: ${pollCursorRef.current}`)
+        } else {
+          console.log(`[Chat Widget] 📍 No cursor - will fetch all messages from thread`)
+        }
 
-        const res = await fetch(`/api/chat/poll?${params.toString()}`, { method: 'GET' })
+        const pollUrl = `/api/chat/poll?${params.toString()}`
+        console.log(`[Chat Widget] 🌐 Fetching: ${pollUrl.substring(0, 100)}...`)
+        
+        const res = await fetch(pollUrl, { method: 'GET' })
+        const fetchTime = Date.now() - pollStartTime
+        
+        console.log(`[Chat Widget] 📥 Response received (${fetchTime}ms):`, {
+          status: res.status,
+          statusText: res.statusText,
+          ok: res.ok,
+          contentType: res.headers.get('content-type'),
+        })
+        
         if (!res.ok) {
-          const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+          const errorData = await res.json().catch(() => ({ error: 'Failed to parse error response' }))
           const errorMsg = errorData?.error || errorData?.details || 'Unknown error'
+          
+          console.error('[Chat Widget] ❌ Poll request failed:', {
+            status: res.status,
+            statusText: res.statusText,
+            error: errorMsg,
+            details: errorData?.details,
+            retry: errorData?.retry,
+            fullResponse: errorData,
+          })
           
           // If it's a retry-able error (like thread indexing), don't clear token
           if (errorData?.retry && errorMsg.includes('not be indexed yet')) {
-            console.log('[Chat Widget] Thread not indexed yet, will retry on next poll')
+            console.log('[Chat Widget] ⏳ Thread not indexed yet, will retry on next poll')
             return // Continue polling, will retry
           }
           
           // If token is invalid or thread not found, clear it and stop polling
           if (res.status === 401 || errorMsg.includes('Invalid token') || (errorMsg.includes('Thread not found') && !errorData?.retry)) {
-            console.error('[Chat Widget] Poll failed with critical error, clearing token:', errorMsg)
+            console.error('[Chat Widget] 🚨 CRITICAL: Poll failed, clearing token:', errorMsg)
             chatTokenRef.current = ''
             if (typeof window !== 'undefined') {
               window.localStorage.removeItem('slackChatToken')
@@ -109,65 +146,110 @@ export default function SlackChatWidget() {
             return
           }
           
-          // For invalid_arguments that's not retry-able, log but don't clear token immediately
-          // It might be a temporary Slack API issue
-          console.error('[Chat Widget] Poll request failed:', {
-            status: res.status,
-            statusText: res.statusText,
-            error: errorMsg,
-            retry: errorData?.retry,
-          })
-          // Don't show error to user on every poll - only log it
+          // For other errors, just log and continue polling
           return
         }
+        
         const data = await res.json()
+        console.log(`[Chat Widget] 📦 Poll response data:`, {
+          success: data.success,
+          messageCount: data.messages?.length || 0,
+          cursor: data.cursor || 'none',
+          messages: data.messages?.map((m: any) => ({ 
+            id: m.id, 
+            text: m.text?.substring(0, 50), 
+            ts: m.ts 
+          })) || [],
+          fullResponse: data,
+        })
+        
         if (!data?.success) {
           const errorMsg = data?.error || 'Unknown error'
           
+          console.error('[Chat Widget] ❌ Poll returned unsuccessful:', {
+            success: data.success,
+            error: errorMsg,
+            details: data?.details,
+            fullResponse: data,
+          })
+          
           // If it's a critical scope error, show it to the user once
-          if (errorMsg.includes('CRITICAL') || errorMsg.includes('missing') && errorMsg.includes('scope')) {
-            console.error('[Chat Widget] CRITICAL SCOPE ERROR:', errorMsg)
+          if (errorMsg.includes('CRITICAL') || (errorMsg.includes('missing') && errorMsg.includes('scope'))) {
+            console.error('[Chat Widget] 🚨 CRITICAL SCOPE ERROR:', errorMsg)
             // Don't spam - only log once per session
-            if (!window.sessionStorage.getItem('scopeErrorShown')) {
+            if (typeof window !== 'undefined' && !window.sessionStorage.getItem('scopeErrorShown')) {
               window.sessionStorage.setItem('scopeErrorShown', 'true')
-              // Could show a user-friendly message here if needed
             }
-          } else {
-            console.error('[Chat Widget] Poll returned unsuccessful:', {
-              error: errorMsg,
-              details: data?.details,
-            })
           }
           return
         }
 
         // Update cursor to latest message timestamp
-        if (typeof data.cursor === 'string') {
+        if (typeof data.cursor === 'string' && data.cursor !== pollCursorRef.current) {
+          console.log(`[Chat Widget] 📍 Cursor updated: ${pollCursorRef.current || 'none'} → ${data.cursor}`)
           pollCursorRef.current = data.cursor
+        } else if (data.cursor) {
+          console.log(`[Chat Widget] 📍 Cursor unchanged: ${data.cursor}`)
         }
 
         const newMsgs = (data.messages || []) as Array<{ id: string; text: string; ts: string }>
+        console.log(`[Chat Widget] 📨 Processing ${newMsgs.length} messages from poll`)
+        
         if (newMsgs.length > 0) {
-          console.log(`[Chat Widget] Received ${newMsgs.length} new agent messages`)
+          console.log(`[Chat Widget] ✅ Received ${newMsgs.length} new agent messages:`, 
+            newMsgs.map(m => ({ 
+              id: m.id, 
+              text: m.text?.substring(0, 50) + (m.text && m.text.length > 50 ? '...' : ''), 
+              ts: m.ts,
+              timestamp: new Date(parseFloat(m.ts) * 1000).toISOString(),
+            }))
+          )
+          
           setMessages((prev) => {
             const existingIds = new Set(prev.map((m) => m.id))
+            console.log(`[Chat Widget] 📋 Current message IDs:`, Array.from(existingIds))
+            
             const additions: Message[] = newMsgs
-              .filter((m) => m.id && !existingIds.has(m.id))
-              .map((m) => ({
-                id: m.id,
-                text: m.text || '',
-                sender: 'agent',
-                timestamp: new Date(parseFloat(m.ts) * 1000),
-              }))
+              .filter((m) => {
+                const isNew = m.id && !existingIds.has(m.id)
+                if (!isNew) {
+                  console.log(`[Chat Widget] ⏭️ Skipping duplicate message: ${m.id}`)
+                }
+                return isNew
+              })
+              .map((m) => {
+                const msg: Message = {
+                  id: m.id,
+                  text: m.text || '',
+                  sender: 'agent',
+                  timestamp: new Date(parseFloat(m.ts) * 1000),
+                }
+                console.log(`[Chat Widget] ➕ Adding message:`, {
+                  id: msg.id,
+                  text: msg.text.substring(0, 50) + (msg.text.length > 50 ? '...' : ''),
+                  sender: msg.sender,
+                  timestamp: msg.timestamp.toISOString(),
+                })
+                return msg
+              })
+            
             if (additions.length > 0) {
-              console.log('[Chat Widget] Adding messages:', additions.map(m => m.text))
+              console.log(`[Chat Widget] ✅ Adding ${additions.length} new messages to chat. Total messages will be: ${prev.length + additions.length}`)
               return [...prev, ...additions]
+            } else {
+              console.log(`[Chat Widget] ⚠️ No new messages to add (all were duplicates)`)
             }
             return prev
           })
+        } else {
+          console.log(`[Chat Widget] ℹ️ No new messages in this poll (messageCount: 0)`)
         }
       } catch (error) {
-        console.error('[Chat Widget] Polling error:', error)
+        console.error('[Chat Widget] ❌ Polling error:', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+          pollAttempt: pollAttempts,
+        })
       }
     }
 
