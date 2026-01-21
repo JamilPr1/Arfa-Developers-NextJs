@@ -25,18 +25,20 @@ Then click **Install to Workspace** and copy the **Bot User OAuth Token**.
 
 ## 3) Pick the Slack channel
 
-Create (or pick) a channel like `#website-chat`.
+**Default Channel ID:** `C0A9W02H09Y` (already configured in code)
 
-Copy the **Channel ID**:
-- Right click channel → “View channel details” → copy Channel ID
+If you want to use a different channel:
+- Create (or pick) a channel like `#website-chat`
+- Right click channel → "View channel details" → copy Channel ID
+- Set `SLACK_CHANNEL_ID` in Vercel to override the default
 
 ## 4) Set Vercel Environment Variables
 
 Add these in Vercel (Production + Preview + Development):
 
-- `SLACK_BOT_TOKEN` = `xoxb-...`
-- `SLACK_CHANNEL_ID` = `C0123ABCDEF` (or `G...` for private)
-- `CHAT_SESSION_SECRET` = random long string (used to sign chat session tokens)
+- `SLACK_BOT_TOKEN` = `xoxb-...` (required)
+- `SLACK_CHANNEL_ID` = `C0A9W02H09Y` (optional - defaults to this channel)
+- `CHAT_SESSION_SECRET` = random long string (required - used to sign chat session tokens)
 
 Note: You can keep `SLACK_WEBHOOK_URL` for lead notifications; live chat uses the bot token.
 

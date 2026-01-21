@@ -44,15 +44,16 @@ export async function POST(request: NextRequest) {
     }
 
     const slackBotToken = process.env.SLACK_BOT_TOKEN
-    const slackChannelId = process.env.SLACK_CHANNEL_ID
+    // Default channel: C0A9W02H09Y (can be overridden via SLACK_CHANNEL_ID env var)
+    const slackChannelId = process.env.SLACK_CHANNEL_ID || 'C0A9W02H09Y'
     const tokenSecret = process.env.CHAT_SESSION_SECRET
 
-    if (!slackBotToken || !slackChannelId || !tokenSecret) {
+    if (!slackBotToken || !tokenSecret) {
       return NextResponse.json(
         {
           success: false,
           error:
-            'Slack live chat is not configured. Set SLACK_BOT_TOKEN, SLACK_CHANNEL_ID, and CHAT_SESSION_SECRET in environment variables.',
+            'Slack live chat is not configured. Set SLACK_BOT_TOKEN and CHAT_SESSION_SECRET in environment variables. (Channel ID defaults to C0A9W02H09Y)',
         },
         { status: 500 }
       )
