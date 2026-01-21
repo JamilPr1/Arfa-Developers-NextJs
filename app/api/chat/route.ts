@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
           if (channelInfo.error === 'channel_not_found') {
             return NextResponse.json({
               success: false,
-              error: `Channel not found (${slackChannelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Set SLACK_CHANNEL_ID in Vercel environment variables to your channel ID (e.g., D0AA3JR33T8) and redeploy.`,
+              error: `Channel not found (${slackChannelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Update SLACK_CHANNEL_ID in Vercel to C0AA2KHR02Z (support-team-channel) and redeploy.`,
             }, { status: 404 })
           } else if (channelInfo.error === 'missing_scope') {
             return NextResponse.json({
