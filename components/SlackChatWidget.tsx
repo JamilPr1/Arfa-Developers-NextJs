@@ -189,10 +189,12 @@ export default function SlackChatWidget() {
           window.localStorage.setItem('slackChatToken', newToken)
         }
         if (typeof threadTs === 'string') {
-          // Start cursor from the thread starter timestamp
-          // We'll only show messages with timestamps greater than this
-          pollCursorRef.current = threadTs
-          console.log('[Chat Widget] Initialized polling cursor to threadTs:', threadTs)
+          // Don't set cursor to threadTs - we want to see all messages in the thread
+          // The cursor will be updated by the poll endpoint based on actual message timestamps
+          // Setting it to threadTs would filter out the thread starter and early replies
+          console.log('[Chat Widget] Thread created, starting polling from thread:', threadTs)
+          // Clear cursor so we start fresh and get all messages
+          pollCursorRef.current = ''
         }
 
         const botMessage: Message = {

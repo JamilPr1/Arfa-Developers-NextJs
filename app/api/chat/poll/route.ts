@@ -111,32 +111,29 @@ export async function GET(request: NextRequest) {
       .filter((m) => {
         if (!m.ts) return false
         
+        // Always skip the thread starter message itself (it's the header)
+        if (m.ts === verified.threadTs) return false
+        
         // Skip messages we've already seen (cursor-based filtering)
-        if (cursor && parseFloat(m.ts) <= parseFloat(cursor)) {
+        // Only filter if cursor is set and is NOT the thread starter (threadTs)
+        // This ensures we don't filter out messages that come after the thread starter
+        if (cursor && cursor !== verified.threadTs && parseFloat(m.ts) <= parseFloat(cursor)) {
           return false
         }
 
         // Ignore bot-posted visitor messages (these are the website visitor messages)
         const isVisitorMeta = m.metadata?.event_type === 'webchat_message' && m.metadata?.event_payload?.sender === 'visitor'
-        if (isVisitorMeta) {
-          return false
-        }
+        if (isVisitorMeta) return false
 
         // Ignore messages with subtypes (like thread_broadcast, etc.)
-        if (m.subtype) {
-          return false
-        }
+        if (m.subtype) return false
 
         // Keep only messages from real users (team members) - must have a user ID
         // Bot messages have bot_id, user messages have user
-        if (!m.user || m.bot_id) {
-          return false
-        }
+        if (!m.user || m.bot_id) return false
 
         // Must have text content
-        if (!m.text || m.text.trim().length === 0) {
-          return false
-        }
+        if (!m.text || m.text.trim().length === 0) return false
 
         return true
       })
@@ -148,13 +145,24 @@ export async function GET(request: NextRequest) {
 
     // Update cursor to the latest message timestamp in the thread
     // Slack returns messages in chronological order, so the last one is the most recent
-    const latestMessage = resp.messages[resp.messages.length - 1]
-    const newCursor = latestMessage?.ts || cursor
-
-    // Debug logging (remove in production if needed)
+    // Only update cursor if we have messages, and use the latest agent message timestamp
+    let newCursor = cursor
     if (agentMessages.length > 0) {
+      // Use the latest agent message timestamp as the new cursor
+      const latestAgentMsg = agentMessages[agentMessages.length - 1]
+      newCursor = latestAgentMsg.ts
       console.log(`[Chat Poll] Found ${agentMessages.length} new agent messages for thread ${verified.threadTs}`)
+      console.log(`[Chat Poll] Agent messages:`, agentMessages.map(m => ({ ts: m.ts, text: m.text?.substring(0, 50) })))
+    } else if (resp.messages.length > 0) {
+      // If no agent messages but we have messages, update cursor to latest message
+      // This prevents re-fetching the same messages
+      const latestMessage = resp.messages[resp.messages.length - 1]
+      if (latestMessage?.ts && latestMessage.ts !== verified.threadTs) {
+        newCursor = latestMessage.ts
+      }
     }
+
+    console.log(`[Chat Poll] Returning ${agentMessages.length} agent messages, cursor: ${newCursor}`)
 
     return NextResponse.json({ success: true, messages: agentMessages, cursor: newCursor })
   } catch (error) {
