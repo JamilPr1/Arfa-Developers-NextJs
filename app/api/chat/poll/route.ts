@@ -187,23 +187,29 @@ export async function GET(request: NextRequest) {
       
       if (!resp.ok) {
         // Log the error but don't fail - return empty messages to keep chat working
-        console.error('[Chat Poll] conversations.replies failed:', {
+        console.error('[Chat Poll] ❌ conversations.replies FAILED:', {
           error: resp.error,
           warning: resp.warning,
           channel: verified.channelId,
           threadTs: threadTsString,
+          fullResponse: JSON.stringify(resp, null, 2),
         })
         
         // If it's a scope issue, log it clearly
         if (resp.error === 'missing_scope' || resp.error === 'invalid_arguments') {
-          console.error('[Chat Poll] CRITICAL: Bot likely missing channels:history scope. Check Vercel logs for details.')
+          console.error('[Chat Poll] 🚨 CRITICAL: Bot likely missing channels:history scope!')
+          console.error('[Chat Poll] 🚨 Fix: Go to https://api.slack.com/apps → Your App → OAuth & Permissions')
+          console.error('[Chat Poll] 🚨 Add "channels:history" scope → Reinstall App → Update SLACK_BOT_TOKEN in Vercel')
         }
         
         // Return empty messages instead of erroring - keeps chat working one-way
+        // But include the error in the response so frontend can log it
         return NextResponse.json({
           success: true,
           messages: [],
           cursor: cursor,
+          error: resp.error, // Include error for debugging
+          warning: resp.warning,
         })
       }
       
