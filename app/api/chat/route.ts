@@ -111,10 +111,21 @@ export async function POST(request: NextRequest) {
       })) as SlackPostMessageResponse
 
       if (!intro.ok || !intro.ts) {
-        console.error('Slack intro message error:', intro.error, intro)
+        console.error('Slack intro message error:', intro.error, intro, { channelId: slackChannelId })
+        
+        // Provide helpful error messages
+        let errorMessage = `Slack API error: ${intro.error || 'Failed to create chat thread'}`
+        if (intro.error === 'channel_not_found') {
+          errorMessage = `Channel not found (${slackChannelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Update SLACK_CHANNEL_ID in Vercel if using a different channel.`
+        } else if (intro.error === 'missing_scope') {
+          errorMessage = 'Bot is missing required scopes. Please add chat:write, channels:read, and channels:history, then reinstall the app.'
+        } else if (intro.error === 'not_in_channel') {
+          errorMessage = `Bot is not a member of channel ${slackChannelId}. Add the bot to the channel using /invite @YourBotName`
+        }
+        
         return NextResponse.json({ 
           success: false, 
-          error: `Slack API error: ${intro.error || 'Failed to create chat thread. Please check your Slack Bot Token and channel permissions.'}` 
+          error: errorMessage
         }, { status: 502 })
       }
 

@@ -79,7 +79,9 @@ export async function GET(request: NextRequest) {
       if (slackError === 'missing_scope') {
         userFriendlyError = 'Bot is missing required scope: channels:history. Please add this scope and reinstall the app.'
       } else if (slackError === 'channel_not_found') {
-        userFriendlyError = 'Channel not found. Please ensure the bot is added to the channel.'
+        userFriendlyError = `Channel not found (${verified.channelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Update SLACK_CHANNEL_ID in Vercel if using a different channel.`
+      } else if (slackError === 'not_in_channel') {
+        userFriendlyError = `Bot is not a member of channel ${verified.channelId}. Add the bot to the channel using /invite @YourBotName`
       } else if (slackError === 'thread_not_found') {
         userFriendlyError = 'Thread not found. The chat session may have expired.'
       }
