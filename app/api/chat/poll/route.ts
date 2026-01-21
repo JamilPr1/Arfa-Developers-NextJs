@@ -102,6 +102,46 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Check bot access to channel and verify permissions
+    try {
+      const channelInfo = (await slackApi('conversations.info', slackBotToken, {
+        channel: String(verified.channelId).trim(),
+      }, 5000)) as any
+      
+      if (!channelInfo.ok) {
+        console.error('[Chat Poll] ❌ Channel access check failed:', {
+          error: channelInfo.error,
+          channel: verified.channelId,
+        })
+        
+        if (channelInfo.error === 'channel_not_found') {
+          return NextResponse.json({
+            success: false,
+            error: `Channel not found. Please ensure: 1) The bot is added to the channel, 2) The channel ID (${verified.channelId}) is correct, 3) Update SLACK_CHANNEL_ID in Vercel if using a different channel.`,
+          }, { status: 404 })
+        } else if (channelInfo.error === 'missing_scope') {
+          return NextResponse.json({
+            success: false,
+            error: 'Bot is missing required scopes. Please add channels:read and channels:history, then reinstall the app.',
+          }, { status: 403 })
+        } else if (channelInfo.error === 'not_in_channel') {
+          return NextResponse.json({
+            success: false,
+            error: `Bot is not a member of channel ${verified.channelId}. Add the bot to the channel using /invite @YourBotName`,
+          }, { status: 403 })
+        }
+      } else {
+        console.log('[Chat Poll] ✅ Channel access verified:', {
+          channel: verified.channelId,
+          channelName: channelInfo.channel?.name,
+          isMember: channelInfo.channel?.is_member,
+        })
+      }
+    } catch (error) {
+      console.warn('[Chat Poll] Channel access check failed (non-critical):', error)
+      // Continue anyway - the actual API call will fail if there's a real issue
+    }
+
     console.log('[Chat Poll] Fetching replies:', {
       channel: verified.channelId,
       threadTs: verified.threadTs,
@@ -141,25 +181,7 @@ export async function GET(request: NextRequest) {
       limit: typeof apiPayload.limit,
     })
     
-    // First, check what scopes the token actually has by calling auth.test
-    try {
-      const authTest = (await slackApi('auth.test', slackBotToken, {}, 3000)) as any
-      if (authTest.ok) {
-        console.log('[Chat Poll] Token info:', {
-          botId: authTest.bot_id,
-          userId: authTest.user_id,
-          team: authTest.team,
-          url: authTest.url,
-        })
-      } else {
-        console.error('[Chat Poll] Token invalid:', authTest.error)
-      }
-    } catch (error) {
-      console.warn('[Chat Poll] Could not verify token (non-critical):', error)
-    }
-    
-    // Skip conversations.info check if it's causing invalid_arguments
-    // Go straight to conversations.replies
+    // Go straight to conversations.replies (channel access already verified above)
 
     // Use conversations.replies to get thread replies (this is the correct API for threads)
     // conversations.history doesn't return thread replies, only top-level messages
