@@ -7,6 +7,7 @@ import LiveChat from '@/components/LiveChat'
 import StructuredData from '@/components/StructuredData'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import AIChatbot from '@/components/AIChatbot'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import Script from 'next/script'
 
 const poppins = Poppins({
@@ -164,6 +165,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           {process.env.NEXT_PUBLIC_INTERCOM_ID && (
             <LiveChat provider="intercom" id={process.env.NEXT_PUBLIC_INTERCOM_ID} />
           )}
+          {/* Vercel Speed Insights */}
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
