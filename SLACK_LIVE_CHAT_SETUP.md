@@ -16,10 +16,12 @@ This enables a **true 2‑way live chat**:
 
 In **OAuth & Permissions** → **Bot Token Scopes**, add:
 
-- `chat:write`
-- `channels:read`
-- `channels:history`
+- `chat:write` (to post messages and create threads)
+- `channels:read` (to read channel information)
+- `channels:history` (to read messages and thread replies - **REQUIRED for polling**)
 - `groups:history` (only if you will use a private channel)
+
+**Important:** After adding scopes, you **must reinstall the app** to your workspace for the new permissions to take effect.
 
 Then click **Install to Workspace** and copy the **Bot User OAuth Token**.
 
@@ -49,6 +51,22 @@ When a visitor sends a message:
 - Each visitor chat is a **Slack thread**
 
 To reply to the visitor:
-- Reply **in the thread**
-- The website will show that reply to the visitor automatically.
+- Reply **in the thread** (not in the main channel)
+- The website will show that reply to the visitor automatically (polled every ~2.5 seconds)
+
+## Troubleshooting
+
+### 502 Bad Gateway errors on `/api/chat/poll`
+
+If you see 502 errors when polling for replies:
+
+1. **Check Vercel logs** (Project → Logs) to see the actual Slack API error
+2. **Verify bot scopes**: Ensure `channels:history` is added and the app is reinstalled
+3. **Verify bot is in channel**: The bot must be a member of the channel
+4. **Check thread exists**: Make sure you're replying in the thread (not posting new messages)
+
+Common Slack API errors:
+- `channel_not_found` → Bot not in channel or wrong channel ID
+- `missing_scope` → Bot needs `channels:history` scope
+- `thread_not_found` → Invalid thread timestamp (shouldn't happen if using the token)
 

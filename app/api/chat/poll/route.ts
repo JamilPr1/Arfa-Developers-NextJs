@@ -50,9 +50,28 @@ export async function GET(request: NextRequest) {
       inclusive: true,
     })) as SlackRepliesResponse
 
-    if (!resp.ok || !resp.messages) {
-      console.error('[Chat Poll] Slack API error:', resp.error, { channel: verified.channelId, threadTs: verified.threadTs })
-      return NextResponse.json({ success: false, error: `Slack error: ${resp.error || 'unknown'}` }, { status: 502 })
+    if (!resp.ok) {
+      console.error('[Chat Poll] Slack API error:', {
+        error: resp.error,
+        channel: verified.channelId,
+        threadTs: verified.threadTs,
+        fullResponse: resp,
+      })
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Slack API error: ${resp.error || 'Failed to fetch thread replies. Please check bot permissions and ensure the bot has conversations.replies scope.'}` 
+        }, 
+        { status: 502 }
+      )
+    }
+
+    if (!resp.messages || !Array.isArray(resp.messages)) {
+      console.error('[Chat Poll] Invalid response format:', { resp })
+      return NextResponse.json(
+        { success: false, error: 'Invalid response from Slack API' },
+        { status: 502 }
+      )
     }
 
     console.log(`[Chat Poll] Fetched ${resp.messages.length} messages from thread ${verified.threadTs}, cursor: ${cursor || 'none'}`)
@@ -109,8 +128,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, messages: agentMessages, cursor: newCursor })
   } catch (error) {
-    console.error('Chat poll error:', error)
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
+    console.error('[Chat Poll] Unexpected error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: `Server error: ${errorMessage}. Check Vercel logs for details.` 
+      }, 
+      { status: 500 }
+    )
   }
 }
 
