@@ -211,6 +211,12 @@ export default function SlackChatWidget() {
           console.log('[Chat Widget] Thread created, starting polling from thread:', threadTs)
           // Clear cursor so we start fresh and get all messages
           pollCursorRef.current = ''
+          
+          // Wait a moment before starting to poll (Slack needs time to process the thread)
+          // The polling useEffect will start automatically after a short delay
+          setTimeout(() => {
+            console.log('[Chat Widget] Ready to poll for replies')
+          }, 1000)
         }
 
         const botMessage: Message = {

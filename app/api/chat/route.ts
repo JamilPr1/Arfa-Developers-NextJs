@@ -149,8 +149,15 @@ export async function POST(request: NextRequest) {
         }, { status: 502 })
       }
 
-      threadTs = intro.ts
+      // Ensure threadTs is stored as a string (Slack returns it as string)
+      threadTs = String(intro.ts)
       channelId = slackChannelId
+      
+      console.log('[Chat API] Thread created successfully:', {
+        threadTs,
+        channelId,
+        threadTsType: typeof threadTs,
+      })
     }
 
     // Post visitor message into the thread (as bot)

@@ -80,11 +80,29 @@ export async function GET(request: NextRequest) {
       cursor: cursor || 'none',
     })
 
+    // Ensure threadTs is a string (Slack API requires string format)
+    // Also ensure it's in the correct format (timestamp with decimal)
+    const threadTsString = String(verified.threadTs).trim()
+    
+    // Double-check the format is correct
+    if (!/^\d+\.\d+$/.test(threadTsString)) {
+      console.error('[Chat Poll] ThreadTs format validation failed after string conversion:', threadTsString)
+      return NextResponse.json(
+        { success: false, error: 'Invalid thread timestamp format in token' },
+        { status: 400 }
+      )
+    }
+    
+    console.log('[Chat Poll] Calling Slack API with:', {
+      channel: verified.channelId,
+      ts: threadTsString,
+      tsType: typeof threadTsString,
+    })
+    
     const resp = (await slackApi('conversations.replies', slackBotToken, {
       channel: verified.channelId,
-      ts: verified.threadTs,
+      ts: threadTsString,
       limit: 50,
-      // Remove inclusive parameter - it might be causing issues
     })) as SlackRepliesResponse
 
     if (!resp.ok) {
@@ -109,7 +127,13 @@ export async function GET(request: NextRequest) {
       } else if (slackError === 'thread_not_found') {
         userFriendlyError = 'Thread not found. The chat session may have expired.'
       } else if (slackError === 'invalid_arguments') {
-        userFriendlyError = `Invalid API arguments. Thread timestamp: ${verified.threadTs}, Channel: ${verified.channelId}. Please check if the thread still exists.`
+        console.error('[Chat Poll] Invalid arguments details:', {
+          channel: verified.channelId,
+          threadTs: verified.threadTs,
+          threadTsType: typeof verified.threadTs,
+          channelType: typeof verified.channelId,
+        })
+        userFriendlyError = `Invalid API arguments. This might mean the thread doesn't exist yet or the format is incorrect. Thread: ${verified.threadTs}, Channel: ${verified.channelId}`
       }
       
       return NextResponse.json(
