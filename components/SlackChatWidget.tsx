@@ -38,19 +38,23 @@ export default function SlackChatWidget() {
 
   useEffect(() => {
     // Stable session id (persists per browser)
-    if (!sessionIdRef.current && typeof window !== 'undefined') {
-      const existing = window.localStorage.getItem('slackChatSessionId')
-      if (existing) {
-        sessionIdRef.current = existing
-      } else {
-        const newId = `chat_${Date.now()}_${Math.random().toString(16).slice(2)}`
-        sessionIdRef.current = newId
-        window.localStorage.setItem('slackChatSessionId', newId)
+    if (typeof window !== 'undefined') {
+      if (!sessionIdRef.current) {
+        const existing = window.localStorage.getItem('slackChatSessionId')
+        if (existing) {
+          sessionIdRef.current = existing
+        } else {
+          const newId = `chat_${Date.now()}_${Math.random().toString(16).slice(2)}`
+          sessionIdRef.current = newId
+          window.localStorage.setItem('slackChatSessionId', newId)
+        }
       }
 
+      // Always check for stored token and restore it
       const storedToken = window.localStorage.getItem('slackChatToken')
-      if (storedToken) {
+      if (storedToken && !chatTokenRef.current) {
         chatTokenRef.current = storedToken
+        console.log('[Chat Widget] Restored token from localStorage')
       }
     }
 
@@ -78,10 +82,22 @@ export default function SlackChatWidget() {
         const res = await fetch(`/api/chat/poll?${params.toString()}`, { method: 'GET' })
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+          const errorMsg = errorData?.error || errorData?.details || 'Unknown error'
+          
+          // If token is invalid or thread not found, clear it and stop polling
+          if (res.status === 401 || errorMsg.includes('Invalid token') || errorMsg.includes('Thread not found') || errorMsg.includes('Invalid API arguments')) {
+            console.error('[Chat Widget] Poll failed with critical error, clearing token:', errorMsg)
+            chatTokenRef.current = ''
+            if (typeof window !== 'undefined') {
+              window.localStorage.removeItem('slackChatToken')
+            }
+            return
+          }
+          
           console.error('[Chat Widget] Poll request failed:', {
             status: res.status,
             statusText: res.statusText,
-            error: errorData?.error || errorData?.details,
+            error: errorMsg,
           })
           // Don't show error to user on every poll - only log it
           return

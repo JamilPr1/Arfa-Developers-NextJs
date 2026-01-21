@@ -56,11 +56,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 })
     }
 
+    // Validate threadTs format (should be a timestamp string like "1234567890.123456")
+    if (!verified.threadTs || !/^\d+\.\d+$/.test(verified.threadTs)) {
+      console.error('[Chat Poll] Invalid threadTs format:', verified.threadTs)
+      return NextResponse.json(
+        { success: false, error: 'Invalid thread timestamp format' },
+        { status: 400 }
+      )
+    }
+
+    // Validate channel ID format (should start with C, G, or D)
+    if (!verified.channelId || !/^[CGD]/.test(verified.channelId)) {
+      console.error('[Chat Poll] Invalid channelId format:', verified.channelId)
+      return NextResponse.json(
+        { success: false, error: 'Invalid channel ID format' },
+        { status: 400 }
+      )
+    }
+
+    console.log('[Chat Poll] Fetching replies:', {
+      channel: verified.channelId,
+      threadTs: verified.threadTs,
+      cursor: cursor || 'none',
+    })
+
     const resp = (await slackApi('conversations.replies', slackBotToken, {
       channel: verified.channelId,
       ts: verified.threadTs,
       limit: 50,
-      inclusive: true,
+      // Remove inclusive parameter - it might be causing issues
     })) as SlackRepliesResponse
 
     if (!resp.ok) {
@@ -84,6 +108,8 @@ export async function GET(request: NextRequest) {
         userFriendlyError = `Bot is not a member of channel ${verified.channelId}. Add the bot to the channel using /invite @YourBotName`
       } else if (slackError === 'thread_not_found') {
         userFriendlyError = 'Thread not found. The chat session may have expired.'
+      } else if (slackError === 'invalid_arguments') {
+        userFriendlyError = `Invalid API arguments. Thread timestamp: ${verified.threadTs}, Channel: ${verified.channelId}. Please check if the thread still exists.`
       }
       
       return NextResponse.json(
