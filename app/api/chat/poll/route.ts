@@ -68,6 +68,30 @@ export async function GET(request: NextRequest) {
           userId: authTest.user_id,
           team: authTest.team,
         })
+        
+        // Test if token has channels:history scope by attempting a simple history call
+        // This helps diagnose if the token actually has the required scopes
+        try {
+          const scopeTest = await slackApi('conversations.history', slackBotToken, {
+            channel: 'C0AA2KHR02Z', // Test with default channel
+            limit: 1,
+          }, 3000) as any
+          
+          if (scopeTest.ok) {
+            console.log('[Chat Poll] ✅ Scope test passed: Token has channels:history scope')
+          } else if (scopeTest.error === 'missing_scope') {
+            console.error('[Chat Poll] 🚨 SCOPE TEST FAILED: Token is MISSING channels:history scope!')
+            console.error('[Chat Poll] 🚨 This means:')
+            console.error('[Chat Poll] 🚨   1. Scopes may be added in Slack app settings, BUT')
+            console.error('[Chat Poll] 🚨   2. The app was NOT reinstalled after adding scopes')
+            console.error('[Chat Poll] 🚨   3. The token in Vercel is an OLD token without the new scopes')
+            console.error('[Chat Poll] 🚨 FIX: Reinstall the app → Get NEW token → Update Vercel')
+          } else {
+            console.warn('[Chat Poll] Scope test returned:', scopeTest.error, '(may be channel access issue, not scope issue)')
+          }
+        } catch (scopeError) {
+          console.warn('[Chat Poll] Could not test scopes (non-critical):', scopeError)
+        }
       } else {
         console.error('[Chat Poll] Bot token invalid:', authTest.error)
       }
@@ -122,7 +146,7 @@ export async function GET(request: NextRequest) {
         } else if (channelInfo.error === 'missing_scope') {
           return NextResponse.json({
             success: false,
-            error: 'Bot is missing required scopes. Please add channels:read and channels:history, then reinstall the app.',
+            error: 'Bot is missing required scopes. Please add channels:read, channels:history, and chat:write to your Slack app, then REINSTALL the app to your workspace, copy the NEW bot token, and update SLACK_BOT_TOKEN in Vercel.',
           }, { status: 403 })
         } else if (channelInfo.error === 'not_in_channel') {
           return NextResponse.json({
@@ -242,9 +266,25 @@ export async function GET(request: NextRequest) {
         
         // Provide specific error messages
         if (resp.error === 'missing_scope') {
-          console.error('[Chat Poll] 🚨 CRITICAL: Bot missing channels:history scope!')
-          console.error('[Chat Poll] 🚨 Fix: Go to https://api.slack.com/apps → Your App → OAuth & Permissions')
-          console.error('[Chat Poll] 🚨 Add "channels:history" scope → Reinstall App → Update SLACK_BOT_TOKEN in Vercel')
+          console.error('[Chat Poll] 🚨 CRITICAL: Bot missing required OAuth scopes!')
+          console.error('[Chat Poll] 🚨 Required scopes: channels:history, channels:read')
+          console.error('[Chat Poll] 🚨 Fix steps:')
+          console.error('[Chat Poll] 🚨   1. Go to https://api.slack.com/apps → Select your app')
+          console.error('[Chat Poll] 🚨   2. Navigate to "OAuth & Permissions" → "Bot Token Scopes"')
+          console.error('[Chat Poll] 🚨   3. Add these scopes: channels:history, channels:read, chat:write')
+          console.error('[Chat Poll] 🚨   4. Click "Reinstall to Workspace" (IMPORTANT!)')
+          console.error('[Chat Poll] 🚨   5. Copy the NEW Bot User OAuth Token (starts with xoxb-)')
+          console.error('[Chat Poll] 🚨   6. Update SLACK_BOT_TOKEN in Vercel with the new token')
+          console.error('[Chat Poll] 🚨   7. Redeploy your Vercel project')
+          
+          // Return explicit error for missing_scope
+          return NextResponse.json({
+            success: false,
+            messages: [],
+            cursor: cursor,
+            error: 'missing_scope',
+            errorMessage: 'Bot is missing channels:history scope. Messages can be sent but replies cannot be fetched. Add channels:history scope in Slack app settings, reinstall the app, and update SLACK_BOT_TOKEN in Vercel.',
+          }, { status: 403 })
         } else if (resp.error === 'invalid_arguments') {
           console.error('[Chat Poll] 🚨 CRITICAL: Invalid arguments to conversations.replies!')
           console.error('[Chat Poll] 🚨 Attempting fallback: using conversations.history with thread filter...')
@@ -289,12 +329,32 @@ export async function GET(request: NextRequest) {
                 })
               }
             } else {
-              console.error('[Chat Poll] ❌ Fallback also failed:', fallbackResp.error || 'Unknown error')
+              const fallbackError = fallbackResp.error || 'Unknown error'
+              console.error('[Chat Poll] ❌ Fallback also failed:', fallbackError)
+              
+              if (fallbackError === 'missing_scope') {
+                console.error('[Chat Poll] 🚨 CRITICAL: Bot missing channels:history scope!')
+                console.error('[Chat Poll] 🚨 Both conversations.replies AND conversations.history failed due to missing_scope')
+                console.error('[Chat Poll] 🚨 This means the bot token does NOT have channels:history scope')
+                console.error('[Chat Poll] 🚨 Fix: Add channels:history scope → Reinstall App → Update SLACK_BOT_TOKEN in Vercel')
+              }
+              
+              // For missing_scope, return a more explicit error so the widget knows what's wrong
+              if (fallbackError === 'missing_scope') {
+                return NextResponse.json({
+                  success: false,
+                  messages: [],
+                  cursor: cursor,
+                  error: 'missing_scope',
+                  errorMessage: 'Bot is missing channels:history scope. Messages can be sent but replies cannot be fetched. Add channels:history scope in Slack app settings, reinstall the app, and update SLACK_BOT_TOKEN in Vercel.',
+                }, { status: 403 })
+              }
+              
               return NextResponse.json({
                 success: true,
                 messages: [],
                 cursor: cursor,
-                error: resp.error,
+                error: `Slack API error: ${fallbackError}`,
                 warning: resp.warning,
               })
             }
@@ -309,12 +369,13 @@ export async function GET(request: NextRequest) {
             })
           }
         } else {
-          // For other errors, return empty
+          // For other errors, return empty but still indicate there was an error
           return NextResponse.json({
             success: true,
             messages: [],
             cursor: cursor,
             error: resp.error,
+            errorMessage: resp.error ? `Slack API error: ${resp.error}` : undefined,
             warning: resp.warning,
           })
         }
@@ -350,6 +411,8 @@ export async function GET(request: NextRequest) {
         subtype: m.subtype,
         metadata: m.metadata,
         isThreadStarter: m.ts === threadTsString,
+        isAfterCursor: cursor ? parseFloat(m.ts) > parseFloat(cursor) : true,
+        cursorComparison: cursor ? `${parseFloat(m.ts)} > ${parseFloat(cursor)} = ${parseFloat(m.ts) > parseFloat(cursor)}` : 'no cursor',
       })))
       
       // Filter for agent messages (exclude visitor messages and thread starter)
@@ -367,9 +430,18 @@ export async function GET(request: NextRequest) {
           }
           
           // Skip messages we've already seen
-          if (cursor && parseFloat(m.ts) <= parseFloat(cursor)) {
-            console.log(`[Chat Poll] ⏭️ Skipping already seen message: ${m.ts} (cursor: ${cursor})`)
-            return false
+          // Use strict comparison: only skip if timestamp is strictly less than or equal to cursor
+          // Add small epsilon to handle floating point precision issues
+          if (cursor) {
+            const msgTs = parseFloat(m.ts)
+            const cursorTs = parseFloat(cursor)
+            // Only skip if message timestamp is clearly older than cursor (with 0.1s buffer for precision)
+            if (msgTs <= cursorTs + 0.1) {
+              console.log(`[Chat Poll] ⏭️ Skipping already seen message: ${m.ts} (cursor: ${cursor}, diff: ${msgTs - cursorTs}s)`)
+              return false
+            } else {
+              console.log(`[Chat Poll] ✅ Message is new: ${m.ts} > cursor ${cursor} (diff: ${msgTs - cursorTs}s)`)
+            }
           }
           
           // Skip bot-posted visitor messages (identified by metadata)
@@ -418,17 +490,69 @@ export async function GET(request: NextRequest) {
           text: (m.text || '').replace(/^<@[^>]+>\s*/g, '').trim(),
         }))
       
-      const newCursor = agentMessages.length > 0 
-        ? agentMessages[agentMessages.length - 1].ts 
-        : cursor
+      // Set cursor to the latest message timestamp (highest ts value)
+      // This ensures we don't miss messages that arrive between polls
+      let newCursor = cursor
+      if (agentMessages.length > 0) {
+        // Find the message with the highest timestamp
+        const latestMessage = agentMessages.reduce((latest, current) => {
+          return parseFloat(current.ts) > parseFloat(latest.ts) ? current : latest
+        })
+        newCursor = latestMessage.ts
+        console.log(`[Chat Poll] 📍 Setting cursor to latest message: ${newCursor} (from ${agentMessages.length} new messages)`)
+      } else if (resp.messages.length > 0) {
+        // Even if no agent messages, update cursor to latest message in thread to avoid re-checking old messages
+        // But only if we have messages - this handles the case where all messages are filtered out
+        const allTimestamps = resp.messages
+          .map((m: any) => m.ts)
+          .filter((ts: string) => ts && parseFloat(ts) > parseFloat(threadTsString))
+          .sort((a: string, b: string) => parseFloat(b) - parseFloat(a))
+        
+        if (allTimestamps.length > 0 && cursor) {
+          const latestTs = allTimestamps[0]
+          const cursorTs = parseFloat(cursor)
+          const latestTsNum = parseFloat(latestTs)
+          
+          // Only update cursor if latest message is newer than current cursor
+          if (latestTsNum > cursorTs) {
+            newCursor = latestTs
+            console.log(`[Chat Poll] 📍 Updating cursor to latest thread message (even though filtered): ${newCursor}`)
+          }
+        }
+      }
+      
+      // Log detailed filtering breakdown
+      const filteredBreakdown = {
+        totalMessages: resp.messages.length,
+        skippedThreadStarter: resp.messages.filter((m: any) => m.ts === threadTsString).length,
+        skippedByCursor: cursor ? resp.messages.filter((m: any) => m.ts && parseFloat(m.ts) <= parseFloat(cursor) + 0.1).length : 0,
+        skippedVisitor: resp.messages.filter((m: any) => m.metadata?.event_type === 'webchat_message' && m.metadata?.event_payload?.sender === 'visitor').length,
+        skippedNoUser: resp.messages.filter((m: any) => !m.user).length,
+        skippedBot: resp.messages.filter((m: any) => m.bot_id && m.subtype !== 'thread_broadcast').length,
+        skippedEmpty: resp.messages.filter((m: any) => !m.text || m.text.trim().length === 0).length,
+        skippedSubtype: resp.messages.filter((m: any) => m.subtype && !['thread_broadcast'].includes(m.subtype)).length,
+        kept: agentMessages.length,
+      }
       
       console.log(`[Chat Poll] 📊 Filtering results:`, {
-        totalMessages: resp.messages.length,
-        agentMessages: agentMessages.length,
+        ...filteredBreakdown,
         cursor: cursor || 'none',
         newCursor: newCursor || 'none',
         agentMessageDetails: agentMessages.map(m => ({ id: m.id, text: m.text.substring(0, 50), ts: m.ts })),
       })
+      
+      // If we have messages but none passed filtering, log a warning
+      if (resp.messages.length > 0 && agentMessages.length === 0 && cursor) {
+        console.warn(`[Chat Poll] ⚠️ WARNING: ${resp.messages.length} messages in thread but none passed filtering!`)
+        console.warn(`[Chat Poll] ⚠️ This might indicate: 1) All messages are before cursor, 2) All messages are visitor messages, 3) All messages are bot messages`)
+        console.warn(`[Chat Poll] ⚠️ Current cursor: ${cursor}, Thread messages:`, resp.messages.map((m: any) => ({
+          ts: m.ts,
+          user: m.user || 'none',
+          bot_id: m.bot_id || 'none',
+          text: m.text?.substring(0, 30) || 'empty',
+          isAfterCursor: parseFloat(m.ts) > parseFloat(cursor),
+        })))
+      }
       
       return NextResponse.json({
         success: true,

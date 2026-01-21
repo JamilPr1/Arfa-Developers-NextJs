@@ -100,8 +100,14 @@ export async function POST(request: NextRequest) {
           } else if (channelInfo.error === 'missing_scope') {
             return NextResponse.json({
               success: false,
-              error: 'Bot is missing required scopes. Please add channels:read, channels:history, and chat:write, then reinstall the app.',
+              error: 'Bot is missing required scopes. Please add channels:read, channels:history, and chat:write to your Slack app, then REINSTALL the app to your workspace, copy the NEW bot token, and update SLACK_BOT_TOKEN in Vercel.',
             }, { status: 403 })
+          } else if (channelInfo.error === 'invalid_arguments') {
+            console.error('[Chat API] 🚨 Invalid arguments error - this may indicate:')
+            console.error('[Chat API] 🚨   1. Channel ID format is incorrect')
+            console.error('[Chat API] 🚨   2. Bot token is missing channels:read scope')
+            console.error('[Chat API] 🚨   3. Channel ID does not exist in this workspace')
+            // Continue - let the actual API call handle the error
           } else if (channelInfo.error === 'not_in_channel') {
             return NextResponse.json({
               success: false,
@@ -182,7 +188,7 @@ export async function POST(request: NextRequest) {
         if (intro.error === 'channel_not_found') {
           errorMessage = `Channel not found (${slackChannelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Update SLACK_CHANNEL_ID in Vercel if using a different channel.`
         } else if (intro.error === 'missing_scope') {
-          errorMessage = 'Bot is missing required scopes. Please add chat:write, channels:read, and channels:history, then reinstall the app.'
+          errorMessage = 'Bot is missing required scopes. Please add chat:write, channels:read, and channels:history to your Slack app, then REINSTALL the app to your workspace, copy the NEW bot token, and update SLACK_BOT_TOKEN in Vercel.'
         } else if (intro.error === 'not_in_channel') {
           errorMessage = `Bot is not a member of channel ${slackChannelId}. Add the bot to the channel using /invite @YourBotName`
         }
@@ -234,7 +240,7 @@ export async function POST(request: NextRequest) {
       
       let errorMessage = `Slack API error: ${msg.error || 'Failed to send message'}`
       if (msg.error === 'missing_scope') {
-        errorMessage = 'Bot is missing required scope: chat:write. Please add this scope and reinstall the app.'
+        errorMessage = 'Bot is missing required scope: chat:write. Please add this scope to your Slack app, then REINSTALL the app to your workspace, copy the NEW bot token, and update SLACK_BOT_TOKEN in Vercel.'
       } else if (msg.error === 'channel_not_found') {
         errorMessage = `Channel not found (${channelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Set SLACK_CHANNEL_ID in Vercel to your channel ID and redeploy.`
       } else if (msg.error === 'not_in_channel') {
