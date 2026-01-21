@@ -99,19 +99,49 @@ export async function GET(request: NextRequest) {
       tsType: typeof threadTsString,
     })
     
-    const apiPayload = {
-      channel: verified.channelId,
+    // Build API payload - ensure all values are strings
+    const apiPayload: Record<string, string | number> = {
+      channel: String(verified.channelId).trim(),
       ts: threadTsString,
       limit: 50,
     }
     
     console.log('[Chat Poll] Slack API payload:', JSON.stringify(apiPayload))
+    console.log('[Chat Poll] Payload types:', {
+      channel: typeof apiPayload.channel,
+      ts: typeof apiPayload.ts,
+      limit: typeof apiPayload.limit,
+    })
     
     const resp = (await slackApi('conversations.replies', slackBotToken, apiPayload)) as SlackRepliesResponse
 
     if (!resp.ok) {
       // Log the full response for debugging
       console.error('[Chat Poll] Full Slack API response:', JSON.stringify(resp, null, 2))
+      
+      // If it's invalid_arguments and the thread was just created, it might need time to index
+      // Return a more helpful error but don't clear the token immediately
+      if (resp.error === 'invalid_arguments') {
+        const errorDetails = {
+          error: resp.error,
+          warning: resp.warning,
+          response_metadata: resp.response_metadata,
+          payload: apiPayload,
+        }
+        console.error('[Chat Poll] Invalid arguments - possible causes:', errorDetails)
+        
+        // Check if this might be a timing issue (thread just created)
+        // Don't clear token on first invalid_arguments - might be indexing delay
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Thread may not be indexed yet. Please wait a moment and try again. Thread: ${threadTsString}`,
+            details: resp.error,
+            retry: true, // Signal to frontend to retry
+          },
+          { status: 502 }
+        )
+      }
       const slackError = resp.error || 'unknown_error'
       const errorDetails = {
         error: slackError,

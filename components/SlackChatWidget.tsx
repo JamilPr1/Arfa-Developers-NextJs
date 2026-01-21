@@ -84,8 +84,14 @@ export default function SlackChatWidget() {
           const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
           const errorMsg = errorData?.error || errorData?.details || 'Unknown error'
           
+          // If it's a retry-able error (like thread indexing), don't clear token
+          if (errorData?.retry && errorMsg.includes('not be indexed yet')) {
+            console.log('[Chat Widget] Thread not indexed yet, will retry on next poll')
+            return // Continue polling, will retry
+          }
+          
           // If token is invalid or thread not found, clear it and stop polling
-          if (res.status === 401 || errorMsg.includes('Invalid token') || errorMsg.includes('Thread not found') || errorMsg.includes('Invalid API arguments')) {
+          if (res.status === 401 || errorMsg.includes('Invalid token') || (errorMsg.includes('Thread not found') && !errorData?.retry)) {
             console.error('[Chat Widget] Poll failed with critical error, clearing token:', errorMsg)
             chatTokenRef.current = ''
             if (typeof window !== 'undefined') {
@@ -94,10 +100,13 @@ export default function SlackChatWidget() {
             return
           }
           
+          // For invalid_arguments that's not retry-able, log but don't clear token immediately
+          // It might be a temporary Slack API issue
           console.error('[Chat Widget] Poll request failed:', {
             status: res.status,
             statusText: res.statusText,
             error: errorMsg,
+            retry: errorData?.retry,
           })
           // Don't show error to user on every poll - only log it
           return
