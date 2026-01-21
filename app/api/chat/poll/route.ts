@@ -124,6 +124,26 @@ export async function GET(request: NextRequest) {
       limit: typeof apiPayload.limit,
     })
     
+    // First, verify the channel and thread exist using conversations.info
+    // This helps diagnose if the issue is with the thread or the API call
+    try {
+      const channelInfo = (await slackApi('conversations.info', slackBotToken, {
+        channel: verified.channelId,
+      }, 5000)) as any
+      
+      if (!channelInfo.ok) {
+        console.error('[Chat Poll] Channel info check failed:', channelInfo.error)
+      } else {
+        console.log('[Chat Poll] Channel verified:', {
+          channelId: verified.channelId,
+          channelName: channelInfo.channel?.name,
+          isMember: channelInfo.channel?.is_member,
+        })
+      }
+    } catch (error) {
+      console.warn('[Chat Poll] Could not verify channel (non-critical):', error)
+    }
+
     // Call Slack API with timeout
     let resp: SlackRepliesResponse
     try {
@@ -146,29 +166,55 @@ export async function GET(request: NextRequest) {
       // Log the full response for debugging
       console.error('[Chat Poll] Full Slack API response:', JSON.stringify(resp, null, 2))
       
-      // If it's invalid_arguments and the thread was just created, it might need time to index
-      // Return a more helpful error but don't clear the token immediately
+      // If it's invalid_arguments, log full details for debugging
       if (resp.error === 'invalid_arguments') {
         const errorDetails = {
           error: resp.error,
           warning: resp.warning,
           response_metadata: resp.response_metadata,
           payload: apiPayload,
+          payloadStringified: JSON.stringify(apiPayload),
+          channelId: verified.channelId,
+          threadTs: threadTsString,
         }
-        console.error('[Chat Poll] Invalid arguments - possible causes:', errorDetails)
+        console.error('[Chat Poll] Invalid arguments - FULL DETAILS:', JSON.stringify(errorDetails, null, 2))
         
-        // Check if this might be a timing issue (thread just created)
-        // Don't clear token on first invalid_arguments - might be indexing delay
-        // Return 200 with retry flag instead of 502 to avoid breaking the polling loop
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Thread may not be indexed yet. Please wait a moment and try again.`,
-            details: resp.error,
-            retry: true, // Signal to frontend to retry
-          },
-          { status: 200 } // Return 200 so frontend doesn't treat it as critical
-        )
+        // Check response_metadata for more details
+        if (resp.response_metadata?.messages) {
+          console.error('[Chat Poll] Response metadata messages:', resp.response_metadata.messages)
+        }
+        
+        // Try to get more info about why it's invalid
+        // Sometimes Slack returns additional error context
+        const errorMsg = resp.warning || resp.error || 'invalid_arguments'
+        
+        // Check if it's a timing issue (thread just created) vs a real error
+        // If we've been polling for a while, it's likely a real error
+        const isRecentThread = Date.now() - (parseFloat(threadTsString) * 1000) < 30000 // 30 seconds
+        
+        if (isRecentThread) {
+          // Thread was just created, might need time to index
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Thread may not be indexed yet. Please wait a moment and try again.`,
+              details: resp.error,
+              retry: true,
+            },
+            { status: 200 }
+          )
+        } else {
+          // Thread is older, this is likely a real error
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Slack API error: ${errorMsg}. Check Vercel logs for full details. Possible causes: 1) Bot not in channel, 2) Thread doesn't exist, 3) Missing scope (even if shown in UI, app may need reinstall).`,
+              details: resp.error,
+              retry: false, // Don't retry if it's a persistent error
+            },
+            { status: 502 }
+          )
+        }
       }
       const slackError = resp.error || 'unknown_error'
       const errorDetails = {
