@@ -181,11 +181,35 @@ export async function GET(request: NextRequest) {
       limit: typeof apiPayload.limit,
     })
     
-    // Go straight to conversations.replies (channel access already verified above)
-
     // Use conversations.replies to get thread replies (this is the correct API for threads)
     // conversations.history doesn't return thread replies, only top-level messages
     try {
+      // First, verify the parent message exists by trying to get it
+      // This helps diagnose if the thread timestamp is valid
+      let parentMessageExists = false
+      try {
+        const parentCheck = await slackApi('conversations.history', slackBotToken, {
+          channel: String(verified.channelId).trim(),
+          latest: threadTsString,
+          limit: 1,
+          inclusive: true,
+        }, 3000) as any
+        
+        if (parentCheck.ok && parentCheck.messages && parentCheck.messages.length > 0) {
+          const parentMsg = parentCheck.messages[0]
+          if (parentMsg.ts === threadTsString) {
+            parentMessageExists = true
+            console.log('[Chat Poll] ✅ Parent message verified:', {
+              ts: parentMsg.ts,
+              text: parentMsg.text?.substring(0, 50),
+              hasThread: !!parentMsg.thread_ts,
+            })
+          }
+        }
+      } catch (e) {
+        console.warn('[Chat Poll] Could not verify parent message (non-critical):', e)
+      }
+      
       // Build the API payload - ensure all values are correct types
       const apiPayload: Record<string, any> = {
         channel: String(verified.channelId).trim(),
@@ -199,6 +223,7 @@ export async function GET(request: NextRequest) {
         tsType: typeof apiPayload.ts,
         tsLength: apiPayload.ts.length,
         limit: apiPayload.limit,
+        parentMessageExists,
       })
       
       const resp = (await slackApi('conversations.replies', slackBotToken, apiPayload, 8000)) as SlackRepliesResponse
@@ -211,6 +236,7 @@ export async function GET(request: NextRequest) {
           channel: verified.channelId,
           threadTs: threadTsString,
           payload: apiPayload,
+          parentMessageExists,
           fullResponse: JSON.stringify(resp, null, 2),
         })
         
@@ -221,29 +247,86 @@ export async function GET(request: NextRequest) {
           console.error('[Chat Poll] 🚨 Add "channels:history" scope → Reinstall App → Update SLACK_BOT_TOKEN in Vercel')
         } else if (resp.error === 'invalid_arguments') {
           console.error('[Chat Poll] 🚨 CRITICAL: Invalid arguments to conversations.replies!')
-          console.error('[Chat Poll] 🚨 Possible causes:')
-          console.error('[Chat Poll] 🚨   1. Thread timestamp format is wrong:', threadTsString)
-          console.error('[Chat Poll] 🚨   2. Channel ID is wrong:', verified.channelId)
-          console.error('[Chat Poll] 🚨   3. Bot doesn\'t have access to this thread')
-          console.error('[Chat Poll] 🚨   4. Thread doesn\'t exist or was deleted')
-          // Try to get more info about the thread
+          console.error('[Chat Poll] 🚨 Attempting fallback: using conversations.history with thread filter...')
+          
+          // Fallback: Try using conversations.history and filter by thread_ts
+          // This works when conversations.replies fails due to invalid_arguments
           try {
-            const threadInfo = await slackApi('conversations.info', slackBotToken, {
-              channel: verified.channelId,
-            }, 3000)
-            console.error('[Chat Poll] 📋 Channel info:', JSON.stringify(threadInfo, null, 2))
-          } catch (e) {
-            console.error('[Chat Poll] Could not fetch channel info:', e)
+            const threadTsFloat = parseFloat(threadTsString)
+            const fallbackResp = await slackApi('conversations.history', slackBotToken, {
+              channel: String(verified.channelId).trim(),
+              oldest: String(threadTsFloat - 3600), // 1 hour before thread (as string)
+              latest: String(Date.now() / 1000), // Now (as string)
+              limit: 200,
+            }, 8000) as any
+            
+            if (fallbackResp.ok && fallbackResp.messages && Array.isArray(fallbackResp.messages)) {
+              // Filter messages that belong to this thread
+              // A message is in the thread if:
+              // 1. Its thread_ts matches the thread timestamp, OR
+              // 2. Its ts matches the thread timestamp (it's the parent message)
+              const threadMessages = fallbackResp.messages.filter((m: any) => {
+                const msgThreadTs = m.thread_ts ? String(m.thread_ts) : null
+                const msgTs = m.ts ? String(m.ts) : null
+                return (msgThreadTs === threadTsString) || (msgTs === threadTsString)
+              })
+              
+              console.log('[Chat Poll] ✅ Fallback successful! Found', threadMessages.length, 'messages in thread (out of', fallbackResp.messages.length, 'total)')
+              
+              if (threadMessages.length > 0) {
+                // Use fallback messages - modify resp to continue processing
+                resp.ok = true
+                resp.messages = threadMessages
+                resp.error = undefined // Clear error since fallback worked
+                console.log('[Chat Poll] 🔄 Using fallback method - processing', threadMessages.length, 'messages')
+              } else {
+                console.warn('[Chat Poll] ⚠️ Fallback found no thread messages')
+                return NextResponse.json({
+                  success: true,
+                  messages: [],
+                  cursor: cursor,
+                  error: 'Thread not found or empty',
+                })
+              }
+            } else {
+              console.error('[Chat Poll] ❌ Fallback also failed:', fallbackResp.error || 'Unknown error')
+              return NextResponse.json({
+                success: true,
+                messages: [],
+                cursor: cursor,
+                error: resp.error,
+                warning: resp.warning,
+              })
+            }
+          } catch (fallbackError) {
+            console.error('[Chat Poll] ❌ Fallback error:', fallbackError)
+            return NextResponse.json({
+              success: true,
+              messages: [],
+              cursor: cursor,
+              error: resp.error,
+              warning: resp.warning,
+            })
           }
+        } else {
+          // For other errors, return empty
+          return NextResponse.json({
+            success: true,
+            messages: [],
+            cursor: cursor,
+            error: resp.error,
+            warning: resp.warning,
+          })
         }
-        
-        // Return empty messages instead of erroring - keeps chat working one-way
-        // But include the error in the response so frontend can log it
+      }
+      
+      // If we got here and resp.ok is still false, return empty
+      if (!resp.ok) {
         return NextResponse.json({
           success: true,
           messages: [],
           cursor: cursor,
-          error: resp.error, // Include error for debugging
+          error: resp.error,
           warning: resp.warning,
         })
       }
