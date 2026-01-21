@@ -141,40 +141,25 @@ export async function GET(request: NextRequest) {
       limit: typeof apiPayload.limit,
     })
     
-    // First, verify the channel and bot membership using conversations.info
-    // This helps diagnose if the issue is with the thread or the API call
+    // First, check what scopes the token actually has by calling auth.test
     try {
-      const channelInfo = (await slackApi('conversations.info', slackBotToken, {
-        channel: verified.channelId,
-      }, 5000)) as any
-      
-      if (!channelInfo.ok) {
-        console.error('[Chat Poll] Channel info check failed:', channelInfo.error)
-        if (channelInfo.error === 'missing_scope') {
-          return NextResponse.json(
-            {
-              success: false,
-              error: 'Bot is missing channels:read scope. Even though scope is in UI, app must be REINSTALLED after adding scopes.',
-              details: channelInfo.error,
-            },
-            { status: 502 }
-          )
-        }
-      } else {
-        console.log('[Chat Poll] Channel verified:', {
-          channelId: verified.channelId,
-          channelName: channelInfo.channel?.name,
-          isMember: channelInfo.channel?.is_member,
-          isPrivate: channelInfo.channel?.is_private,
+      const authTest = (await slackApi('auth.test', slackBotToken, {}, 3000)) as any
+      if (authTest.ok) {
+        console.log('[Chat Poll] Token info:', {
+          botId: authTest.bot_id,
+          userId: authTest.user_id,
+          team: authTest.team,
+          url: authTest.url,
         })
-        
-        if (!channelInfo.channel?.is_member) {
-          console.error('[Chat Poll] Bot is not a member of the channel!')
-        }
+      } else {
+        console.error('[Chat Poll] Token invalid:', authTest.error)
       }
     } catch (error) {
-      console.warn('[Chat Poll] Could not verify channel (non-critical):', error)
+      console.warn('[Chat Poll] Could not verify token (non-critical):', error)
     }
+    
+    // Skip conversations.info check if it's causing invalid_arguments
+    // Go straight to conversations.replies
 
     // Use conversations.replies to get thread replies (this is the correct API for threads)
     // conversations.history doesn't return thread replies, only top-level messages
