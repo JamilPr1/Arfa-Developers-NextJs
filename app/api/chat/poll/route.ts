@@ -261,7 +261,7 @@ export async function GET(request: NextRequest) {
             return false
           }
           
-          // Skip bot-posted visitor messages
+          // Skip bot-posted visitor messages (identified by metadata)
           const isVisitorMeta = m.metadata?.event_type === 'webchat_message' && 
                                m.metadata?.event_payload?.sender === 'visitor'
           if (isVisitorMeta) {
@@ -269,15 +269,26 @@ export async function GET(request: NextRequest) {
             return false
           }
           
-          // Skip messages with subtypes
-          if (m.subtype) {
+          // Skip messages that are clearly bot/system messages (but allow user messages with some subtypes)
+          // Allow messages with subtypes like 'thread_broadcast' (when agent replies and also sends to channel)
+          const allowedSubtypes = ['thread_broadcast']
+          if (m.subtype && !allowedSubtypes.includes(m.subtype)) {
             console.log(`[Chat Poll] ⏭️ Skipping message with subtype: ${m.ts} (subtype: ${m.subtype})`)
             return false
           }
           
-          // Only real user messages (not bot messages)
-          if (!m.user || m.bot_id) {
-            console.log(`[Chat Poll] ⏭️ Skipping bot message: ${m.ts} (user: ${m.user}, bot_id: ${m.bot_id})`)
+          // Must have a user ID (real human user, not a bot)
+          // Bot messages have bot_id but no user, or have user but it's a bot user
+          // Real user messages have user ID and no bot_id (or bot_id is null/undefined)
+          if (!m.user) {
+            console.log(`[Chat Poll] ⏭️ Skipping message without user: ${m.ts} (bot_id: ${m.bot_id})`)
+            return false
+          }
+          
+          // Skip if it's a bot message (has bot_id and no real user context)
+          // But allow if it's a thread_broadcast from a user (those can have bot_id but are still user messages)
+          if (m.bot_id && m.subtype !== 'thread_broadcast') {
+            console.log(`[Chat Poll] ⏭️ Skipping bot message: ${m.ts} (user: ${m.user}, bot_id: ${m.bot_id}, subtype: ${m.subtype})`)
             return false
           }
           
@@ -287,7 +298,7 @@ export async function GET(request: NextRequest) {
             return false
           }
           
-          console.log(`[Chat Poll] ✅ Keeping agent message: ${m.ts} from user ${m.user}`)
+          console.log(`[Chat Poll] ✅ Keeping agent message: ${m.ts} from user ${m.user} (subtype: ${m.subtype || 'none'}, bot_id: ${m.bot_id || 'none'})`)
           return true
         })
         .map((m) => ({
