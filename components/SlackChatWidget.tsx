@@ -152,6 +152,12 @@ export default function SlackChatWidget() {
     setIsConnecting(true)
 
     try {
+      console.log('[Chat Widget] Sending message to API:', {
+        message: userMessage.text,
+        sessionId: sessionIdRef.current,
+        hasToken: !!chatTokenRef.current,
+      })
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,6 +171,15 @@ export default function SlackChatWidget() {
       })
 
       const data = await response.json().catch(() => ({ success: false, error: 'Failed to parse response' }))
+      
+      console.log('[Chat Widget] API response:', {
+        ok: response.ok,
+        status: response.status,
+        success: data?.success,
+        error: data?.error,
+        hasToken: !!data?.token,
+        threadTs: data?.threadTs,
+      })
       
       if (response.ok && data?.success) {
         const newToken = data?.token

@@ -15,15 +15,25 @@ interface ChatMessage {
 type SlackPostMessageResponse = { ok: boolean; ts?: string; error?: string }
 
 async function slackApi(method: string, token: string, payload: Record<string, any>) {
-  const resp = await fetch(`https://slack.com/api/${method}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify(payload),
-  })
-  return (await resp.json()) as any
+  try {
+    const resp = await fetch(`https://slack.com/api/${method}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!resp.ok) {
+      console.error(`[Slack API] HTTP error: ${resp.status} ${resp.statusText}`)
+    }
+    const result = await resp.json()
+    console.log(`[Slack API] ${method} response:`, { ok: result.ok, error: result.error, hasTs: !!result.ts })
+    return result as any
+  } catch (error) {
+    console.error('[Slack API] Network error:', error)
+    throw error
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -104,6 +114,11 @@ export async function POST(request: NextRequest) {
       }
       introBlocks.push({ type: 'divider' })
 
+      console.log('[Chat API] Creating new chat thread in Slack:', {
+        channel: slackChannelId,
+        sessionId: safeSession,
+      })
+      
       const intro = (await slackApi('chat.postMessage', slackBotToken, {
         channel: slackChannelId,
         text: `New website chat (${safeSession})`,
@@ -111,7 +126,12 @@ export async function POST(request: NextRequest) {
       })) as SlackPostMessageResponse
 
       if (!intro.ok || !intro.ts) {
-        console.error('Slack intro message error:', intro.error, intro, { channelId: slackChannelId })
+        console.error('[Chat API] Slack intro message error:', {
+          error: intro.error,
+          warning: (intro as any).warning,
+          fullResponse: intro,
+          channelId: slackChannelId,
+        })
         
         // Provide helpful error messages
         let errorMessage = `Slack API error: ${intro.error || 'Failed to create chat thread'}`
@@ -134,6 +154,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Post visitor message into the thread (as bot)
+    console.log('[Chat API] Posting visitor message to Slack:', {
+      channel: channelId,
+      threadTs,
+      messageLength: message.trim().length,
+      sessionId: safeSession,
+    })
+    
     const msg = (await slackApi('chat.postMessage', slackBotToken, {
       channel: channelId,
       thread_ts: threadTs,
@@ -148,12 +175,26 @@ export async function POST(request: NextRequest) {
     })) as SlackPostMessageResponse
 
     if (!msg.ok) {
-      console.error('Slack message post error:', msg.error, msg)
+      console.error('[Chat API] Slack message post error:', {
+        error: msg.error,
+        warning: (msg as any).warning,
+        response: msg,
+      })
+      
+      let errorMessage = `Slack API error: ${msg.error || 'Failed to send message'}`
+      if (msg.error === 'missing_scope') {
+        errorMessage = 'Bot is missing required scope: chat:write. Please add this scope and reinstall the app.'
+      } else if (msg.error === 'channel_not_found' || msg.error === 'not_in_channel') {
+        errorMessage = `Bot cannot access channel ${channelId}. Please ensure the bot is added to the channel.`
+      }
+      
       return NextResponse.json({ 
         success: false, 
-        error: `Slack API error: ${msg.error || 'Failed to send message. Please check your Slack Bot Token permissions.'}` 
+        error: errorMessage
       }, { status: 502 })
     }
+    
+    console.log('[Chat API] Message sent successfully to Slack:', { threadTs: msg.ts })
 
     const newToken = signChatToken(
       { sessionId: safeSession, channelId: channelId!, threadTs: threadTs! },
