@@ -57,6 +57,23 @@ export async function GET(request: NextRequest) {
     if (!slackBotToken || !tokenSecret) {
       return NextResponse.json({ success: false, error: 'Not configured' }, { status: 500 })
     }
+    
+    // Test if bot token has the required scope by calling auth.test
+    // This helps diagnose scope issues
+    try {
+      const authTest = (await slackApi('auth.test', slackBotToken, {}, 3000)) as any
+      if (authTest.ok) {
+        console.log('[Chat Poll] Bot token verified:', {
+          botId: authTest.bot_id,
+          userId: authTest.user_id,
+          team: authTest.team,
+        })
+      } else {
+        console.error('[Chat Poll] Bot token invalid:', authTest.error)
+      }
+    } catch (error) {
+      console.warn('[Chat Poll] Could not verify bot token (non-critical):', error)
+    }
 
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token') || ''
@@ -220,10 +237,32 @@ export async function GET(request: NextRequest) {
           )
         } else {
           // Thread is older, this is likely a real error
+          // Try to verify if the thread actually exists by checking the channel history
+          try {
+            const historyCheck = (await slackApi('conversations.history', slackBotToken, {
+              channel: verified.channelId,
+              latest: threadTsString,
+              limit: 1,
+              inclusive: true,
+            }, 5000)) as any
+            
+            if (!historyCheck.ok) {
+              console.error('[Chat Poll] History check failed:', historyCheck.error)
+            } else {
+              console.log('[Chat Poll] History check result:', {
+                hasMessages: historyCheck.messages?.length > 0,
+                messageTs: historyCheck.messages?.[0]?.ts,
+                matchesThread: historyCheck.messages?.[0]?.ts === threadTsString,
+              })
+            }
+          } catch (err) {
+            console.warn('[Chat Poll] Could not verify thread in history:', err)
+          }
+          
           return NextResponse.json(
             {
               success: false,
-              error: `Slack API error: ${errorMsg}. Check Vercel logs for full details. Possible causes: 1) Bot not in channel, 2) Thread doesn't exist, 3) Missing scope (even if shown in UI, app may need reinstall).`,
+              error: `Slack API error: ${errorMsg}. Check Vercel logs for full details. Possible causes: 1) Bot not in channel, 2) Thread doesn't exist, 3) Missing scope (even if shown in UI, app may need reinstall), 4) Thread timestamp format issue.`,
               details: resp.error,
               retry: false, // Don't retry if it's a persistent error
             },
