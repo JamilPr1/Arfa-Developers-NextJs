@@ -15,7 +15,7 @@ export default function WhatsAppButton() {
       transition={{ delay: 1, type: 'spring', stiffness: 200 }}
       style={{
         position: 'fixed',
-        bottom: 180, // Position above Tawk.to widget (which is typically at bottom: 20)
+        bottom: 180, // Position above the AI chat button
         right: 20,
         zIndex: 1000,
       }}
