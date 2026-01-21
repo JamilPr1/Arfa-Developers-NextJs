@@ -176,9 +176,74 @@ export async function GET(request: NextRequest) {
       console.warn('[Chat Poll] Could not verify channel (non-critical):', error)
     }
 
-    // Call Slack API with timeout
-    let resp: SlackRepliesResponse
+    // Use conversations.history instead of conversations.replies for simpler, more reliable polling
+    // This gets recent messages from the channel and we filter for thread replies
+    let resp: any
     try {
+      // Get recent messages from the channel (last 50 messages)
+      resp = (await slackApi('conversations.history', slackBotToken, {
+        channel: verified.channelId,
+        limit: 50,
+      }, 8000)) as any
+      
+      // If that works, filter for messages in our thread
+      if (resp.ok && resp.messages) {
+        // Find the thread starter message
+        const threadStarter = resp.messages.find((m: { ts?: string }) => m.ts === threadTsString)
+        
+        if (!threadStarter) {
+          console.log('[Chat Poll] Thread starter not found in recent history, thread may be older')
+          // Return empty but success - thread exists but no new replies
+          return NextResponse.json({
+            success: true,
+            messages: [],
+            cursor: cursor,
+          })
+        }
+        
+        // Get all messages that are replies to this thread (have thread_ts matching our thread)
+        const threadReplies = resp.messages.filter((m: { thread_ts?: string; ts?: string }) => 
+          m.thread_ts === threadTsString && m.ts !== threadTsString
+        )
+        
+        // Convert to our format
+        const agentMessages = threadReplies
+          .filter((m: { metadata?: { event_type?: string; event_payload?: { sender?: string } }; ts?: string; user?: string; bot_id?: string; text?: string }) => {
+            // Skip bot-posted visitor messages
+            const isVisitorMeta = m.metadata?.event_type === 'webchat_message' && 
+                                 m.metadata?.event_payload?.sender === 'visitor'
+            if (isVisitorMeta) return false
+            
+            // Skip messages we've already seen
+            if (cursor && m.ts && parseFloat(m.ts) <= parseFloat(cursor)) return false
+            
+            // Only real user messages (not bot messages)
+            if (!m.user || m.bot_id) return false
+            if (!m.text || m.text.trim().length === 0) return false
+            
+            return true
+          })
+          .map((m: { ts: string; text?: string }) => ({
+            id: m.ts,
+            ts: m.ts,
+            text: (m.text || '').replace(/^<@[^>]+>\s*/g, '').trim(),
+          }))
+        
+        const newCursor = threadReplies.length > 0 
+          ? threadReplies[threadReplies.length - 1].ts 
+          : cursor
+        
+        console.log(`[Chat Poll] Found ${agentMessages.length} agent messages using conversations.history`)
+        
+        return NextResponse.json({
+          success: true,
+          messages: agentMessages,
+          cursor: newCursor,
+        })
+      }
+      
+      // If conversations.history failed, fall back to conversations.replies
+      console.log('[Chat Poll] conversations.history failed, trying conversations.replies as fallback')
       resp = (await slackApi('conversations.replies', slackBotToken, apiPayload, 8000)) as SlackRepliesResponse
     } catch (error) {
       // Handle timeout or network errors gracefully
