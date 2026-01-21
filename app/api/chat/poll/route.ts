@@ -99,13 +99,19 @@ export async function GET(request: NextRequest) {
       tsType: typeof threadTsString,
     })
     
-    const resp = (await slackApi('conversations.replies', slackBotToken, {
+    const apiPayload = {
       channel: verified.channelId,
       ts: threadTsString,
       limit: 50,
-    })) as SlackRepliesResponse
+    }
+    
+    console.log('[Chat Poll] Slack API payload:', JSON.stringify(apiPayload))
+    
+    const resp = (await slackApi('conversations.replies', slackBotToken, apiPayload)) as SlackRepliesResponse
 
     if (!resp.ok) {
+      // Log the full response for debugging
+      console.error('[Chat Poll] Full Slack API response:', JSON.stringify(resp, null, 2))
       const slackError = resp.error || 'unknown_error'
       const errorDetails = {
         error: slackError,
