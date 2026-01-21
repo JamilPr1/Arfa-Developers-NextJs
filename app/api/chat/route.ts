@@ -77,6 +77,50 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate channel access before attempting to post messages
+    if (!token) {
+      // Only check channel access on first message (when creating new thread)
+      try {
+        const channelInfo = (await slackApi('conversations.info', slackBotToken, {
+          channel: slackChannelId,
+        })) as any
+        
+        if (!channelInfo.ok) {
+          console.error('[Chat API] ❌ Channel access check failed:', {
+            error: channelInfo.error,
+            channel: slackChannelId,
+            hasEnvVar: !!process.env.SLACK_CHANNEL_ID,
+          })
+          
+          if (channelInfo.error === 'channel_not_found') {
+            return NextResponse.json({
+              success: false,
+              error: `Channel not found (${slackChannelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Set SLACK_CHANNEL_ID in Vercel environment variables to your channel ID (e.g., D0AA3JR33T8) and redeploy.`,
+            }, { status: 404 })
+          } else if (channelInfo.error === 'missing_scope') {
+            return NextResponse.json({
+              success: false,
+              error: 'Bot is missing required scopes. Please add channels:read, channels:history, and chat:write, then reinstall the app.',
+            }, { status: 403 })
+          } else if (channelInfo.error === 'not_in_channel') {
+            return NextResponse.json({
+              success: false,
+              error: `Bot is not a member of channel ${slackChannelId}. Add the bot to the channel using /invite @YourBotName, or set SLACK_CHANNEL_ID in Vercel to a channel where the bot is already a member.`,
+            }, { status: 403 })
+          }
+        } else {
+          console.log('[Chat API] ✅ Channel access verified:', {
+            channel: slackChannelId,
+            channelName: channelInfo.channel?.name,
+            isMember: channelInfo.channel?.is_member,
+          })
+        }
+      } catch (error) {
+        console.warn('[Chat API] Channel access check failed (non-critical):', error)
+        // Continue anyway - the actual API call will fail if there's a real issue
+      }
+    }
+
     const safeSession = sessionId && sessionId.length < 200 ? sessionId : `chat_${Date.now()}`
     const safePageUrl = pageUrl && pageUrl.length < 1000 ? pageUrl : undefined
 
@@ -191,8 +235,10 @@ export async function POST(request: NextRequest) {
       let errorMessage = `Slack API error: ${msg.error || 'Failed to send message'}`
       if (msg.error === 'missing_scope') {
         errorMessage = 'Bot is missing required scope: chat:write. Please add this scope and reinstall the app.'
-      } else if (msg.error === 'channel_not_found' || msg.error === 'not_in_channel') {
-        errorMessage = `Bot cannot access channel ${channelId}. Please ensure the bot is added to the channel.`
+      } else if (msg.error === 'channel_not_found') {
+        errorMessage = `Channel not found (${channelId}). Please ensure: 1) The bot is added to the channel, 2) The channel ID is correct, 3) Set SLACK_CHANNEL_ID in Vercel to your channel ID and redeploy.`
+      } else if (msg.error === 'not_in_channel') {
+        errorMessage = `Bot is not a member of channel ${channelId}. Add the bot to the channel using /invite @YourBotName, or set SLACK_CHANNEL_ID in Vercel to a channel where the bot is already a member.`
       }
       
       return NextResponse.json({ 
