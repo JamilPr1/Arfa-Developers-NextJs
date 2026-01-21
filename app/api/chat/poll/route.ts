@@ -168,8 +168,16 @@ export async function GET(request: NextRequest) {
           threadTs: verified.threadTs,
           threadTsType: typeof verified.threadTs,
           channelType: typeof verified.channelId,
+          channelStartsWith: verified.channelId?.[0],
+          threadTsFormat: /^\d+\.\d+$/.test(String(verified.threadTs)),
         })
-        userFriendlyError = `Invalid API arguments. This might mean the thread doesn't exist yet or the format is incorrect. Thread: ${verified.threadTs}, Channel: ${verified.channelId}`
+        
+        // Check if it's a private channel issue (private channels start with 'G')
+        if (verified.channelId?.startsWith('G')) {
+          userFriendlyError = `Invalid arguments for private channel. Ensure bot has 'groups:history' scope and is in the private channel.`
+        } else {
+          userFriendlyError = `Invalid API arguments. Possible causes: 1) Thread not indexed yet (wait a moment), 2) Bot missing 'channels:history' scope, 3) Bot not in channel. Thread: ${verified.threadTs}, Channel: ${verified.channelId}`
+        }
       }
       
       return NextResponse.json(
