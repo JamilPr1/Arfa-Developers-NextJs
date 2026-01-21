@@ -3,16 +3,21 @@ import { NextRequest, NextResponse } from 'next/server'
 interface ChatMessage {
   message: string
   timestamp: string
+  sessionId?: string
+  pageUrl?: string
 }
 
 // Send chat message to Slack
-async function sendToSlack(message: string, timestamp: string): Promise<boolean> {
+async function sendToSlack(message: string, timestamp: string, sessionId?: string, pageUrl?: string): Promise<boolean> {
   if (!process.env.SLACK_WEBHOOK_URL) {
     console.warn('Slack webhook URL not configured')
     return false
   }
 
   try {
+    const safeSession = sessionId && sessionId.length < 200 ? sessionId : 'N/A'
+    const safePageUrl = pageUrl && pageUrl.length < 1000 ? pageUrl : undefined
+
     const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -38,6 +43,15 @@ async function sendToSlack(message: string, timestamp: string): Promise<boolean>
             elements: [
               {
                 type: 'mrkdwn',
+                text: `*Session:* \`${safeSession}\`${safePageUrl ? `  |  *Page:* ${safePageUrl}` : ''}`,
+              },
+            ],
+          },
+          {
+            type: 'context',
+            elements: [
+              {
+                type: 'mrkdwn',
                 text: `📅 ${new Date(timestamp).toLocaleString()}`,
               },
             ],
@@ -49,7 +63,7 @@ async function sendToSlack(message: string, timestamp: string): Promise<boolean>
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: '💡 *Quick Actions:*\n• Reply in this thread\n• Call: +1-516-603-7838\n• Email: jawadparvez.dev@gmail.com',
+              text: '💡 *Quick Actions:*\n• Reply in this thread\n• Ask for phone number/email in chat\n• Call: +1-516-603-7838\n• Email: jawadparvez.dev@gmail.com',
             },
           },
         ],
@@ -66,7 +80,7 @@ async function sendToSlack(message: string, timestamp: string): Promise<boolean>
 export async function POST(request: NextRequest) {
   try {
     const body: ChatMessage = await request.json()
-    const { message, timestamp } = body
+    const { message, timestamp, sessionId, pageUrl } = body
 
     // Validate input
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -84,7 +98,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send to Slack
-    const success = await sendToSlack(message.trim(), timestamp || new Date().toISOString())
+    const success = await sendToSlack(message.trim(), timestamp || new Date().toISOString(), sessionId, pageUrl)
 
     if (!success) {
       return NextResponse.json(

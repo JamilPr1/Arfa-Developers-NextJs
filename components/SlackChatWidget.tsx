@@ -19,20 +19,34 @@ export default function SlackChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! 👋 I'm here to help. Send me a message and our team will respond via Slack.",
+      text: "Hi! 👋 Welcome to Arfa Developers. Send a message and we'll connect you with a team member shortly.",
       sender: 'bot',
       timestamp: new Date(),
     },
   ])
   const [inputValue, setInputValue] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const sessionIdRef = useRef<string>('')
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   useEffect(() => {
+    // Stable session id (persists per browser)
+    if (!sessionIdRef.current && typeof window !== 'undefined') {
+      const existing = window.localStorage.getItem('slackChatSessionId')
+      if (existing) {
+        sessionIdRef.current = existing
+      } else {
+        const newId = `chat_${Date.now()}_${Math.random().toString(16).slice(2)}`
+        sessionIdRef.current = newId
+        window.localStorage.setItem('slackChatSessionId', newId)
+      }
+    }
+
     if (isOpen) {
       scrollToBottom()
     }
@@ -51,6 +65,7 @@ export default function SlackChatWidget() {
     setMessages((prev) => [...prev, userMessage])
     setInputValue('')
     setIsSending(true)
+    setIsConnecting(true)
 
     try {
       const response = await fetch('/api/chat', {
@@ -59,13 +74,15 @@ export default function SlackChatWidget() {
         body: JSON.stringify({
           message: userMessage.text,
           timestamp: userMessage.timestamp.toISOString(),
+          sessionId: sessionIdRef.current,
+          pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
         }),
       })
 
       if (response.ok) {
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: '✅ Message sent! Our team will respond via Slack. You can also reach us at +1-516-603-7838 or submit a form for faster response.',
+          text: "✅ Thanks! Someone from our team will connect with you shortly. Please keep this chat open and feel free to send more details.",
           sender: 'bot',
           timestamp: new Date(),
         }
@@ -76,13 +93,14 @@ export default function SlackChatWidget() {
     } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: '❌ Failed to send message. Please try again or contact us directly at +1-516-603-7838.',
+        text: '❌ Failed to send message. Please try again or contact us at +1-516-603-7838.',
         sender: 'bot',
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsSending(false)
+      setIsConnecting(false)
     }
   }
 
@@ -203,6 +221,13 @@ export default function SlackChatWidget() {
                     backgroundColor: '#f5f5f5',
                   }}
                 >
+                  {isConnecting && (
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                      <Paper elevation={1} sx={{ p: 1.5, borderRadius: '12px' }}>
+                        <Typography variant="body2">Connecting you with a team member…</Typography>
+                      </Paper>
+                    </Box>
+                  )}
                   {messages.map((msg) => (
                     <Box
                       key={msg.id}
