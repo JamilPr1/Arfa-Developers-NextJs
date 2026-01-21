@@ -19,8 +19,11 @@ type SlackRepliesResponse = {
   response_metadata?: any
 }
 
-async function slackApi(method: string, token: string, payload: Record<string, any>) {
+async function slackApi(method: string, token: string, payload: Record<string, any>, timeoutMs = 10000) {
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+    
     const resp = await fetch(`https://slack.com/api/${method}`, {
       method: 'POST',
       headers: {
@@ -28,12 +31,20 @@ async function slackApi(method: string, token: string, payload: Record<string, a
         'Content-Type': 'application/json; charset=utf-8',
       },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     })
+    
+    clearTimeout(timeoutId)
+    
     if (!resp.ok) {
       console.error(`[Slack API] HTTP error: ${resp.status} ${resp.statusText}`)
     }
     return (await resp.json()) as any
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('[Slack API] Request timeout')
+      throw new Error('Slack API request timed out')
+    }
     console.error('[Slack API] Network error:', error)
     throw error
   }
@@ -113,7 +124,23 @@ export async function GET(request: NextRequest) {
       limit: typeof apiPayload.limit,
     })
     
-    const resp = (await slackApi('conversations.replies', slackBotToken, apiPayload)) as SlackRepliesResponse
+    // Call Slack API with timeout
+    let resp: SlackRepliesResponse
+    try {
+      resp = (await slackApi('conversations.replies', slackBotToken, apiPayload, 8000)) as SlackRepliesResponse
+    } catch (error) {
+      // Handle timeout or network errors gracefully
+      console.error('[Chat Poll] Slack API call failed:', error)
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Slack API request failed. This might be temporary - please try again.',
+          details: error instanceof Error ? error.message : 'Unknown error',
+          retry: true,
+        },
+        { status: 502 }
+      )
+    }
 
     if (!resp.ok) {
       // Log the full response for debugging
@@ -132,14 +159,15 @@ export async function GET(request: NextRequest) {
         
         // Check if this might be a timing issue (thread just created)
         // Don't clear token on first invalid_arguments - might be indexing delay
+        // Return 200 with retry flag instead of 502 to avoid breaking the polling loop
         return NextResponse.json(
           {
             success: false,
-            error: `Thread may not be indexed yet. Please wait a moment and try again. Thread: ${threadTsString}`,
+            error: `Thread may not be indexed yet. Please wait a moment and try again.`,
             details: resp.error,
             retry: true, // Signal to frontend to retry
           },
-          { status: 502 }
+          { status: 200 } // Return 200 so frontend doesn't treat it as critical
         )
       }
       const slackError = resp.error || 'unknown_error'

@@ -67,12 +67,21 @@ export default function SlackChatWidget() {
   useEffect(() => {
     if (!isOpen) return
     let cancelled = false
+    let pollAttempts = 0
 
     const poll = async () => {
       if (!chatTokenRef.current) {
         console.log('[Chat Widget] No token available for polling')
         return
       }
+      
+      pollAttempts++
+      
+      // Add a delay for the first few polls to give Slack time to index the thread
+      if (pollAttempts <= 3) {
+        await new Promise(resolve => setTimeout(resolve, 2000 * pollAttempts))
+      }
+      
       try {
         const params = new URLSearchParams({
           token: chatTokenRef.current,
@@ -150,10 +159,21 @@ export default function SlackChatWidget() {
       }
     }
 
+    // Start polling after a short delay to give thread time to be indexed
+    const initialDelay = setTimeout(() => {
+      if (!cancelled) poll()
+    }, 2000)
+    
+    // Then poll every 3 seconds (increased from 2.5s to reduce load)
     const interval = window.setInterval(() => {
       if (!cancelled) poll()
-    }, 2500)
-    poll()
+    }, 3000)
+
+    return () => {
+      cancelled = true
+      clearTimeout(initialDelay)
+      window.clearInterval(interval)
+    }
 
     return () => {
       cancelled = true
@@ -221,11 +241,8 @@ export default function SlackChatWidget() {
           // Clear cursor so we start fresh and get all messages
           pollCursorRef.current = ''
           
-          // Wait a moment before starting to poll (Slack needs time to process the thread)
-          // The polling useEffect will start automatically after a short delay
-          setTimeout(() => {
-            console.log('[Chat Widget] Ready to poll for replies')
-          }, 1000)
+          // Note: Polling will start automatically via the useEffect
+          // We add a small delay in the poll function itself for the first few attempts
         }
 
         const botMessage: Message = {
