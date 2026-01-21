@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyChatToken } from '@/lib/chatToken'
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
+
 type SlackRepliesResponse = {
   ok: boolean
   messages?: Array<{

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { signChatToken, verifyChatToken } from '@/lib/chatToken'
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
+
 interface ChatMessage {
   message: string
   timestamp: string
