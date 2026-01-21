@@ -397,7 +397,7 @@ export async function GET(request: NextRequest) {
 
     // Filter out visitor messages (posted by bot with metadata sender=visitor) and the thread starter header.
     const agentMessages = resp.messages
-      .filter((m) => {
+      .filter((m: { ts?: string; metadata?: { event_type?: string; event_payload?: { sender?: string } }; subtype?: string; user?: string; bot_id?: string; text?: string }) => {
         if (!m.ts) return false
         
         // Always skip the thread starter message itself (it's the header)
@@ -426,9 +426,9 @@ export async function GET(request: NextRequest) {
 
         return true
       })
-      .map((m) => ({
-        id: m.ts!,
-        ts: m.ts!,
+      .map((m: { ts: string; text?: string }) => ({
+        id: m.ts,
+        ts: m.ts,
         text: (m.text || '').replace(/^<@[^>]+>\s*/g, '').trim(),
       }))
 
@@ -441,7 +441,7 @@ export async function GET(request: NextRequest) {
       const latestAgentMsg = agentMessages[agentMessages.length - 1]
       newCursor = latestAgentMsg.ts
       console.log(`[Chat Poll] Found ${agentMessages.length} new agent messages for thread ${verified.threadTs}`)
-      console.log(`[Chat Poll] Agent messages:`, agentMessages.map(m => ({ ts: m.ts, text: m.text?.substring(0, 50) })))
+      console.log(`[Chat Poll] Agent messages:`, agentMessages.map((m: { ts: string; text?: string }) => ({ ts: m.ts, text: m.text?.substring(0, 50) })))
     } else if (resp.messages.length > 0) {
       // If no agent messages but we have messages, update cursor to latest message
       // This prevents re-fetching the same messages
