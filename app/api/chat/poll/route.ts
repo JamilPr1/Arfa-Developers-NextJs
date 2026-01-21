@@ -15,18 +15,28 @@ type SlackRepliesResponse = {
     metadata?: { event_type?: string; event_payload?: any }
   }>
   error?: string
+  warning?: string
+  response_metadata?: any
 }
 
 async function slackApi(method: string, token: string, payload: Record<string, any>) {
-  const resp = await fetch(`https://slack.com/api/${method}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify(payload),
-  })
-  return (await resp.json()) as any
+  try {
+    const resp = await fetch(`https://slack.com/api/${method}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!resp.ok) {
+      console.error(`[Slack API] HTTP error: ${resp.status} ${resp.statusText}`)
+    }
+    return (await resp.json()) as any
+  } catch (error) {
+    console.error('[Slack API] Network error:', error)
+    throw error
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -54,16 +64,31 @@ export async function GET(request: NextRequest) {
     })) as SlackRepliesResponse
 
     if (!resp.ok) {
-      console.error('[Chat Poll] Slack API error:', {
-        error: resp.error,
+      const slackError = resp.error || 'unknown_error'
+      const errorDetails = {
+        error: slackError,
         channel: verified.channelId,
         threadTs: verified.threadTs,
-        fullResponse: resp,
-      })
+        warning: resp.warning,
+        response_metadata: resp.response_metadata,
+      }
+      console.error('[Chat Poll] Slack API error:', errorDetails)
+      
+      // Provide helpful error messages based on common errors
+      let userFriendlyError = `Slack API error: ${slackError}`
+      if (slackError === 'missing_scope') {
+        userFriendlyError = 'Bot is missing required scope: channels:history. Please add this scope and reinstall the app.'
+      } else if (slackError === 'channel_not_found') {
+        userFriendlyError = 'Channel not found. Please ensure the bot is added to the channel.'
+      } else if (slackError === 'thread_not_found') {
+        userFriendlyError = 'Thread not found. The chat session may have expired.'
+      }
+      
       return NextResponse.json(
         { 
           success: false, 
-          error: `Slack API error: ${resp.error || 'Failed to fetch thread replies. Please check bot permissions and ensure the bot has conversations.replies scope.'}` 
+          error: userFriendlyError,
+          details: slackError, // Include raw error for debugging
         }, 
         { status: 502 }
       )

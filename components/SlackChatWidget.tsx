@@ -77,12 +77,21 @@ export default function SlackChatWidget() {
 
         const res = await fetch(`/api/chat/poll?${params.toString()}`, { method: 'GET' })
         if (!res.ok) {
-          console.warn('[Chat Widget] Poll request failed:', res.status, res.statusText)
+          const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+          console.error('[Chat Widget] Poll request failed:', {
+            status: res.status,
+            statusText: res.statusText,
+            error: errorData?.error || errorData?.details,
+          })
+          // Don't show error to user on every poll - only log it
           return
         }
         const data = await res.json()
         if (!data?.success) {
-          console.warn('[Chat Widget] Poll returned unsuccessful:', data?.error)
+          console.error('[Chat Widget] Poll returned unsuccessful:', {
+            error: data?.error,
+            details: data?.details,
+          })
           return
         }
 
