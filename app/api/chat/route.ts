@@ -1,86 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { signChatToken, verifyChatToken } from '@/lib/chatToken'
 
 interface ChatMessage {
   message: string
   timestamp: string
   sessionId?: string
   pageUrl?: string
+  token?: string
 }
 
-// Send chat message to Slack
-async function sendToSlack(message: string, timestamp: string, sessionId?: string, pageUrl?: string): Promise<boolean> {
-  if (!process.env.SLACK_WEBHOOK_URL) {
-    console.warn('Slack webhook URL not configured')
-    return false
-  }
+type SlackPostMessageResponse = { ok: boolean; ts?: string; error?: string }
 
-  try {
-    const safeSession = sessionId && sessionId.length < 200 ? sessionId : 'N/A'
-    const safePageUrl = pageUrl && pageUrl.length < 1000 ? pageUrl : undefined
-
-    const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: `💬 New Website Chat Message`,
-        blocks: [
-          {
-            type: 'header',
-            text: {
-              type: 'plain_text',
-              text: '💬 New Website Chat Message',
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `*Message:*\n${message}`,
-            },
-          },
-          {
-            type: 'context',
-            elements: [
-              {
-                type: 'mrkdwn',
-                text: `*Session:* \`${safeSession}\`${safePageUrl ? `  |  *Page:* ${safePageUrl}` : ''}`,
-              },
-            ],
-          },
-          {
-            type: 'context',
-            elements: [
-              {
-                type: 'mrkdwn',
-                text: `📅 ${new Date(timestamp).toLocaleString()}`,
-              },
-            ],
-          },
-          {
-            type: 'divider',
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: '💡 *Quick Actions:*\n• Reply in this thread\n• Ask for phone number/email in chat\n• Call: +1-516-603-7838\n• Email: jawadparvez.dev@gmail.com',
-            },
-          },
-        ],
-      }),
-    })
-
-    return response.ok
-  } catch (error) {
-    console.error('Error sending to Slack:', error)
-    return false
-  }
+async function slackApi(method: string, token: string, payload: Record<string, any>) {
+  const resp = await fetch(`https://slack.com/api/${method}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    body: JSON.stringify(payload),
+  })
+  return (await resp.json()) as any
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: ChatMessage = await request.json()
-    const { message, timestamp, sessionId, pageUrl } = body
+    const { message, timestamp, sessionId, pageUrl, token } = body
 
     // Validate input
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -97,19 +43,100 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send to Slack
-    const success = await sendToSlack(message.trim(), timestamp || new Date().toISOString(), sessionId, pageUrl)
+    const slackBotToken = process.env.SLACK_BOT_TOKEN
+    const slackChannelId = process.env.SLACK_CHANNEL_ID
+    const tokenSecret = process.env.CHAT_SESSION_SECRET
 
-    if (!success) {
+    if (!slackBotToken || !slackChannelId || !tokenSecret) {
       return NextResponse.json(
-        { success: false, error: 'Failed to send message to Slack' },
+        {
+          success: false,
+          error:
+            'Slack live chat is not configured. Set SLACK_BOT_TOKEN, SLACK_CHANNEL_ID, and CHAT_SESSION_SECRET in environment variables.',
+        },
         { status: 500 }
       )
     }
 
+    const safeSession = sessionId && sessionId.length < 200 ? sessionId : `chat_${Date.now()}`
+    const safePageUrl = pageUrl && pageUrl.length < 1000 ? pageUrl : undefined
+
+    let threadTs: string | undefined
+    let channelId: string | undefined
+
+    if (token) {
+      const verified = verifyChatToken(token, tokenSecret)
+      if (verified && verified.sessionId === safeSession) {
+        threadTs = verified.threadTs
+        channelId = verified.channelId
+      }
+    }
+
+    // Create a new thread for this session on first message
+    if (!threadTs) {
+      const introBlocks: any[] = [
+        {
+          type: 'header',
+          text: { type: 'plain_text', text: '💬 New Website Live Chat' },
+        },
+        {
+          type: 'section',
+          fields: [
+            { type: 'mrkdwn', text: `*Session:*\n\`${safeSession}\`` },
+            { type: 'mrkdwn', text: `*Time:*\n${new Date(timestamp || new Date().toISOString()).toLocaleString()}` },
+          ],
+        },
+      ]
+      if (safePageUrl) {
+        introBlocks.push({
+          type: 'section',
+          text: { type: 'mrkdwn', text: `*Page:*\n${safePageUrl}` },
+        })
+      }
+      introBlocks.push({ type: 'divider' })
+
+      const intro = (await slackApi('chat.postMessage', slackBotToken, {
+        channel: slackChannelId,
+        text: `New website chat (${safeSession})`,
+        blocks: introBlocks,
+      })) as SlackPostMessageResponse
+
+      if (!intro.ok || !intro.ts) {
+        return NextResponse.json({ success: false, error: `Slack error: ${intro.error || 'unknown'}` }, { status: 502 })
+      }
+
+      threadTs = intro.ts
+      channelId = slackChannelId
+    }
+
+    // Post visitor message into the thread (as bot)
+    const msg = (await slackApi('chat.postMessage', slackBotToken, {
+      channel: channelId,
+      thread_ts: threadTs,
+      text: `👤 Visitor: ${message.trim()}`,
+      metadata: {
+        event_type: 'webchat_message',
+        event_payload: {
+          sessionId: safeSession,
+          sender: 'visitor',
+        },
+      },
+    })) as SlackPostMessageResponse
+
+    if (!msg.ok) {
+      return NextResponse.json({ success: false, error: `Slack error: ${msg.error || 'unknown'}` }, { status: 502 })
+    }
+
+    const newToken = signChatToken(
+      { sessionId: safeSession, channelId: channelId!, threadTs: threadTs! },
+      tokenSecret
+    )
+
     return NextResponse.json({
       success: true,
       message: 'Message sent successfully',
+      token: newToken,
+      threadTs,
     })
   } catch (error) {
     console.error('Error processing chat message:', error)

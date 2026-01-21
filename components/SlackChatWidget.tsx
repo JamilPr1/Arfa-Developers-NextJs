@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface Message {
   id: string
   text: string
-  sender: 'user' | 'bot'
+  sender: 'user' | 'bot' | 'agent'
   timestamp: Date
 }
 
@@ -29,6 +29,8 @@ export default function SlackChatWidget() {
   const [isConnecting, setIsConnecting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const sessionIdRef = useRef<string>('')
+  const chatTokenRef = useRef<string>('')
+  const pollCursorRef = useRef<string>('')
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -45,12 +47,70 @@ export default function SlackChatWidget() {
         sessionIdRef.current = newId
         window.localStorage.setItem('slackChatSessionId', newId)
       }
+
+      const storedToken = window.localStorage.getItem('slackChatToken')
+      if (storedToken) {
+        chatTokenRef.current = storedToken
+      }
     }
 
     if (isOpen) {
       scrollToBottom()
     }
   }, [messages, isOpen])
+
+  // Poll Slack thread for agent replies while chat is open
+  useEffect(() => {
+    if (!isOpen) return
+    let cancelled = false
+
+    const poll = async () => {
+      if (!chatTokenRef.current) return
+      try {
+        const params = new URLSearchParams({
+          token: chatTokenRef.current,
+        })
+        if (pollCursorRef.current) params.set('cursor', pollCursorRef.current)
+
+        const res = await fetch(`/api/chat/poll?${params.toString()}`, { method: 'GET' })
+        if (!res.ok) return
+        const data = await res.json()
+        if (!data?.success) return
+
+        if (typeof data.cursor === 'string') {
+          pollCursorRef.current = data.cursor
+        }
+
+        const newMsgs = (data.messages || []) as Array<{ id: string; text: string; ts: string }>
+        if (newMsgs.length) {
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id))
+            const additions: Message[] = newMsgs
+              .filter((m) => m.id && !existingIds.has(m.id))
+              .map((m) => ({
+                id: m.id,
+                text: m.text || '',
+                sender: 'agent',
+                timestamp: new Date(parseFloat(m.ts) * 1000),
+              }))
+            return additions.length ? [...prev, ...additions] : prev
+          })
+        }
+      } catch {
+        // ignore polling errors
+      }
+    }
+
+    const interval = window.setInterval(() => {
+      if (!cancelled) poll()
+    }, 2500)
+    poll()
+
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [isOpen])
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isSending) return
@@ -76,10 +136,23 @@ export default function SlackChatWidget() {
           timestamp: userMessage.timestamp.toISOString(),
           sessionId: sessionIdRef.current,
           pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+          token: chatTokenRef.current || undefined,
         }),
       })
 
       if (response.ok) {
+        const data = await response.json().catch(() => null)
+        const newToken = data?.token
+        const threadTs = data?.threadTs
+        if (typeof newToken === 'string' && typeof window !== 'undefined') {
+          chatTokenRef.current = newToken
+          window.localStorage.setItem('slackChatToken', newToken)
+        }
+        if (typeof threadTs === 'string') {
+          // Start cursor from the thread starter so we only display future agent replies
+          pollCursorRef.current = threadTs
+        }
+
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: "✅ Thanks! Someone from our team will connect with you shortly. Please keep this chat open and feel free to send more details.",
@@ -241,7 +314,7 @@ export default function SlackChatWidget() {
                         sx={{
                           p: 1.5,
                           maxWidth: '75%',
-                          backgroundColor: msg.sender === 'user' ? '#1E3A8A' : 'white',
+                          backgroundColor: msg.sender === 'user' ? '#1E3A8A' : msg.sender === 'agent' ? '#ffffff' : 'white',
                           color: msg.sender === 'user' ? 'white' : 'text.primary',
                           borderRadius: '12px',
                         }}
