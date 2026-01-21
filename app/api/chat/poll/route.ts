@@ -186,27 +186,55 @@ export async function GET(request: NextRequest) {
     // Use conversations.replies to get thread replies (this is the correct API for threads)
     // conversations.history doesn't return thread replies, only top-level messages
     try {
-      const resp = (await slackApi('conversations.replies', slackBotToken, {
+      // Build the API payload - ensure all values are correct types
+      const apiPayload: Record<string, any> = {
         channel: String(verified.channelId).trim(),
-        ts: threadTsString,
+        ts: threadTsString, // Thread timestamp (parent message timestamp)
         limit: 100, // Get up to 100 messages from the thread
-      }, 8000)) as SlackRepliesResponse
+      }
+      
+      console.log('[Chat Poll] 📤 Calling conversations.replies with payload:', {
+        channel: apiPayload.channel,
+        ts: apiPayload.ts,
+        tsType: typeof apiPayload.ts,
+        tsLength: apiPayload.ts.length,
+        limit: apiPayload.limit,
+      })
+      
+      const resp = (await slackApi('conversations.replies', slackBotToken, apiPayload, 8000)) as SlackRepliesResponse
       
       if (!resp.ok) {
-        // Log the error but don't fail - return empty messages to keep chat working
+        // Log the error with full details
         console.error('[Chat Poll] ❌ conversations.replies FAILED:', {
           error: resp.error,
           warning: resp.warning,
           channel: verified.channelId,
           threadTs: threadTsString,
+          payload: apiPayload,
           fullResponse: JSON.stringify(resp, null, 2),
         })
         
-        // If it's a scope issue, log it clearly
-        if (resp.error === 'missing_scope' || resp.error === 'invalid_arguments') {
-          console.error('[Chat Poll] 🚨 CRITICAL: Bot likely missing channels:history scope!')
+        // Provide specific error messages
+        if (resp.error === 'missing_scope') {
+          console.error('[Chat Poll] 🚨 CRITICAL: Bot missing channels:history scope!')
           console.error('[Chat Poll] 🚨 Fix: Go to https://api.slack.com/apps → Your App → OAuth & Permissions')
           console.error('[Chat Poll] 🚨 Add "channels:history" scope → Reinstall App → Update SLACK_BOT_TOKEN in Vercel')
+        } else if (resp.error === 'invalid_arguments') {
+          console.error('[Chat Poll] 🚨 CRITICAL: Invalid arguments to conversations.replies!')
+          console.error('[Chat Poll] 🚨 Possible causes:')
+          console.error('[Chat Poll] 🚨   1. Thread timestamp format is wrong:', threadTsString)
+          console.error('[Chat Poll] 🚨   2. Channel ID is wrong:', verified.channelId)
+          console.error('[Chat Poll] 🚨   3. Bot doesn\'t have access to this thread')
+          console.error('[Chat Poll] 🚨   4. Thread doesn\'t exist or was deleted')
+          // Try to get more info about the thread
+          try {
+            const threadInfo = await slackApi('conversations.info', slackBotToken, {
+              channel: verified.channelId,
+            }, 3000)
+            console.error('[Chat Poll] 📋 Channel info:', JSON.stringify(threadInfo, null, 2))
+          } catch (e) {
+            console.error('[Chat Poll] Could not fetch channel info:', e)
+          }
         }
         
         // Return empty messages instead of erroring - keeps chat working one-way
