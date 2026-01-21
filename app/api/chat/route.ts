@@ -49,11 +49,16 @@ export async function POST(request: NextRequest) {
     const tokenSecret = process.env.CHAT_SESSION_SECRET
 
     if (!slackBotToken || !tokenSecret) {
+      console.error('Missing environment variables:', {
+        hasBotToken: !!slackBotToken,
+        hasTokenSecret: !!tokenSecret,
+        channelId: slackChannelId,
+      })
       return NextResponse.json(
         {
           success: false,
           error:
-            'Slack live chat is not configured. Set SLACK_BOT_TOKEN and CHAT_SESSION_SECRET in environment variables. (Channel ID defaults to C0A9W02H09Y)',
+            'Slack live chat is not configured. Please set SLACK_BOT_TOKEN and CHAT_SESSION_SECRET in Vercel environment variables. After adding them, redeploy your project.',
         },
         { status: 500 }
       )
@@ -103,7 +108,11 @@ export async function POST(request: NextRequest) {
       })) as SlackPostMessageResponse
 
       if (!intro.ok || !intro.ts) {
-        return NextResponse.json({ success: false, error: `Slack error: ${intro.error || 'unknown'}` }, { status: 502 })
+        console.error('Slack intro message error:', intro.error, intro)
+        return NextResponse.json({ 
+          success: false, 
+          error: `Slack API error: ${intro.error || 'Failed to create chat thread. Please check your Slack Bot Token and channel permissions.'}` 
+        }, { status: 502 })
       }
 
       threadTs = intro.ts
@@ -125,7 +134,11 @@ export async function POST(request: NextRequest) {
     })) as SlackPostMessageResponse
 
     if (!msg.ok) {
-      return NextResponse.json({ success: false, error: `Slack error: ${msg.error || 'unknown'}` }, { status: 502 })
+      console.error('Slack message post error:', msg.error, msg)
+      return NextResponse.json({ 
+        success: false, 
+        error: `Slack API error: ${msg.error || 'Failed to send message. Please check your Slack Bot Token permissions.'}` 
+      }, { status: 502 })
     }
 
     const newToken = signChatToken(
@@ -141,8 +154,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error processing chat message:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error'
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: `Server error: ${errorMessage}` },
       { status: 500 }
     )
   }

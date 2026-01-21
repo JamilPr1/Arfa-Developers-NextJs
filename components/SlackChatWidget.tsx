@@ -140,8 +140,9 @@ export default function SlackChatWidget() {
         }),
       })
 
-      if (response.ok) {
-        const data = await response.json().catch(() => null)
+      const data = await response.json().catch(() => ({ success: false, error: 'Failed to parse response' }))
+      
+      if (response.ok && data?.success) {
         const newToken = data?.token
         const threadTs = data?.threadTs
         if (typeof newToken === 'string' && typeof window !== 'undefined') {
@@ -161,12 +162,22 @@ export default function SlackChatWidget() {
         }
         setMessages((prev) => [...prev, botMessage])
       } else {
-        throw new Error('Failed to send message')
+        // Show the actual error message from the API
+        const errorText = data?.error || 'Failed to send message'
+        console.error('Chat API error:', errorText, data)
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: `❌ ${errorText}. Please try again or contact us at +1-516-603-7838.`,
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
       }
     } catch (error) {
+      console.error('Chat send error:', error)
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: '❌ Failed to send message. Please try again or contact us at +1-516-603-7838.',
+        text: `❌ Network error: ${error instanceof Error ? error.message : 'Failed to send message'}. Please try again or contact us at +1-516-603-7838.`,
         sender: 'bot',
         timestamp: new Date(),
       }
