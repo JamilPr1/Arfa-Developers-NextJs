@@ -51,32 +51,61 @@ export async function GET(request: NextRequest) {
     })) as SlackRepliesResponse
 
     if (!resp.ok || !resp.messages) {
+      console.error('[Chat Poll] Slack API error:', resp.error, { channel: verified.channelId, threadTs: verified.threadTs })
       return NextResponse.json({ success: false, error: `Slack error: ${resp.error || 'unknown'}` }, { status: 502 })
     }
+
+    console.log(`[Chat Poll] Fetched ${resp.messages.length} messages from thread ${verified.threadTs}, cursor: ${cursor || 'none'}`)
 
     // Filter out visitor messages (posted by bot with metadata sender=visitor) and the thread starter header.
     const agentMessages = resp.messages
       .filter((m) => {
         if (!m.ts) return false
-        if (cursor && parseFloat(m.ts) <= parseFloat(cursor)) return false
+        
+        // Skip messages we've already seen (cursor-based filtering)
+        if (cursor && parseFloat(m.ts) <= parseFloat(cursor)) {
+          return false
+        }
 
-        // Ignore bot-posted visitor messages
+        // Ignore bot-posted visitor messages (these are the website visitor messages)
         const isVisitorMeta = m.metadata?.event_type === 'webchat_message' && m.metadata?.event_payload?.sender === 'visitor'
-        if (isVisitorMeta) return false
+        if (isVisitorMeta) {
+          return false
+        }
 
-        // Ignore the thread starter message (typically has no user reply content)
-        // Keep only user messages from team members
-        if (m.subtype) return false
-        if (!m.user) return false
+        // Ignore messages with subtypes (like thread_broadcast, etc.)
+        if (m.subtype) {
+          return false
+        }
+
+        // Keep only messages from real users (team members) - must have a user ID
+        // Bot messages have bot_id, user messages have user
+        if (!m.user || m.bot_id) {
+          return false
+        }
+
+        // Must have text content
+        if (!m.text || m.text.trim().length === 0) {
+          return false
+        }
+
         return true
       })
       .map((m) => ({
-        id: m.ts,
-        ts: m.ts,
+        id: m.ts!,
+        ts: m.ts!,
         text: (m.text || '').replace(/^<@[^>]+>\s*/g, '').trim(),
       }))
 
-    const newCursor = resp.messages.length ? resp.messages[resp.messages.length - 1].ts : cursor
+    // Update cursor to the latest message timestamp in the thread
+    // Slack returns messages in chronological order, so the last one is the most recent
+    const latestMessage = resp.messages[resp.messages.length - 1]
+    const newCursor = latestMessage?.ts || cursor
+
+    // Debug logging (remove in production if needed)
+    if (agentMessages.length > 0) {
+      console.log(`[Chat Poll] Found ${agentMessages.length} new agent messages for thread ${verified.threadTs}`)
+    }
 
     return NextResponse.json({ success: true, messages: agentMessages, cursor: newCursor })
   } catch (error) {

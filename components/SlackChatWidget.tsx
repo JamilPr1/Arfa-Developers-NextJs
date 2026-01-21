@@ -65,7 +65,10 @@ export default function SlackChatWidget() {
     let cancelled = false
 
     const poll = async () => {
-      if (!chatTokenRef.current) return
+      if (!chatTokenRef.current) {
+        console.log('[Chat Widget] No token available for polling')
+        return
+      }
       try {
         const params = new URLSearchParams({
           token: chatTokenRef.current,
@@ -73,16 +76,24 @@ export default function SlackChatWidget() {
         if (pollCursorRef.current) params.set('cursor', pollCursorRef.current)
 
         const res = await fetch(`/api/chat/poll?${params.toString()}`, { method: 'GET' })
-        if (!res.ok) return
+        if (!res.ok) {
+          console.warn('[Chat Widget] Poll request failed:', res.status, res.statusText)
+          return
+        }
         const data = await res.json()
-        if (!data?.success) return
+        if (!data?.success) {
+          console.warn('[Chat Widget] Poll returned unsuccessful:', data?.error)
+          return
+        }
 
+        // Update cursor to latest message timestamp
         if (typeof data.cursor === 'string') {
           pollCursorRef.current = data.cursor
         }
 
         const newMsgs = (data.messages || []) as Array<{ id: string; text: string; ts: string }>
-        if (newMsgs.length) {
+        if (newMsgs.length > 0) {
+          console.log(`[Chat Widget] Received ${newMsgs.length} new agent messages`)
           setMessages((prev) => {
             const existingIds = new Set(prev.map((m) => m.id))
             const additions: Message[] = newMsgs
@@ -93,11 +104,15 @@ export default function SlackChatWidget() {
                 sender: 'agent',
                 timestamp: new Date(parseFloat(m.ts) * 1000),
               }))
-            return additions.length ? [...prev, ...additions] : prev
+            if (additions.length > 0) {
+              console.log('[Chat Widget] Adding messages:', additions.map(m => m.text))
+              return [...prev, ...additions]
+            }
+            return prev
           })
         }
-      } catch {
-        // ignore polling errors
+      } catch (error) {
+        console.error('[Chat Widget] Polling error:', error)
       }
     }
 
@@ -150,8 +165,10 @@ export default function SlackChatWidget() {
           window.localStorage.setItem('slackChatToken', newToken)
         }
         if (typeof threadTs === 'string') {
-          // Start cursor from the thread starter so we only display future agent replies
+          // Start cursor from the thread starter timestamp
+          // We'll only show messages with timestamps greater than this
           pollCursorRef.current = threadTs
+          console.log('[Chat Widget] Initialized polling cursor to threadTs:', threadTs)
         }
 
         const botMessage: Message = {
