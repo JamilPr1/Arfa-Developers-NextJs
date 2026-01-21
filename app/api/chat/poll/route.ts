@@ -176,69 +176,97 @@ export async function GET(request: NextRequest) {
       console.warn('[Chat Poll] Could not verify channel (non-critical):', error)
     }
 
-    // SIMPLIFIED: Use conversations.history - if it fails, just return empty messages (don't error)
-    // This makes the chat work one-way (website → Slack) even if polling has issues
+    // Use conversations.replies to get thread replies (this is the correct API for threads)
+    // conversations.history doesn't return thread replies, only top-level messages
     try {
-      // Get recent messages from the channel (last 50 messages)
-      const resp = (await slackApi('conversations.history', slackBotToken, {
-        channel: verified.channelId,
-        limit: 50,
-      }, 5000)) as any
+      const resp = (await slackApi('conversations.replies', slackBotToken, {
+        channel: String(verified.channelId).trim(),
+        ts: threadTsString,
+        limit: 100, // Get up to 100 messages from the thread
+      }, 8000)) as SlackRepliesResponse
       
-      // If that works, filter for messages in our thread
-      if (resp.ok && resp.messages && Array.isArray(resp.messages)) {
-        // Get all messages that are replies to this thread (have thread_ts matching our thread)
-        const threadReplies = resp.messages.filter((m: { thread_ts?: string; ts?: string }) => 
-          m.thread_ts === threadTsString && m.ts !== threadTsString
-        )
+      if (!resp.ok) {
+        // Log the error but don't fail - return empty messages to keep chat working
+        console.error('[Chat Poll] conversations.replies failed:', {
+          error: resp.error,
+          warning: resp.warning,
+          channel: verified.channelId,
+          threadTs: threadTsString,
+        })
         
-        // Convert to our format
-        const agentMessages = threadReplies
-          .filter((m: { metadata?: { event_type?: string; event_payload?: { sender?: string } }; ts?: string; user?: string; bot_id?: string; text?: string }) => {
-            // Skip bot-posted visitor messages
-            const isVisitorMeta = m.metadata?.event_type === 'webchat_message' && 
-                                 m.metadata?.event_payload?.sender === 'visitor'
-            if (isVisitorMeta) return false
-            
-            // Skip messages we've already seen
-            if (cursor && m.ts && parseFloat(m.ts) <= parseFloat(cursor)) return false
-            
-            // Only real user messages (not bot messages)
-            if (!m.user || m.bot_id) return false
-            if (!m.text || m.text.trim().length === 0) return false
-            
-            return true
-          })
-          .map((m: { ts: string; text?: string }) => ({
-            id: m.ts,
-            ts: m.ts,
-            text: (m.text || '').replace(/^<@[^>]+>\s*/g, '').trim(),
-          }))
+        // If it's a scope issue, log it clearly
+        if (resp.error === 'missing_scope' || resp.error === 'invalid_arguments') {
+          console.error('[Chat Poll] CRITICAL: Bot likely missing channels:history scope. Check Vercel logs for details.')
+        }
         
-        const newCursor = threadReplies.length > 0 
-          ? threadReplies[threadReplies.length - 1].ts 
-          : cursor
-        
-        console.log(`[Chat Poll] Found ${agentMessages.length} agent messages using conversations.history`)
-        
+        // Return empty messages instead of erroring - keeps chat working one-way
         return NextResponse.json({
           success: true,
-          messages: agentMessages,
-          cursor: newCursor,
+          messages: [],
+          cursor: cursor,
         })
       }
       
-      // If API call failed or returned no messages, just return empty (don't error)
-      console.log('[Chat Poll] conversations.history returned no messages or failed, returning empty')
+      if (!resp.messages || !Array.isArray(resp.messages)) {
+        console.warn('[Chat Poll] Invalid response format, returning empty')
+        return NextResponse.json({
+          success: true,
+          messages: [],
+          cursor: cursor,
+        })
+      }
+      
+      console.log(`[Chat Poll] Fetched ${resp.messages.length} messages from thread`)
+      
+      // Filter for agent messages (exclude visitor messages and thread starter)
+      const agentMessages = resp.messages
+        .filter((m) => {
+          if (!m.ts) return false
+          
+          // Skip the thread starter message itself
+          if (m.ts === threadTsString) return false
+          
+          // Skip messages we've already seen
+          if (cursor && parseFloat(m.ts) <= parseFloat(cursor)) return false
+          
+          // Skip bot-posted visitor messages
+          const isVisitorMeta = m.metadata?.event_type === 'webchat_message' && 
+                               m.metadata?.event_payload?.sender === 'visitor'
+          if (isVisitorMeta) return false
+          
+          // Skip messages with subtypes
+          if (m.subtype) return false
+          
+          // Only real user messages (not bot messages)
+          if (!m.user || m.bot_id) return false
+          
+          // Must have text
+          if (!m.text || m.text.trim().length === 0) return false
+          
+          return true
+        })
+        .map((m) => ({
+          id: m.ts!,
+          ts: m.ts!,
+          text: (m.text || '').replace(/^<@[^>]+>\s*/g, '').trim(),
+        }))
+      
+      const newCursor = agentMessages.length > 0 
+        ? agentMessages[agentMessages.length - 1].ts 
+        : cursor
+      
+      if (agentMessages.length > 0) {
+        console.log(`[Chat Poll] Found ${agentMessages.length} new agent messages`)
+      }
+      
       return NextResponse.json({
         success: true,
-        messages: [],
-        cursor: cursor,
+        messages: agentMessages,
+        cursor: newCursor,
       })
     } catch (error) {
-      // On any error, just return empty messages instead of failing
-      // This keeps the chat working one-way (website → Slack)
-      console.warn('[Chat Poll] Error fetching messages (non-critical, returning empty):', error instanceof Error ? error.message : error)
+      // On any error, return empty messages instead of failing
+      console.warn('[Chat Poll] Error fetching messages (returning empty):', error instanceof Error ? error.message : error)
       return NextResponse.json({
         success: true,
         messages: [],
