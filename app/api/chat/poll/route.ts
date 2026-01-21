@@ -198,13 +198,15 @@ export async function GET(request: NextRequest) {
           channelType: typeof verified.channelId,
           channelStartsWith: verified.channelId?.[0],
           threadTsFormat: /^\d+\.\d+$/.test(String(verified.threadTs)),
+          fullResponse: resp,
         })
         
+        // invalid_arguments for conversations.replies almost always means missing channels:history scope
         // Check if it's a private channel issue (private channels start with 'G')
         if (verified.channelId?.startsWith('G')) {
-          userFriendlyError = `Invalid arguments for private channel. Ensure bot has 'groups:history' scope and is in the private channel.`
+          userFriendlyError = `CRITICAL: Bot is missing 'groups:history' scope. Go to https://api.slack.com/apps → Your App → OAuth & Permissions → Add 'groups:history' → Reinstall App → Update SLACK_BOT_TOKEN in Vercel`
         } else {
-          userFriendlyError = `Invalid API arguments. Possible causes: 1) Thread not indexed yet (wait a moment), 2) Bot missing 'channels:history' scope, 3) Bot not in channel. Thread: ${verified.threadTs}, Channel: ${verified.channelId}`
+          userFriendlyError = `CRITICAL: Bot is missing 'channels:history' scope. This is REQUIRED for reading thread replies. Fix: 1) Go to https://api.slack.com/apps → Your App → OAuth & Permissions, 2) Add 'channels:history' scope, 3) Click 'Reinstall to Workspace', 4) Copy new Bot Token, 5) Update SLACK_BOT_TOKEN in Vercel, 6) Redeploy`
         }
       }
       

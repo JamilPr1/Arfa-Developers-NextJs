@@ -122,10 +122,22 @@ export default function SlackChatWidget() {
         }
         const data = await res.json()
         if (!data?.success) {
-          console.error('[Chat Widget] Poll returned unsuccessful:', {
-            error: data?.error,
-            details: data?.details,
-          })
+          const errorMsg = data?.error || 'Unknown error'
+          
+          // If it's a critical scope error, show it to the user once
+          if (errorMsg.includes('CRITICAL') || errorMsg.includes('missing') && errorMsg.includes('scope')) {
+            console.error('[Chat Widget] CRITICAL SCOPE ERROR:', errorMsg)
+            // Don't spam - only log once per session
+            if (!window.sessionStorage.getItem('scopeErrorShown')) {
+              window.sessionStorage.setItem('scopeErrorShown', 'true')
+              // Could show a user-friendly message here if needed
+            }
+          } else {
+            console.error('[Chat Widget] Poll returned unsuccessful:', {
+              error: errorMsg,
+              details: data?.details,
+            })
+          }
           return
         }
 
