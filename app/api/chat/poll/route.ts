@@ -216,33 +216,65 @@ export async function GET(request: NextRequest) {
         })
       }
       
-      console.log(`[Chat Poll] Fetched ${resp.messages.length} messages from thread`)
+      console.log(`[Chat Poll] ✅ Fetched ${resp.messages.length} messages from thread ${threadTsString}`)
+      console.log(`[Chat Poll] 📋 All messages in thread:`, resp.messages.map((m: any) => ({
+        ts: m.ts,
+        user: m.user,
+        bot_id: m.bot_id,
+        text: m.text?.substring(0, 50),
+        thread_ts: m.thread_ts,
+        subtype: m.subtype,
+        metadata: m.metadata,
+        isThreadStarter: m.ts === threadTsString,
+      })))
       
       // Filter for agent messages (exclude visitor messages and thread starter)
       const agentMessages = resp.messages
         .filter((m) => {
-          if (!m.ts) return false
+          if (!m.ts) {
+            console.log(`[Chat Poll] ⏭️ Skipping message: no ts`)
+            return false
+          }
           
           // Skip the thread starter message itself
-          if (m.ts === threadTsString) return false
+          if (m.ts === threadTsString) {
+            console.log(`[Chat Poll] ⏭️ Skipping thread starter: ${m.ts}`)
+            return false
+          }
           
           // Skip messages we've already seen
-          if (cursor && parseFloat(m.ts) <= parseFloat(cursor)) return false
+          if (cursor && parseFloat(m.ts) <= parseFloat(cursor)) {
+            console.log(`[Chat Poll] ⏭️ Skipping already seen message: ${m.ts} (cursor: ${cursor})`)
+            return false
+          }
           
           // Skip bot-posted visitor messages
           const isVisitorMeta = m.metadata?.event_type === 'webchat_message' && 
                                m.metadata?.event_payload?.sender === 'visitor'
-          if (isVisitorMeta) return false
+          if (isVisitorMeta) {
+            console.log(`[Chat Poll] ⏭️ Skipping visitor message: ${m.ts}`)
+            return false
+          }
           
           // Skip messages with subtypes
-          if (m.subtype) return false
+          if (m.subtype) {
+            console.log(`[Chat Poll] ⏭️ Skipping message with subtype: ${m.ts} (subtype: ${m.subtype})`)
+            return false
+          }
           
           // Only real user messages (not bot messages)
-          if (!m.user || m.bot_id) return false
+          if (!m.user || m.bot_id) {
+            console.log(`[Chat Poll] ⏭️ Skipping bot message: ${m.ts} (user: ${m.user}, bot_id: ${m.bot_id})`)
+            return false
+          }
           
           // Must have text
-          if (!m.text || m.text.trim().length === 0) return false
+          if (!m.text || m.text.trim().length === 0) {
+            console.log(`[Chat Poll] ⏭️ Skipping empty message: ${m.ts}`)
+            return false
+          }
           
+          console.log(`[Chat Poll] ✅ Keeping agent message: ${m.ts} from user ${m.user}`)
           return true
         })
         .map((m) => ({
@@ -255,9 +287,13 @@ export async function GET(request: NextRequest) {
         ? agentMessages[agentMessages.length - 1].ts 
         : cursor
       
-      if (agentMessages.length > 0) {
-        console.log(`[Chat Poll] Found ${agentMessages.length} new agent messages`)
-      }
+      console.log(`[Chat Poll] 📊 Filtering results:`, {
+        totalMessages: resp.messages.length,
+        agentMessages: agentMessages.length,
+        cursor: cursor || 'none',
+        newCursor: newCursor || 'none',
+        agentMessageDetails: agentMessages.map(m => ({ id: m.id, text: m.text.substring(0, 50), ts: m.ts })),
+      })
       
       return NextResponse.json({
         success: true,
