@@ -15,86 +15,61 @@ export default function AIChatbot() {
       ;(window as any).Tawk_API = (window as any).Tawk_API || {}
       ;(window as any).Tawk_LoadStart = new Date()
 
-      // Customize Tawk.to widget using API
+      // Customize Tawk.to widget using API - Hide text, show icon only
       ;(window as any).Tawk_API.onLoad = function () {
-        // Customize widget appearance after it loads
-        const customizeWidget = () => {
-          // Find the widget bubble - try multiple selectors
+        // Hide all text bubbles and show only icon
+        const hideTextBubble = () => {
           const widget = document.querySelector('#tawkchat-container') || document.querySelector('[id*="tawk"]')
           if (widget) {
-            // Customize bubble text - try multiple selectors
-            const bubbleEl = widget.querySelector('.tawk-bubble') || 
-                          widget.querySelector('[class*="bubble"]') ||
-                          widget.querySelector('[class*="tawk"]')
-            const bubble = bubbleEl as HTMLElement | null
+            // Find and hide all bubble/text elements
+            const bubbles = widget.querySelectorAll('.tawk-bubble, [class*="bubble"], [class*="widget-bubble"]')
+            bubbles.forEach((bubble) => {
+              const el = bubble as HTMLElement
+              el.style.display = 'none'
+              el.style.visibility = 'hidden'
+              el.style.opacity = '0'
+              el.style.width = '0'
+              el.style.height = '0'
+              el.style.padding = '0'
+              el.style.margin = '0'
+            })
             
-            if (bubble) {
-              // Find text element with multiple selectors
-              const textSelectors = [
-                '.tawk-bubble-text',
-                '.tawk-bubble-text-wrapper',
-                '[class*="bubble-text"]',
-                '[class*="widget-text"]',
-                'span',
-                'div'
-              ]
-              
-              let textElement: HTMLElement | null = null
-              for (const selector of textSelectors) {
-                const found = bubble.querySelector(selector) as HTMLElement | null
-                if (found && (found.textContent || found.innerText)) {
-                  textElement = found
-                  break
-                }
-              }
-              
-              // If no text element found, use bubble itself
-              if (!textElement) {
-                textElement = bubble
-              }
-              
-              if (textElement) {
-                // Always replace text regardless of current content
-                const currentText = textElement.textContent || textElement.innerText || ''
-                
-                // Replace any variation of "We Are Here" or set default text
-                if (currentText.toLowerCase().includes('we are here') || 
-                    currentText.toLowerCase().includes('we\'re here') ||
-                    currentText.trim() === '' ||
-                    currentText.length < 5) {
-                  textElement.textContent = '💬 Need Help?'
-                  textElement.style.color = '#FFFFFF'
-                  textElement.style.fontWeight = '600'
-                  textElement.style.fontSize = '14px'
-                } else if (!currentText.includes('Need Help')) {
-                  // Force change if it's not our custom text
-                  textElement.textContent = '💬 Need Help?'
-                  textElement.style.color = '#FFFFFF'
-                  textElement.style.fontWeight = '600'
-                  textElement.style.fontSize = '14px'
-                }
-              }
-              
-              // Style the bubble
-              bubble.style.background = 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)'
-              bubble.style.borderRadius = '25px'
-              bubble.style.boxShadow = '0 4px 12px rgba(30, 58, 138, 0.3)'
-              bubble.style.padding = '12px 20px'
-            }
+            // Hide all text elements
+            const textElements = widget.querySelectorAll(
+              '.tawk-bubble-text, .tawk-bubble-text-wrapper, [class*="bubble-text"], [class*="widget-text"], [class*="text"]'
+            )
+            textElements.forEach((text) => {
+              const el = text as HTMLElement
+              el.style.display = 'none'
+              el.style.visibility = 'hidden'
+              el.style.opacity = '0'
+            })
+            
+            // Style the button/icon to be circular and match brand
+            const buttons = widget.querySelectorAll('.tawk-button, [class*="button"], [class*="icon"]')
+            buttons.forEach((btn) => {
+              const el = btn as HTMLElement
+              el.style.width = '60px'
+              el.style.height = '60px'
+              el.style.borderRadius = '50%'
+              el.style.background = 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)'
+              el.style.boxShadow = '0 4px 12px rgba(30, 58, 138, 0.3)'
+              el.style.border = 'none'
+            })
           }
         }
 
-        // Try to customize immediately and after delays (more attempts)
-        customizeWidget()
-        setTimeout(customizeWidget, 300)
-        setTimeout(customizeWidget, 800)
-        setTimeout(customizeWidget, 1500)
-        setTimeout(customizeWidget, 2500)
-        setTimeout(customizeWidget, 4000)
+        // Hide text immediately and on delays
+        hideTextBubble()
+        setTimeout(hideTextBubble, 300)
+        setTimeout(hideTextBubble, 800)
+        setTimeout(hideTextBubble, 1500)
+        setTimeout(hideTextBubble, 2500)
+        setTimeout(hideTextBubble, 4000)
         
-        // Also use MutationObserver to catch dynamic changes
+        // Use MutationObserver to catch dynamic changes
         const observer = new MutationObserver(() => {
-          customizeWidget()
+          hideTextBubble()
         })
         
         setTimeout(() => {
@@ -103,57 +78,74 @@ export default function AIChatbot() {
             observer.observe(widget, {
               childList: true,
               subtree: true,
-              characterData: true
+              attributes: true,
+              attributeFilter: ['style', 'class']
             })
           }
         }, 1000)
       }
 
-      // Add custom CSS to style the widget
+      // Add custom CSS to style the widget - Icon only, no text
       const style = document.createElement('style')
       style.id = 'tawk-custom-styles'
       style.textContent = `
-        /* Customize Tawk.to widget appearance */
+        /* Hide all text and bubble - Show only icon */
         #tawkchat-container {
           bottom: 20px !important;
           right: 20px !important;
           z-index: 999 !important;
         }
-        #tawkchat-container .tawk-bubble {
-          background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%) !important;
-          border-radius: 25px !important;
-          box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
-          padding: 12px 20px !important;
-          border: none !important;
+        
+        /* Hide the text bubble completely */
+        #tawkchat-container .tawk-bubble,
+        #tawkchat-container [class*="bubble"],
+        #tawkchat-container [class*="widget-bubble"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          width: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
         }
+        
+        /* Hide all text elements */
         #tawkchat-container .tawk-bubble-text,
         #tawkchat-container .tawk-bubble-text-wrapper,
         #tawkchat-container [class*="bubble-text"],
         #tawkchat-container [class*="widget-text"],
         #tawkchat-container .tawk-bubble span,
-        #tawkchat-container .tawk-bubble div {
-          color: #FFFFFF !important;
-          font-weight: 600 !important;
-          font-size: 14px !important;
-          font-family: 'Poppins', sans-serif !important;
-        }
-        /* Force text content using CSS (if possible) */
-        #tawkchat-container .tawk-bubble::after {
-          content: '💬 Need Help?' !important;
-          color: #FFFFFF !important;
-          font-weight: 600 !important;
-          font-size: 14px !important;
-        }
-        /* Hide original text if needed */
-        #tawkchat-container .tawk-bubble-text:not(:empty) {
+        #tawkchat-container .tawk-bubble div,
+        #tawkchat-container [class*="text"] {
           display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
         }
-        #tawkchat-container .tawk-bubble-text:empty::after {
-          content: '💬 Need Help?' !important;
-          display: block !important;
-          color: #FFFFFF !important;
-          font-weight: 600 !important;
-          font-size: 14px !important;
+        
+        /* Style the icon button only - Simple circular button */
+        #tawkchat-container .tawk-button,
+        #tawkchat-container [class*="button"],
+        #tawkchat-container [class*="icon"],
+        #tawkchat-container iframe {
+          width: 60px !important;
+          height: 60px !important;
+          border-radius: 50% !important;
+          background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%) !important;
+          box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+          border: none !important;
+          transition: all 0.3s ease !important;
+        }
+        
+        #tawkchat-container .tawk-button:hover,
+        #tawkchat-container [class*="button"]:hover {
+          box-shadow: 0 6px 16px rgba(30, 58, 138, 0.5) !important;
+          transform: scale(1.1) !important;
+        }
+        
+        /* Ensure iframe (the widget) is styled as icon */
+        #tawkchat-container iframe {
+          border-radius: 50% !important;
+          overflow: hidden !important;
         }
       `
       document.head.appendChild(style)
