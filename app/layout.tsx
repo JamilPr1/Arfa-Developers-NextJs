@@ -6,7 +6,7 @@ import AOSInit from '@/components/AOSInit'
 import LiveChat from '@/components/LiveChat'
 import StructuredData from '@/components/StructuredData'
 import WhatsAppButton from '@/components/WhatsAppButton'
-import ChatGPTButton from '@/components/ChatGPTButton'
+import SlackChatWidget from '@/components/SlackChatWidget'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import Script from 'next/script'
 
@@ -153,8 +153,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           {children}
           {/* WhatsApp Floating Button */}
           <WhatsAppButton />
-          {/* Free/no-API AI: opens ChatGPT in new tab */}
-          <ChatGPTButton />
+          {/* Real-time Chat Widget - sends messages to Slack */}
+          <SlackChatWidget />
           {/* Live Chat - Configure via environment variables (optional) */}
           {process.env.NEXT_PUBLIC_TIDIO_ID && (
             <LiveChat provider="tidio" id={process.env.NEXT_PUBLIC_TIDIO_ID} />
