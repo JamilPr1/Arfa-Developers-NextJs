@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
     }
 
     const slackBotToken = process.env.SLACK_BOT_TOKEN
-    // Default channel: D0AA3JR33T8 (can be overridden via SLACK_CHANNEL_ID env var)
-    const slackChannelId = process.env.SLACK_CHANNEL_ID || 'D0AA3JR33T8'
+    // Default channel: C0AA2KHR02Z (support-team-channel) - can be overridden via SLACK_CHANNEL_ID env var
+    const slackChannelId = process.env.SLACK_CHANNEL_ID || 'C0AA2KHR02Z'
     const tokenSecret = process.env.CHAT_SESSION_SECRET
 
     if (!slackBotToken || !tokenSecret) {
