@@ -164,15 +164,15 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
     setIsSubmitting(true)
 
     try {
-      // Format message with all project details
+      // Format message with all project details for Slack and Email
       const messageParts = []
-      if (formData.description.trim()) {
-        messageParts.push(`Project Description: ${formData.description.trim()}`)
-      }
+      messageParts.push(`Phone: ${formData.phone.trim()}`)
       messageParts.push(`Timeline: ${formData.timeline}`)
       messageParts.push(`Budget: ${formData.budget}`)
-      messageParts.push(`Phone: ${formData.phone.trim()}`)
-      const fullMessage = messageParts.join('\n\n')
+      if (formData.description.trim()) {
+        messageParts.push(`\nProject Description:\n${formData.description.trim()}`)
+      }
+      const fullMessage = messageParts.join('\n')
 
       // Submit lead data to API (matching LeadData interface)
       const leadData = {
@@ -196,26 +196,33 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
       const result = await response.json()
 
       if (response.ok && result.success) {
-        console.log('[Exit Popup] Lead submitted successfully')
+        console.log('[Exit Popup] Lead submitted successfully to Slack and Email')
         // Mark as shown and close
         hasShownRef.current = true
         if (typeof window !== 'undefined') {
           window.localStorage.setItem('exitIntentPopupShown', 'true')
         }
-        // Open Calendly or scroll to CTA
-        onScheduleConsultation()
+        // Close popup first
         handleClose()
+        // Open Calendly in new tab after a brief delay to ensure lead is sent
+        setTimeout(() => {
+          window.open('https://calendly.com/jawadparvez-dev', '_blank')
+        }, 300)
       } else {
         console.error('[Exit Popup] Lead submission failed:', result.error)
-        // Still proceed to schedule consultation even if API fails
-        onScheduleConsultation()
+        // Still proceed to open Calendly even if API fails
         handleClose()
+        setTimeout(() => {
+          window.open('https://calendly.com/jawadparvez-dev', '_blank')
+        }, 300)
       }
     } catch (error) {
       console.error('[Exit Popup] Error submitting lead:', error)
-      // Still proceed to schedule consultation
-      onScheduleConsultation()
+      // Still proceed to open Calendly
       handleClose()
+      setTimeout(() => {
+        window.open('https://calendly.com/jawadparvez-dev', '_blank')
+      }, 300)
     } finally {
       setIsSubmitting(false)
     }
@@ -392,24 +399,30 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
 
                 <Button
                   type="submit"
-                  variant="contained"
+                  variant="outlined"
                   fullWidth
                   size="large"
                   disabled={isSubmitting}
                   startIcon={<CalendarTodayIcon />}
                   sx={{
-                    backgroundColor: '#F59E0B',
+                    backgroundColor: '#F8FAFC',
+                    border: '1px solid #1E3A8A',
+                    color: '#1E3A8A',
                     py: 1.5,
                     fontWeight: 600,
                     '&:hover': {
-                      backgroundColor: '#FBBF24',
+                      backgroundColor: '#EFF6FF',
+                      borderColor: '#1E40AF',
+                      color: '#1E40AF',
                     },
                     '&:disabled': {
-                      backgroundColor: '#ccc',
+                      backgroundColor: '#F3F4F6',
+                      borderColor: '#D1D5DB',
+                      color: '#9CA3AF',
                     },
                   }}
                 >
-                  {isSubmitting ? 'Submitting...' : 'Schedule Now'}
+                  {isSubmitting ? 'Submitting...' : 'Book a Free Consultation'}
                 </Button>
               </Box>
 

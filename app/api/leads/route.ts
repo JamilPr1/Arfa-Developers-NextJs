@@ -46,7 +46,7 @@ async function sendSlackNotification(data: LeadData): Promise<void> {
               },
               {
                 type: 'mrkdwn',
-                text: `*Company:*\n${data.company || 'N/A'}`,
+                text: `*Phone:*\n${data.company || 'N/A'}`,
               },
               {
                 type: 'mrkdwn',
