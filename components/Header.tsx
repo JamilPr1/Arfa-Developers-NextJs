@@ -22,11 +22,22 @@ import { useRouter, usePathname } from 'next/navigation'
 
 const navLinks = [
   { label: 'Home', href: '/' },
-  { label: 'Services', href: '/services' },
-  { label: 'Portfolio', href: '#portfolio' },
-  { label: 'About', href: '#about' },
-  { label: 'Blog', href: '#blog' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Services', href: '/services', hasDropdown: true },
+  { label: 'Portfolio', href: '/portfolio' },
+  { label: 'About', href: '/about' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
+]
+
+const serviceLinks = [
+  { label: 'Web Development', href: '/services/web-development' },
+  { label: 'Mobile App Development', href: '/services/mobile-app-development' },
+  { label: 'Cloud Solutions', href: '/services/cloud-solutions' },
+  { label: 'Data Analytics', href: '/services/data-analytics' },
+  { label: 'Security & Compliance', href: '/services/security-compliance' },
+  { label: 'Performance Optimization', href: '/services/performance-optimization' },
+  { label: 'E-commerce Development', href: '/services/ecommerce-development' },
+  { label: 'Enterprise Solutions', href: '/services/enterprise-solutions' },
 ]
 
 function HideOnScroll({ children }: { children: React.ReactElement }) {
