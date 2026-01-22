@@ -4,22 +4,26 @@ import { useEffect } from 'react'
 import { Box } from '@mui/material'
 import dynamic from 'next/dynamic'
 
-// Dynamically import MapContainer to avoid SSR issues
-const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), {
-  ssr: false,
-})
+// Dynamically import to avoid SSR issues
+let MapContainer: any
+let TileLayer: any
+let Marker: any
+let Popup: any
 
-const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), {
-  ssr: false,
-})
-
-const Marker = dynamic(() => import('react-leaflet').then((mod) => mod.Marker), {
-  ssr: false,
-})
-
-const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
-  ssr: false,
-})
+if (typeof window !== 'undefined') {
+  MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), {
+    ssr: false,
+  })
+  TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), {
+    ssr: false,
+  })
+  Marker = dynamic(() => import('react-leaflet').then((mod) => mod.Marker), {
+    ssr: false,
+  })
+  Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
+    ssr: false,
+  })
+}
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css'
