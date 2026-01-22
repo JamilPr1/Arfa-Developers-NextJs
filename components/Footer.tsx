@@ -14,20 +14,43 @@ const quickLinks = [
   { label: 'Home', href: '/', isRoute: true },
   { label: 'Services', href: '/services', isRoute: true },
   { label: 'Portfolio', href: '/portfolio', isRoute: true },
+  { label: 'Case Studies', href: '/case-studies', isRoute: true },
   { label: 'About', href: '/about', isRoute: true },
   { label: 'Blog', href: '/blog', isRoute: true },
   { label: 'Contact', href: '/contact', isRoute: true },
+  { label: 'Pricing', href: '/pricing', isRoute: true },
+  { label: 'Our Process', href: '/our-process', isRoute: true },
+  { label: 'Website Rescue', href: '/website-rescue', isRoute: true },
+  { label: 'Testimonials', href: '/testimonials', isRoute: true },
+  { label: 'FAQs', href: '/faqs', isRoute: true },
+  { label: 'Free Audit', href: '/free-audit', isRoute: true },
 ]
 
 const services = [
   { label: 'Web Development', href: '/services/web-development' },
+  { label: 'Website Redesign', href: '/services/website-redesign' },
+  { label: 'Landing Pages', href: '/services/landing-pages' },
+  { label: 'E-commerce Development', href: '/services/ecommerce-development' },
+  { label: 'SEO Services', href: '/services/seo-services' },
+  { label: 'Technical SEO', href: '/services/technical-seo' },
+  { label: 'Local SEO', href: '/services/local-seo' },
+  { label: 'SEO Audit', href: '/services/seo-audit' },
+  { label: 'Digital Marketing', href: '/services/digital-marketing' },
+  { label: 'Google Ads Management', href: '/services/google-ads-management' },
+  { label: 'Content Marketing', href: '/services/content-marketing' },
+  { label: 'Email Marketing', href: '/services/email-marketing' },
   { label: 'Mobile App Development', href: '/services/mobile-app-development' },
   { label: 'Cloud Solutions', href: '/services/cloud-solutions' },
   { label: 'Data Analytics', href: '/services/data-analytics' },
   { label: 'Security & Compliance', href: '/services/security-compliance' },
   { label: 'Performance Optimization', href: '/services/performance-optimization' },
-  { label: 'E-commerce Development', href: '/services/ecommerce-development' },
   { label: 'Enterprise Solutions', href: '/services/enterprise-solutions' },
+]
+
+const legalLinks = [
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms of Service', href: '/terms-of-service' },
+  { label: 'Refund Policy', href: '/refund-policy' },
 ]
 
 export default function Footer() {
@@ -290,12 +313,35 @@ export default function Footer() {
             pt: 3,
             borderTop: '1px solid',
             borderColor: 'divider',
-            textAlign: 'center',
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 2,
           }}
         >
           <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
             © {new Date().getFullYear()} Arfa Developers. All rights reserved.
           </Typography>
+          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {legalLinks.map((link) => (
+              <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
+                <MuiLink
+                  sx={{
+                    color: '#9CA3AF',
+                    fontSize: '0.875rem',
+                    '&:hover': {
+                      color: '#2563EB',
+                      textDecoration: 'underline',
+                    },
+                    transition: 'color 0.3s ease',
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              </Link>
+            ))}
+          </Box>
         </Box>
       </Container>
     </Box>

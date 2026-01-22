@@ -42,12 +42,22 @@ type ServiceLink = {
 
 const serviceLinks: ServiceLink[] = [
   { label: 'Web Development', href: '/services/web-development' },
+  { label: 'Website Redesign', href: '/services/website-redesign' },
+  { label: 'Landing Pages', href: '/services/landing-pages' },
+  { label: 'E-commerce Development', href: '/services/ecommerce-development' },
+  { label: 'SEO Services', href: '/services/seo-services' },
+  { label: 'Technical SEO', href: '/services/technical-seo' },
+  { label: 'Local SEO', href: '/services/local-seo' },
+  { label: 'SEO Audit', href: '/services/seo-audit' },
+  { label: 'Digital Marketing', href: '/services/digital-marketing' },
+  { label: 'Google Ads Management', href: '/services/google-ads-management' },
+  { label: 'Content Marketing', href: '/services/content-marketing' },
+  { label: 'Email Marketing', href: '/services/email-marketing' },
   { label: 'Mobile App Development', href: '/services/mobile-app-development' },
   { label: 'Cloud Solutions', href: '/services/cloud-solutions' },
   { label: 'Data Analytics', href: '/services/data-analytics' },
   { label: 'Security & Compliance', href: '/services/security-compliance' },
   { label: 'Performance Optimization', href: '/services/performance-optimization' },
-  { label: 'E-commerce Development', href: '/services/ecommerce-development' },
   { label: 'Enterprise Solutions', href: '/services/enterprise-solutions' },
 ]
 
