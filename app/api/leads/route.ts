@@ -131,11 +131,11 @@ async function sendDirectEmail(data: LeadData): Promise<{ success: boolean }> {
         return { success: true }
       } else {
         console.error('[Email] ❌ Resend API failed:', response.status, responseData)
-        return { success: false, error: responseData }
+        return { success: false }
       }
     } catch (error) {
       console.error('[Email] ❌ Resend API error:', error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+      return { success: false }
     }
   }
 
