@@ -4,11 +4,6 @@ import { Box, Container, Typography, Grid, TextField, Button, IconButton, Link a
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import {
-  Facebook as FacebookIcon,
-  Twitter as TwitterIcon,
-  LinkedIn as LinkedInIcon,
-  Instagram as InstagramIcon,
-  GitHub as GitHubIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
   LocationOn as LocationIcon,
@@ -85,57 +80,26 @@ export default function Footer() {
               <Typography variant="body2" sx={{ mb: 2, color: '#9CA3AF' }}>
                 Building web solutions that scale globally. From startups to enterprises, we deliver excellence.
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton
-                  size="small"
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+                <PhoneIcon sx={{ color: '#25D366', fontSize: 24 }} />
+                <MuiLink
+                  href="https://wa.me/15166037838"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   sx={{
-                    color: '#F9FAFB',
-                    '&:hover': { backgroundColor: '#2563EB', color: '#FFFFFF' },
-                    transition: 'all 0.3s ease',
+                    color: '#25D366',
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    '&:hover': {
+                      color: '#128C7E',
+                      textDecoration: 'underline',
+                    },
+                    transition: 'color 0.3s ease',
                   }}
                 >
-                  <FacebookIcon />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  sx={{
-                    color: '#F9FAFB',
-                    '&:hover': { backgroundColor: '#2563EB', color: '#FFFFFF' },
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <TwitterIcon />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  sx={{
-                    color: '#F9FAFB',
-                    '&:hover': { backgroundColor: '#2563EB', color: '#FFFFFF' },
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <LinkedInIcon />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  sx={{
-                    color: '#F9FAFB',
-                    '&:hover': { backgroundColor: '#2563EB', color: '#FFFFFF' },
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <InstagramIcon />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  sx={{
-                    color: '#F9FAFB',
-                    '&:hover': { backgroundColor: '#2563EB', color: '#FFFFFF' },
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <GitHubIcon />
-                </IconButton>
+                  +1 (516) 603-7838
+                </MuiLink>
               </Box>
             </motion.div>
           </Grid>
@@ -257,9 +221,22 @@ export default function Footer() {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <PhoneIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                  <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
-                    +1 (555) 123-4567
-                  </Typography>
+                  <MuiLink
+                    href="https://wa.me/15166037838"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      color: '#9CA3AF',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        color: '#25D366',
+                        textDecoration: 'underline',
+                      },
+                      transition: 'color 0.3s ease',
+                    }}
+                  >
+                    +1 (516) 603-7838
+                  </MuiLink>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                   <LocationIcon sx={{ color: '#2563EB', fontSize: 20, mt: 0.5 }} />

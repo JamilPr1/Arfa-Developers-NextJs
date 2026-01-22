@@ -573,7 +573,12 @@ export default function ServicesPage() {
                           color: '#1E3A8A',
                         }}
                       >
-                        {service.title}
+                        <Link
+                          href={`/services/${service.id}`}
+                          style={{ textDecoration: 'none', color: 'inherit' }}
+                        >
+                          {service.title}
+                        </Link>
                       </Typography>
                       <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400 }}>
                         {service.shortDescription}
