@@ -74,13 +74,14 @@ async function sendSlackNotification(data: LeadData): Promise<void> {
       }),
     })
 
+    const responseText = await response.text()
+    
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('[Slack] ❌ Webhook request failed:', response.status, errorText)
-      throw new Error(`Slack webhook failed: ${response.status}`)
+      console.error('[Slack] ❌ Webhook request failed:', response.status, responseText)
+      throw new Error(`Slack webhook failed: ${response.status} - ${responseText}`)
     }
 
-    console.log('[Slack] ✅ Notification sent successfully')
+    console.log('[Slack] ✅ Notification sent successfully. Response:', responseText)
   } catch (error) {
     console.error('[Slack] ❌ Notification error:', error)
     throw error
@@ -123,11 +124,18 @@ async function sendDirectEmail(data: LeadData): Promise<{ success: boolean }> {
         }),
       })
 
+      const responseData = await response.json()
+      
       if (response.ok) {
+        console.log('[Email] ✅ Resend API success:', responseData)
         return { success: true }
+      } else {
+        console.error('[Email] ❌ Resend API failed:', response.status, responseData)
+        return { success: false, error: responseData }
       }
     } catch (error) {
-      console.error('Resend API error:', error)
+      console.error('[Email] ❌ Resend API error:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
 
@@ -249,6 +257,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log for debugging
+    const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL
     console.log('[Leads API] Lead submitted:', {
       name: leadDataWithMessage.name,
       email: leadDataWithMessage.email,
@@ -260,7 +269,8 @@ export async function POST(request: NextRequest) {
       assignedTo: assignLeadByRegion(leadDataWithMessage.region),
       hasResendKey: !!process.env.RESEND_API_KEY,
       hasSendGridKey: !!process.env.SENDGRID_API_KEY,
-      hasSlackWebhook: !!process.env.SLACK_WEBHOOK_URL,
+      hasSlackWebhook: !!slackWebhookUrl,
+      slackWebhookUrl: slackWebhookUrl ? slackWebhookUrl.substring(0, 50) + '...' : 'NOT SET',
     })
 
     // Return success even if email fails (to not block user experience)
