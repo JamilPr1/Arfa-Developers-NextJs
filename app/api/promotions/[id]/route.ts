@@ -19,8 +19,9 @@ export async function PUT(
       )
     }
 
+    const existingPromotion = promotions[index] as any
     promotions[index] = {
-      ...promotions[index],
+      ...existingPromotion,
       ...updatedPromotion,
       id: parseInt(id),
     }

@@ -44,8 +44,9 @@ export async function PUT(
       )
     }
 
+    const existingProject = projects[index] as any
     projects[index] = {
-      ...projects[index],
+      ...existingProject,
       ...updatedProject,
       id: parseInt(id),
       updatedAt: new Date().toISOString(),

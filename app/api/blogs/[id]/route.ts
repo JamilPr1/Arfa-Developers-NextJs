@@ -44,8 +44,9 @@ export async function PUT(
       )
     }
 
+    const existingBlog = blogs[index] as any
     blogs[index] = {
-      ...blogs[index],
+      ...existingBlog,
       ...updatedBlog,
       id: parseInt(id),
       updatedAt: new Date().toISOString(),
