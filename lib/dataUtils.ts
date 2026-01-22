@@ -15,15 +15,21 @@ const isKvAvailable = () => {
 
 // Lazy load KV to avoid errors if not configured
 let kv: any = null
+let kvLoadAttempted = false
+
 const getKv = async () => {
   if (kv) return kv
+  if (kvLoadAttempted) return null
+  kvLoadAttempted = true
+  
   if (isKvAvailable()) {
     try {
+      // Dynamic import to avoid errors if package is not available
       const kvModule = await import('@vercel/kv')
       kv = kvModule.kv
       return kv
-    } catch (error) {
-      console.warn('KV module not available:', error)
+    } catch (error: any) {
+      console.warn('KV module not available or not configured:', error?.message)
       return null
     }
   }
