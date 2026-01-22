@@ -18,10 +18,10 @@ import { motion } from 'framer-motion'
 const quickLinks = [
   { label: 'Home', href: '/', isRoute: true },
   { label: 'Services', href: '/services', isRoute: true },
-  { label: 'Portfolio', href: '#portfolio', isRoute: false },
-  { label: 'About', href: '#about', isRoute: false },
-  { label: 'Blog', href: '#blog', isRoute: false },
-  { label: 'Contact', href: '#contact', isRoute: false },
+  { label: 'Portfolio', href: '/portfolio', isRoute: true },
+  { label: 'About', href: '/about', isRoute: true },
+  { label: 'Blog', href: '/blog', isRoute: true },
+  { label: 'Contact', href: '/contact', isRoute: true },
 ]
 
 const services = [
