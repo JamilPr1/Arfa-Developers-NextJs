@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Box, Link as MuiLink } from '@mui/material'
 import Link from 'next/link'
 
@@ -13,6 +13,8 @@ interface Promotion {
 
 export default function PromotionsBanner() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
+  const [isPaused, setIsPaused] = useState(false)
+  const bannerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchPromotions()
@@ -33,12 +35,15 @@ export default function PromotionsBanner() {
 
   if (promotions.length === 0) return null
 
-  // Calculate animation duration based on content length
-  const totalWidth = promotions.reduce((sum, p) => sum + p.text.length * 8 + 64, 0)
-  const duration = Math.max(20, totalWidth / 50) // Adjust speed based on content
+  // Calculate animation duration - slower speed (60-90 seconds for smooth scrolling)
+  const totalWidth = promotions.reduce((sum, p) => sum + p.text.length * 10 + 80, 0)
+  const duration = Math.max(60, totalWidth / 20) // Much slower for smooth scrolling
 
   return (
     <Box
+      ref={bannerRef}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
       sx={{
         position: 'fixed',
         top: 0,
@@ -48,15 +53,18 @@ export default function PromotionsBanner() {
         overflow: 'hidden',
         bgcolor: '#1E3A8A',
         color: 'white',
-        py: 1,
+        py: 1.5,
         zIndex: 1300,
+        cursor: 'pointer',
       }}
     >
       <Box
         sx={{
           display: 'flex',
           width: 'max-content',
-          animation: `scroll ${duration}s linear infinite`,
+          animation: isPaused 
+            ? 'none' 
+            : `scroll ${duration}s linear infinite`,
           '@keyframes scroll': {
             '0%': {
               transform: 'translateX(100%)',
@@ -65,6 +73,7 @@ export default function PromotionsBanner() {
               transform: 'translateX(-50%)',
             },
           },
+          transition: isPaused ? 'animation-play-state paused' : 'none',
         }}
       >
         {/* Duplicate promotions multiple times for seamless loop */}
@@ -73,7 +82,7 @@ export default function PromotionsBanner() {
             key={`${promotion.id}-${index}`}
             sx={{
               flexShrink: 0,
-              px: 4,
+              px: 6,
               whiteSpace: 'nowrap',
             }}
           >
@@ -89,6 +98,7 @@ export default function PromotionsBanner() {
                 '&:hover': {
                   textDecoration: 'underline',
                 },
+                transition: 'all 0.2s ease',
               }}
             >
               {promotion.text}

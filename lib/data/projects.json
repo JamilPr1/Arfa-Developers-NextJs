@@ -24,5 +24,57 @@
     "published": true,
     "createdAt": "2024-01-10T00:00:00.000Z",
     "updatedAt": "2024-01-10T00:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "title": "FinTech Mobile App",
+    "type": "Mobile App",
+    "image": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800",
+    "url": "https://example.com",
+    "tech": ["React Native", "Firebase", "Stripe"],
+    "description": "Secure mobile banking application with biometric authentication",
+    "fullDescription": "Created a secure mobile banking application with biometric authentication, real-time transaction processing, and advanced security features. The app has over 100K downloads with a 4.8-star rating.",
+    "published": true,
+    "createdAt": "2024-01-08T00:00:00.000Z",
+    "updatedAt": "2024-01-08T00:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "title": "SaaS Dashboard",
+    "type": "Web App",
+    "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800",
+    "url": "https://example.com",
+    "tech": ["Vue.js", "Python", "AWS"],
+    "description": "Analytics dashboard for SaaS businesses with real-time metrics",
+    "fullDescription": "Built a comprehensive analytics dashboard that provides real-time insights for SaaS businesses. Features include custom reporting, data visualization, and automated alerts. Used by 500+ businesses.",
+    "published": true,
+    "createdAt": "2024-01-05T00:00:00.000Z",
+    "updatedAt": "2024-01-05T00:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "title": "Real Estate Platform",
+    "type": "Web App",
+    "image": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800",
+    "url": "https://example.com",
+    "tech": ["Next.js", "GraphQL", "MongoDB"],
+    "description": "Property listing platform with virtual tour integration",
+    "fullDescription": "Developed a modern real estate platform with virtual tour integration, advanced search filters, and property management tools. The platform lists over 10,000 properties with high user engagement.",
+    "published": true,
+    "createdAt": "2024-01-03T00:00:00.000Z",
+    "updatedAt": "2024-01-03T00:00:00.000Z"
+  },
+  {
+    "id": 6,
+    "title": "Education LMS",
+    "type": "Enterprise",
+    "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800",
+    "url": "https://example.com",
+    "tech": ["React", "Django", "PostgreSQL"],
+    "description": "Learning management system for online education",
+    "fullDescription": "Created a comprehensive learning management system that supports online courses, student progress tracking, and interactive assessments. Serves over 50,000 students across multiple institutions.",
+    "published": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
   }
 ]

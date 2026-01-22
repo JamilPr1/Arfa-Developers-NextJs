@@ -27,6 +27,12 @@ import {
   Tab,
   Alert,
   CircularProgress,
+  AppBar,
+  Toolbar,
+  Avatar,
+  Menu,
+  MenuItem,
+  Divider,
 } from '@mui/material'
 import {
   Edit as EditIcon,
@@ -35,9 +41,11 @@ import {
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
   Save as SaveIcon,
+  Dashboard as DashboardIcon,
+  Logout as LogoutIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import Link from 'next/link'
 
 interface Project {
   id: number
@@ -77,11 +85,13 @@ export default function AdminPage() {
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [openDialog, setOpenDialog] = useState(false)
   const [dialogType, setDialogType] = useState<'project' | 'blog' | 'promotion' | null>(null)
   const [editingItem, setEditingItem] = useState<any>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   // Form states
   const [projectForm, setProjectForm] = useState({
@@ -145,17 +155,31 @@ export default function AdminPage() {
   }
 
   const loadData = async () => {
+    setDataLoading(true)
+    setError('')
     try {
       const [projectsRes, blogsRes, promotionsRes] = await Promise.all([
         fetch('/api/admin/projects'),
         fetch('/api/admin/blogs'),
         fetch('/api/admin/promotions'),
       ])
-      setProjects(await projectsRes.json())
-      setBlogs(await blogsRes.json())
-      setPromotions(await promotionsRes.json())
+      
+      if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok) {
+        throw new Error('Failed to load data')
+      }
+      
+      const projectsData = await projectsRes.json()
+      const blogsData = await blogsRes.json()
+      const promotionsData = await promotionsRes.json()
+      
+      setProjects(Array.isArray(projectsData) ? projectsData : [])
+      setBlogs(Array.isArray(blogsData) ? blogsData : [])
+      setPromotions(Array.isArray(promotionsData) ? promotionsData : [])
     } catch (err) {
-      setError('Failed to load data')
+      console.error('Error loading data:', err)
+      setError('Failed to load data. Please refresh the page.')
+    } finally {
+      setDataLoading(false)
     }
   }
 
@@ -166,7 +190,7 @@ export default function AdminPage() {
       if (type === 'project') {
         setProjectForm({
           ...item,
-          tech: item.tech.join(', '),
+          tech: Array.isArray(item.tech) ? item.tech.join(', ') : item.tech || '',
         })
       } else if (type === 'blog') {
         setBlogForm(item)
@@ -226,12 +250,13 @@ export default function AdminPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(projectData),
         })
+        const result = await response.json()
         if (response.ok) {
           setSuccess('Project saved successfully!')
           loadData()
           setOpenDialog(false)
         } else {
-          setError('Failed to save project')
+          setError(result.error || 'Failed to save project')
         }
       } else if (dialogType === 'blog') {
         const url = editingItem
@@ -243,12 +268,13 @@ export default function AdminPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(blogForm),
         })
+        const result = await response.json()
         if (response.ok) {
           setSuccess('Blog saved successfully!')
           loadData()
           setOpenDialog(false)
         } else {
-          setError('Failed to save blog')
+          setError(result.error || 'Failed to save blog')
         }
       } else if (dialogType === 'promotion') {
         const url = editingItem
@@ -260,15 +286,17 @@ export default function AdminPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(promotionForm),
         })
+        const result = await response.json()
         if (response.ok) {
           setSuccess('Promotion saved successfully!')
           loadData()
           setOpenDialog(false)
         } else {
-          setError('Failed to save promotion')
+          setError(result.error || 'Failed to save promotion')
         }
       }
     } catch (err) {
+      console.error('Save error:', err)
       setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
@@ -278,15 +306,17 @@ export default function AdminPage() {
   const handleDelete = async (type: 'project' | 'blog' | 'promotion', id: number) => {
     if (!confirm(`Are you sure you want to delete this ${type}?`)) return
     setLoading(true)
+    setError('')
     try {
       const response = await fetch(`/api/${type}s/${id}`, {
         method: 'DELETE',
       })
+      const result = await response.json()
       if (response.ok) {
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`)
         loadData()
       } else {
-        setError('Failed to delete')
+        setError(result.error || 'Failed to delete')
       }
     } catch (err) {
       setError('An error occurred')
@@ -310,6 +340,8 @@ export default function AdminPage() {
       })
       if (response.ok) {
         loadData()
+      } else {
+        setError('Failed to update status')
       }
     } catch (err) {
       setError('Failed to update status')
@@ -318,50 +350,96 @@ export default function AdminPage() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('admin_authenticated')
+    setIsAuthenticated(false)
+    setAnchorEl(null)
+  }
+
   if (!isAuthenticated) {
     return (
-      <>
-        <Header />
-        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#F9FAFB' }}>
-          <Container maxWidth="sm">
-            <Paper sx={{ p: 4 }}>
-              <Typography variant="h4" sx={{ mb: 3, textAlign: 'center', fontWeight: 700 }}>
-                Admin Login
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#1E3A8A', background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
+        <Container maxWidth="sm">
+          <Paper sx={{ p: 4, borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
+              <DashboardIcon sx={{ fontSize: 60, color: '#1E3A8A', mb: 2 }} />
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E3A8A' }}>
+                Admin CRM Login
               </Typography>
-              <TextField
-                fullWidth
-                type="password"
-                label="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                sx={{ mb: 2 }}
-              />
-              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleLogin}
-                disabled={loading}
-                sx={{ py: 1.5 }}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Login'}
-              </Button>
-            </Paper>
-          </Container>
-        </Box>
-        <Footer />
-      </>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Content Management System
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              type="password"
+              label="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+              sx={{ mb: 2 }}
+            />
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleLogin}
+              disabled={loading}
+              sx={{ py: 1.5, backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+            </Button>
+          </Paper>
+        </Container>
+      </Box>
     )
   }
 
   return (
-    <>
-      <Header />
-      <Box sx={{ minHeight: '100vh', bgcolor: '#F9FAFB', pt: 12, pb: 4 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#F5F7FA' }}>
+      {/* CRM Header */}
+      <AppBar position="fixed" sx={{ bgcolor: '#1E3A8A', zIndex: 1300 }}>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <DashboardIcon />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Admin CRM
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              component={Link}
+              href="/"
+              target="_blank"
+              variant="outlined"
+              sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', '&:hover': { borderColor: 'white' } }}
+            >
+              View Site
+            </Button>
+            <IconButton
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              sx={{ color: 'white' }}
+            >
+              <Avatar sx={{ width: 32, height: 32, bgcolor: '#2563EB' }}>A</Avatar>
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              <MenuItem onClick={handleLogout}>
+                <LogoutIcon sx={{ mr: 1 }} />
+                Logout
+              </MenuItem>
+            </Menu>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      <Box sx={{ pt: 8, pb: 4 }}>
         <Container maxWidth="xl">
-          <Typography variant="h3" sx={{ mb: 4, fontWeight: 700 }}>
-            Admin Panel
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700, color: '#1E3A8A' }}>
+            Content Management
           </Typography>
 
           {error && (
@@ -375,8 +453,12 @@ export default function AdminPage() {
             </Alert>
           )}
 
-          <Paper sx={{ mb: 3 }}>
-            <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
+          <Paper sx={{ mb: 3, borderRadius: 2, overflow: 'hidden' }}>
+            <Tabs 
+              value={tabValue} 
+              onChange={(e, v) => setTabValue(v)}
+              sx={{ borderBottom: 1, borderColor: 'divider' }}
+            >
               <Tab label="Projects" />
               <Tab label="Blogs" />
               <Tab label="Promotions" />
@@ -385,184 +467,267 @@ export default function AdminPage() {
 
           {/* Projects Tab */}
           {tabValue === 0 && (
-            <Paper>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5">Projects</Typography>
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>Projects ({projects.length})</Typography>
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenDialog('project')}
+                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
                 >
                   Add Project
                 </Button>
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Title</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Published</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {projects.map((project) => (
-                      <TableRow key={project.id}>
-                        <TableCell>{project.title}</TableCell>
-                        <TableCell>{project.type}</TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={project.published}
-                            onChange={() => handleToggleStatus('project', project.id, project.published)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton onClick={() => handleOpenDialog('project', project)}>
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton onClick={() => handleDelete('project', project.id)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
+              {dataLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                  <Typography sx={{ mt: 2 }}>Loading projects...</Typography>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Published</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {projects.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                            <Typography color="text.secondary">No projects found. Click "Add Project" to create one.</Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        projects.map((project) => (
+                          <TableRow key={project.id} hover>
+                            <TableCell>{project.title}</TableCell>
+                            <TableCell>
+                              <Chip label={project.type} size="small" color="primary" variant="outlined" />
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={project.published || false}
+                                onChange={() => handleToggleStatus('project', project.id, project.published || false)}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <IconButton 
+                                onClick={() => handleOpenDialog('project', project)}
+                                size="small"
+                                sx={{ color: '#1E3A8A' }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton 
+                                onClick={() => handleDelete('project', project.id)}
+                                size="small"
+                                sx={{ color: '#EF4444' }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </Paper>
           )}
 
           {/* Blogs Tab */}
           {tabValue === 1 && (
-            <Paper>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5">Blogs</Typography>
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>Blogs ({blogs.length})</Typography>
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenDialog('blog')}
+                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
                 >
                   Add Blog
                 </Button>
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Title</TableCell>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Published</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {blogs.map((blog) => (
-                      <TableRow key={blog.id}>
-                        <TableCell>{blog.title}</TableCell>
-                        <TableCell>{blog.date}</TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={blog.published}
-                            onChange={() => handleToggleStatus('blog', blog.id, blog.published)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton onClick={() => handleOpenDialog('blog', blog)}>
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton onClick={() => handleDelete('blog', blog.id)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
+              {dataLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                  <Typography sx={{ mt: 2 }}>Loading blogs...</Typography>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Published</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {blogs.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                            <Typography color="text.secondary">No blogs found. Click "Add Blog" to create one.</Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        blogs.map((blog) => (
+                          <TableRow key={blog.id} hover>
+                            <TableCell>{blog.title}</TableCell>
+                            <TableCell>{blog.date}</TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={blog.published || false}
+                                onChange={() => handleToggleStatus('blog', blog.id, blog.published || false)}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <IconButton 
+                                onClick={() => handleOpenDialog('blog', blog)}
+                                size="small"
+                                sx={{ color: '#1E3A8A' }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton 
+                                onClick={() => handleDelete('blog', blog.id)}
+                                size="small"
+                                sx={{ color: '#EF4444' }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </Paper>
           )}
 
           {/* Promotions Tab */}
           {tabValue === 2 && (
-            <Paper>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5">Promotions</Typography>
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>Promotions ({promotions.length})</Typography>
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenDialog('promotion')}
+                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
                 >
                   Add Promotion
                 </Button>
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Text</TableCell>
-                      <TableCell>Link</TableCell>
-                      <TableCell>Active</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {promotions.map((promotion) => (
-                      <TableRow key={promotion.id}>
-                        <TableCell>{promotion.text}</TableCell>
-                        <TableCell>{promotion.link}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={promotion.active ? 'Active' : 'Paused'}
-                            color={promotion.active ? 'success' : 'default'}
-                            icon={promotion.active ? <PlayIcon /> : <PauseIcon />}
-                          />
-                          <Switch
-                            checked={promotion.active}
-                            onChange={() => handleToggleStatus('promotion', promotion.id, promotion.active)}
-                            sx={{ ml: 1 }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton onClick={() => handleOpenDialog('promotion', promotion)}>
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton onClick={() => handleDelete('promotion', promotion.id)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
+              {dataLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                  <Typography sx={{ mt: 2 }}>Loading promotions...</Typography>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Text</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Link</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {promotions.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                            <Typography color="text.secondary">No promotions found. Click "Add Promotion" to create one.</Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        promotions.map((promotion) => (
+                          <TableRow key={promotion.id} hover>
+                            <TableCell>{promotion.text}</TableCell>
+                            <TableCell>
+                              <Chip label={promotion.link} size="small" variant="outlined" />
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Chip
+                                  label={promotion.active ? 'Active' : 'Paused'}
+                                  color={promotion.active ? 'success' : 'default'}
+                                  size="small"
+                                  icon={promotion.active ? <PlayIcon /> : <PauseIcon />}
+                                />
+                                <Switch
+                                  checked={promotion.active || false}
+                                  onChange={() => handleToggleStatus('promotion', promotion.id, promotion.active || false)}
+                                  size="small"
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <IconButton 
+                                onClick={() => handleOpenDialog('promotion', promotion)}
+                                size="small"
+                                sx={{ color: '#1E3A8A' }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton 
+                                onClick={() => handleDelete('promotion', promotion.id)}
+                                size="small"
+                                sx={{ color: '#EF4444' }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </Paper>
           )}
 
           {/* Dialog for Add/Edit */}
           <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-            <DialogTitle>
+            <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
               {editingItem ? 'Edit' : 'Add'} {dialogType === 'project' ? 'Project' : dialogType === 'blog' ? 'Blog' : 'Promotion'}
             </DialogTitle>
-            <DialogContent>
+            <DialogContent sx={{ mt: 2 }}>
               {dialogType === 'project' && (
-                <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Title"
+                      label="Title *"
                       value={projectForm.title}
                       onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       select
-                      label="Type"
+                      label="Type *"
                       value={projectForm.type}
                       onChange={(e) => setProjectForm({ ...projectForm, type: e.target.value })}
                       SelectProps={{ native: true }}
+                      required
                     >
                       <option value="Web App">Web App</option>
                       <option value="Mobile App">Mobile App</option>
@@ -572,9 +737,10 @@ export default function AdminPage() {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Image URL"
+                      label="Image URL *"
                       value={projectForm.image}
                       onChange={(e) => setProjectForm({ ...projectForm, image: e.target.value })}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -588,10 +754,11 @@ export default function AdminPage() {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Technologies (comma-separated)"
+                      label="Technologies (comma-separated) *"
                       value={projectForm.tech}
                       onChange={(e) => setProjectForm({ ...projectForm, tech: e.target.value })}
                       placeholder="React, Node.js, MongoDB"
+                      required
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -599,9 +766,10 @@ export default function AdminPage() {
                       fullWidth
                       multiline
                       rows={2}
-                      label="Description"
+                      label="Description *"
                       value={projectForm.description}
                       onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -629,13 +797,14 @@ export default function AdminPage() {
               )}
 
               {dialogType === 'blog' && (
-                <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Title"
+                      label="Title *"
                       value={blogForm.title}
                       onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -643,9 +812,10 @@ export default function AdminPage() {
                       fullWidth
                       multiline
                       rows={2}
-                      label="Excerpt"
+                      label="Excerpt *"
                       value={blogForm.excerpt}
                       onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -653,27 +823,30 @@ export default function AdminPage() {
                       fullWidth
                       multiline
                       rows={8}
-                      label="Content"
+                      label="Content *"
                       value={blogForm.content}
                       onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Image URL"
+                      label="Image URL *"
                       value={blogForm.image}
                       onChange={(e) => setBlogForm({ ...blogForm, image: e.target.value })}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
                     <TextField
                       fullWidth
                       type="date"
-                      label="Date"
+                      label="Date *"
                       value={blogForm.date}
                       onChange={(e) => setBlogForm({ ...blogForm, date: e.target.value })}
                       InputLabelProps={{ shrink: true }}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
@@ -699,23 +872,27 @@ export default function AdminPage() {
               )}
 
               {dialogType === 'promotion' && (
-                <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Promotion Text"
+                      label="Promotion Text *"
                       value={promotionForm.text}
                       onChange={(e) => setPromotionForm({ ...promotionForm, text: e.target.value })}
                       placeholder="🎉 Special Offer: Get 20% off..."
+                      required
+                      multiline
+                      rows={2}
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Link"
+                      label="Link *"
                       value={promotionForm.link}
                       onChange={(e) => setPromotionForm({ ...promotionForm, link: e.target.value })}
                       placeholder="/contact"
+                      required
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -726,19 +903,20 @@ export default function AdminPage() {
                           onChange={(e) => setPromotionForm({ ...promotionForm, active: e.target.checked })}
                         />
                       }
-                      label="Active"
+                      label="Active (will display on website)"
                     />
                   </Grid>
                 </Grid>
               )}
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
               <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
               <Button
                 variant="contained"
                 onClick={handleSave}
                 disabled={loading}
                 startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+                sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
               >
                 Save
               </Button>
@@ -746,7 +924,6 @@ export default function AdminPage() {
           </Dialog>
         </Container>
       </Box>
-      <Footer />
-    </>
+    </Box>
   )
 }
