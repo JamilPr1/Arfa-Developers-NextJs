@@ -13,6 +13,16 @@ import {
   Business as EnterpriseIcon,
   Storage as DatabaseIcon,
   Api as ApiIcon,
+  Refresh as RedesignIcon,
+  Campaign as LandingPageIcon,
+  Search as SeoIcon,
+  Build as TechnicalSeoIcon,
+  LocationOn as LocalSeoIcon,
+  Assessment as SeoAuditIcon,
+  Marketing as DigitalMarketingIcon,
+  AdsClick as GoogleAdsIcon,
+  Article as ContentMarketingIcon,
+  Email as EmailMarketingIcon,
 } from '@mui/icons-material'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
