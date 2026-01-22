@@ -315,21 +315,19 @@ export default function Header() {
                               px: 2,
                               py: 1.5,
                               color: '#374151',
+                              transition: 'all 0.2s ease',
+                              borderLeft: '3px solid transparent',
                               '&:hover': {
                                 backgroundColor: '#EFF6FF',
                                 color: '#1E3A8A',
                                 fontWeight: 500,
                                 transform: 'translateX(4px)',
+                                borderLeftColor: '#2563EB',
                               },
                               '&:focus-visible': {
                                 outline: '2px solid #2563EB',
                                 outlineOffset: '-2px',
                                 backgroundColor: '#EFF6FF',
-                              },
-                              transition: 'all 0.2s ease',
-                              borderLeft: '3px solid transparent',
-                              '&:hover': {
-                                borderLeftColor: '#2563EB',
                               },
                             }}
                           >
@@ -553,15 +551,13 @@ export default function Header() {
                               px: 2,
                               py: 1.5,
                               color: '#374151',
+                              transition: 'all 0.2s ease',
+                              borderLeft: '3px solid transparent',
                               '&:hover': {
                                 backgroundColor: '#EFF6FF',
                                 color: '#1E3A8A',
                                 fontWeight: 500,
                                 transform: 'translateX(4px)',
-                              },
-                              transition: 'all 0.2s ease',
-                              borderLeft: '3px solid transparent',
-                              '&:hover': {
                                 borderLeftColor: '#2563EB',
                               },
                             }}
