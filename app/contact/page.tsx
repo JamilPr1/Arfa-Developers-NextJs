@@ -8,6 +8,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import LocationMap from '@/components/LocationMap'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
@@ -163,13 +164,14 @@ export default function ContactPage() {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
                   <LocationIcon sx={{ color: '#1E3A8A', mr: 2, mt: 0.5, fontSize: 28 }} />
-                  <Box>
+                  <Box sx={{ flex: 1 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: '#1E3A8A' }}>
                       Location
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      Serving USA, UK, Qatar, and Saudi Arabia
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                      Serving USA, UK, Qatar, Saudi Arabia, and Pakistan
                     </Typography>
+                    <LocationMap />
                   </Box>
                 </Box>
               </Box>
