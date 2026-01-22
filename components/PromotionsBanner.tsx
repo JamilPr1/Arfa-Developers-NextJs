@@ -62,9 +62,8 @@ export default function PromotionsBanner() {
         sx={{
           display: 'flex',
           width: 'max-content',
-          animation: isPaused 
-            ? 'none' 
-            : `scroll ${duration}s linear infinite`,
+          animation: `scroll ${duration}s linear infinite`,
+          animationPlayState: isPaused ? 'paused' : 'running',
           '@keyframes scroll': {
             '0%': {
               transform: 'translateX(100%)',
@@ -73,7 +72,6 @@ export default function PromotionsBanner() {
               transform: 'translateX(-50%)',
             },
           },
-          transition: isPaused ? 'animation-play-state paused' : 'none',
         }}
       >
         {/* Duplicate promotions multiple times for seamless loop */}
