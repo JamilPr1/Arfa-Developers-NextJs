@@ -209,7 +209,36 @@ export default function Footer() {
               <Grid container spacing={1}>
                 <Grid item xs={6}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {services.slice(0, Math.ceil(services.length / 2)).map((service) => (
+                    {services.slice(0, 10).map((service) => (
+                      <Link
+                        key={service.href}
+                        href={service.href}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <MuiLink
+                          component="span"
+                          sx={{
+                            color: '#9CA3AF',
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            display: 'block',
+                            minHeight: '28px',
+                            lineHeight: '1.4',
+                            py: 0.5,
+                            '&:hover': {
+                              color: '#2563EB',
+                              textDecoration: 'underline',
+                            },
+                            transition: 'color 0.3s ease',
+                          }}
+                        >
+                          {service.label}
+                        </MuiLink>
+                      </Link>
+                    ))}
+                    {/* Move Enterprise Solutions to left column */}
+                    {services.slice(17, 18).map((service) => (
                       <Link
                         key={service.href}
                         href={service.href}
@@ -241,7 +270,7 @@ export default function Footer() {
                 </Grid>
                 <Grid item xs={6}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {services.slice(Math.ceil(services.length / 2)).map((service) => (
+                    {services.slice(10, 17).map((service) => (
                       <Link
                         key={service.href}
                         href={service.href}
