@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "title": "10 Best Practices for Modern Web Development in 2024",
+    "excerpt": "Discover the latest trends and best practices that will shape web development this year.",
+    "content": "Full blog content goes here...",
+    "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800",
+    "date": "2024-01-15",
+    "readTime": "5 min read",
+    "published": true,
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "title": "Scaling Your Application: A Complete Guide",
+    "excerpt": "Learn how to build scalable applications that can grow with your business needs.",
+    "content": "Full blog content goes here...",
+    "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800",
+    "date": "2024-01-10",
+    "readTime": "8 min read",
+    "published": true,
+    "createdAt": "2024-01-10T00:00:00.000Z",
+    "updatedAt": "2024-01-10T00:00:00.000Z"
+  }
+]

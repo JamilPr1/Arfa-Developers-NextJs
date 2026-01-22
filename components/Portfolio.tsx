@@ -1,67 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Tabs, Tab, Chip } from '@mui/material'
 import { motion } from 'framer-motion'
 
 const Slider = dynamic(() => import('react-slick'), { ssr: false })
 
-const projects = [
-  {
-    id: 1,
-    title: 'E-Commerce Platform',
-    type: 'Web App',
-    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800',
-    tech: ['React', 'Node.js', 'MongoDB'],
-    description: 'Scalable e-commerce solution with real-time inventory management',
-  },
-  {
-    id: 2,
-    title: 'Healthcare Management System',
-    type: 'Enterprise',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&auto=format&fit=crop&q=80',
-    tech: ['Next.js', 'TypeScript', 'PostgreSQL'],
-    description: 'HIPAA-compliant healthcare platform for patient management',
-  },
-  {
-    id: 3,
-    title: 'FinTech Mobile App',
-    type: 'Mobile App',
-    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800',
-    tech: ['React Native', 'Firebase', 'Stripe'],
-    description: 'Secure mobile banking application with biometric authentication',
-  },
-  {
-    id: 4,
-    title: 'SaaS Dashboard',
-    type: 'Web App',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
-    tech: ['Vue.js', 'Python', 'AWS'],
-    description: 'Analytics dashboard for SaaS businesses with real-time metrics',
-  },
-  {
-    id: 5,
-    title: 'Real Estate Platform',
-    type: 'Web App',
-    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800',
-    tech: ['Next.js', 'GraphQL', 'MongoDB'],
-    description: 'Property listing platform with virtual tour integration',
-  },
-  {
-    id: 6,
-    title: 'Education LMS',
-    type: 'Enterprise',
-    image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800',
-    tech: ['React', 'Django', 'PostgreSQL'],
-    description: 'Learning management system for online education',
-  },
-]
+interface Project {
+  id: number
+  title: string
+  type: string
+  image: string
+  url?: string
+  tech: string[]
+  description: string
+}
 
 const projectTypes = ['All', 'Web App', 'Mobile App', 'Enterprise']
 
 export default function Portfolio() {
   const [selectedType, setSelectedType] = useState('All')
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects')
+      const data = await response.json()
+      setProjects(data)
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredProjects =
     selectedType === 'All'
@@ -90,6 +67,20 @@ export default function Portfolio() {
         },
       },
     ],
+  }
+
+  if (loading) {
+    return (
+      <Box id="portfolio" sx={{ py: 10, bgcolor: '#FFFFFF', textAlign: 'center' }}>
+        <Container maxWidth="lg">
+          <Typography>Loading projects...</Typography>
+        </Container>
+      </Box>
+    )
+  }
+
+  if (projects.length === 0) {
+    return null
   }
 
   return (

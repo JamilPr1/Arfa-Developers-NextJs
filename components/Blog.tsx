@@ -1,45 +1,52 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Button } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { motion } from 'framer-motion'
 
-const blogPosts = [
-  {
-    id: 1,
-    title: '10 Best Practices for Modern Web Development in 2024',
-    excerpt: 'Discover the latest trends and best practices that will shape web development this year.',
-    image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800',
-    date: 'January 15, 2024',
-    readTime: '5 min read',
-  },
-  {
-    id: 2,
-    title: 'Scaling Your Application: A Complete Guide',
-    excerpt: 'Learn how to build scalable applications that can grow with your business needs.',
-    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800',
-    date: 'January 10, 2024',
-    readTime: '8 min read',
-  },
-  {
-    id: 3,
-    title: 'The Future of Cloud Computing in Enterprise',
-    excerpt: 'Exploring how cloud technologies are transforming enterprise software development.',
-    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800',
-    date: 'January 5, 2024',
-    readTime: '6 min read',
-  },
-  {
-    id: 4,
-    title: 'Security First: Building Secure Web Applications',
-    excerpt: 'Essential security practices every developer should implement in their applications.',
-    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800',
-    date: 'December 28, 2023',
-    readTime: '7 min read',
-  },
-]
+interface BlogPost {
+  id: number
+  title: string
+  excerpt: string
+  image: string
+  date: string
+  readTime: string
+}
 
 export default function Blog() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchBlogs()
+  }, [])
+
+  const fetchBlogs = async () => {
+    try {
+      const response = await fetch('/api/blogs')
+      const data = await response.json()
+      setBlogPosts(data)
+    } catch (error) {
+      console.error('Error fetching blogs:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  if (loading) {
+    return (
+      <Box id="blog" sx={{ py: 10, bgcolor: '#F9FAFB', textAlign: 'center' }}>
+        <Container maxWidth="lg">
+          <Typography>Loading blogs...</Typography>
+        </Container>
+      </Box>
+    )
+  }
+
+  if (blogPosts.length === 0) {
+    return null
+  }
+
   return (
     <Box id="blog" sx={{ py: 10, bgcolor: '#F9FAFB' }}>
       <Container maxWidth="lg">

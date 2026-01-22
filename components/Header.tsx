@@ -19,6 +19,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
+import PromotionsBanner from './PromotionsBanner'
 
 type NavLink = {
   label: string
@@ -161,23 +162,26 @@ export default function Header() {
     pathname === '/contact'
   
   return (
-    <HideOnScroll>
-      <AppBar
-        position="fixed"
-        sx={{
-          backgroundColor: scrolled 
-            ? 'rgba(255, 255, 255, 0.98)' 
-            : hasColoredBackground 
-              ? 'transparent' 
-              : 'rgba(255, 255, 255, 0.98)',
-          backdropFilter: scrolled || !hasColoredBackground ? 'blur(10px)' : 'none',
-          boxShadow: scrolled || !hasColoredBackground 
-            ? '0 2px 20px rgba(0,0,0,0.1)' 
-            : 'none',
-          transition: 'all 0.3s ease-in-out',
-          zIndex: 1100,
-        }}
-      >
+    <>
+      <PromotionsBanner />
+      <HideOnScroll>
+        <AppBar
+          position="fixed"
+          sx={{
+            backgroundColor: scrolled 
+              ? 'rgba(255, 255, 255, 0.98)' 
+              : hasColoredBackground 
+                ? 'transparent' 
+                : 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: scrolled || !hasColoredBackground ? 'blur(10px)' : 'none',
+            boxShadow: scrolled || !hasColoredBackground 
+              ? '0 2px 20px rgba(0,0,0,0.1)' 
+              : 'none',
+            transition: 'all 0.3s ease-in-out',
+            zIndex: 1200,
+            top: { xs: '40px', sm: '40px' }, // Space for promotions banner
+          }}
+        >
         <Container maxWidth="lg">
           <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
             <motion.div
@@ -660,5 +664,6 @@ export default function Header() {
         </Container>
       </AppBar>
     </HideOnScroll>
+    </>
   )
 }

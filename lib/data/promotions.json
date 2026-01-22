@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "text": "🎉 Special Offer: Get 20% off on all web development projects this month!",
+    "link": "/contact",
+    "active": true,
+    "createdAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "text": "✨ New: Free consultation for all new clients - Book now!",
+    "link": "/contact",
+    "active": true,
+    "createdAt": "2024-01-15T00:00:00.000Z"
+  }
+]

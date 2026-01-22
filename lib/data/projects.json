@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "title": "E-Commerce Platform",
+    "type": "Web App",
+    "image": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800",
+    "url": "https://example.com",
+    "tech": ["React", "Node.js", "MongoDB"],
+    "description": "Scalable e-commerce solution with real-time inventory management",
+    "fullDescription": "Built a comprehensive e-commerce platform with advanced features including real-time inventory tracking, secure payment processing, and seamless order management. The platform handles thousands of transactions daily with 99.9% uptime.",
+    "published": true,
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "title": "Healthcare Management System",
+    "type": "Enterprise",
+    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&auto=format&fit=crop&q=80",
+    "url": "https://example.com",
+    "tech": ["Next.js", "TypeScript", "PostgreSQL"],
+    "description": "HIPAA-compliant healthcare platform for patient management",
+    "fullDescription": "Developed a HIPAA-compliant healthcare management system that securely handles patient records, appointments, and medical billing. The system serves over 50 healthcare facilities with strict security and compliance requirements.",
+    "published": true,
+    "createdAt": "2024-01-10T00:00:00.000Z",
+    "updatedAt": "2024-01-10T00:00:00.000Z"
+  }
+]
