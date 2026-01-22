@@ -107,7 +107,7 @@ export default function SlackChatWidget() {
     if (isOpen) {
       scrollToBottom()
     }
-  }, [messages, isOpen])
+  }, [messages, isOpen, questionStep])
   
   // Initialize welcome message when chat opens
   useEffect(() => {
@@ -123,7 +123,8 @@ export default function SlackChatWidget() {
           },
         ])
       } else {
-        // Start questionnaire
+        // Start questionnaire - reset to first question
+        setQuestionStep(0)
         setMessages([
           {
             id: '1',
@@ -132,17 +133,7 @@ export default function SlackChatWidget() {
             timestamp: new Date(),
           },
         ])
-        // Show first question after a brief delay
-        setTimeout(() => {
-          const firstQuestion = questions[0]
-          const botMessage: Message = {
-            id: (Date.now() + 1).toString(),
-            text: firstQuestion.question,
-            sender: 'bot',
-            timestamp: new Date(),
-          }
-          setMessages((prev) => [...prev, botMessage])
-        }, 500)
+        // Question will be shown by the questionnaire component
       }
     }
   }, [isOpen])
@@ -388,34 +379,31 @@ export default function SlackChatWidget() {
     }
     setMessages((prev) => [...prev, userMessage])
     
-    // Move to next question
-    if (questionStep < questions.length - 1) {
-      setQuestionStep(questionStep + 1)
+    // Move to next question - use functional update to get latest state
+    setQuestionStep((currentStep) => {
+      const nextStep = currentStep + 1
       
-      // Show next question
+      // Scroll to bottom after state update
       setTimeout(() => {
-        const nextQuestion = questions[questionStep + 1]
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: nextQuestion.question,
-          sender: 'bot',
-          timestamp: new Date(),
-        }
-        setMessages((prev) => [...prev, botMessage])
-      }, 300)
-    } else {
-      // All questions answered, ask for project details
-      setQuestionStep(questions.length)
-      setTimeout(() => {
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: 'Great! Can you tell us more about your project? (Optional - you can skip this and go straight to chatting)',
-          sender: 'bot',
-          timestamp: new Date(),
-        }
-        setMessages((prev) => [...prev, botMessage])
-      }, 300)
-    }
+        scrollToBottom()
+      }, 100)
+      
+      if (nextStep >= questions.length) {
+        // All questions answered, ask for project details
+        setTimeout(() => {
+          const botMessage: Message = {
+            id: Date.now().toString(),
+            text: 'Great! Can you tell us more about your project? (Optional - you can skip this and go straight to chatting)',
+            sender: 'bot',
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, botMessage])
+          setTimeout(() => scrollToBottom(), 100)
+        }, 300)
+      }
+      
+      return nextStep
+    })
   }
 
   const handleSkipProjectDetails = () => {
@@ -687,41 +675,7 @@ export default function SlackChatWidget() {
                     </Box>
                   )}
                   
-                  {/* Questionnaire */}
-                  {!isQuestionnaireComplete && questionStep < questions.length && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                        <Paper elevation={1} sx={{ p: 1.5, borderRadius: '12px', maxWidth: '85%' }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                            {questions[questionStep].question}
-                          </Typography>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            {questions[questionStep].options.map((option) => (
-                              <Box
-                                key={option}
-                                onClick={() => handleQuestionAnswer(questions[questionStep].id, option)}
-                                sx={{
-                                  p: 1.5,
-                                  borderRadius: '8px',
-                                  border: '1px solid #e0e0e0',
-                                  cursor: 'pointer',
-                                  backgroundColor: 'white',
-                                  transition: 'all 0.2s',
-                                  '&:hover': {
-                                    backgroundColor: '#f0f0f0',
-                                    borderColor: '#1E3A8A',
-                                  },
-                                }}
-                              >
-                                <Typography variant="body2">{option}</Typography>
-                              </Box>
-                            ))}
-                          </Box>
-                        </Paper>
-                      </Box>
-                    </Box>
-                  )}
-                  
+                  {/* Messages from conversation */}
                   {messages.map((msg) => (
                     <Box
                       key={msg.id}
@@ -744,6 +698,44 @@ export default function SlackChatWidget() {
                       </Paper>
                     </Box>
                   ))}
+                  
+                  {/* Questionnaire - Show current question with options (always at the end) */}
+                  {!isQuestionnaireComplete && questionStep < questions.length && questions[questionStep] && (
+                    <Box 
+                      key={`question-${questionStep}`}
+                      sx={{ display: 'flex', justifyContent: 'flex-start', mt: 1 }}
+                    >
+                      <Paper elevation={1} sx={{ p: 1.5, borderRadius: '12px', maxWidth: '85%' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 1.5 }}>
+                          {questions[questionStep].question}
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {questions[questionStep].options.map((option) => (
+                            <Box
+                              key={`${questionStep}-${option}`}
+                              onClick={() => handleQuestionAnswer(questions[questionStep].id, option)}
+                              sx={{
+                                p: 1.5,
+                                borderRadius: '8px',
+                                border: '1px solid #e0e0e0',
+                                cursor: 'pointer',
+                                backgroundColor: 'white',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                  backgroundColor: '#f0f0f0',
+                                  borderColor: '#1E3A8A',
+                                  transform: 'translateX(2px)',
+                                },
+                              }}
+                            >
+                              <Typography variant="body2">{option}</Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Paper>
+                    </Box>
+                  )}
+                  
                   {isSending && (
                     <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                       <CircularProgress size={20} />
