@@ -14,6 +14,8 @@ interface ChatMessage {
     projectType?: string
     timeline?: string
     budget?: string
+    name?: string
+    email?: string
     projectDetails?: string
   }
 }
@@ -170,13 +172,31 @@ export async function POST(request: NextRequest) {
       }
       
       // Add lead information if available
-      if (leadInfo && (leadInfo.projectType || leadInfo.timeline || leadInfo.budget || leadInfo.projectDetails)) {
+      if (leadInfo && (leadInfo.projectType || leadInfo.timeline || leadInfo.budget || leadInfo.name || leadInfo.email || leadInfo.projectDetails)) {
         introBlocks.push({ type: 'divider' })
         introBlocks.push({
           type: 'header',
           text: { type: 'plain_text', text: '📋 Lead Information' },
         })
         
+        // Contact Information (Name and Email) - Most Important
+        if (leadInfo.name || leadInfo.email) {
+          const contactFields: any[] = []
+          if (leadInfo.name) {
+            contactFields.push({ type: 'mrkdwn', text: `*Name:*\n${leadInfo.name}` })
+          }
+          if (leadInfo.email) {
+            contactFields.push({ type: 'mrkdwn', text: `*Email:*\n${leadInfo.email}` })
+          }
+          if (contactFields.length > 0) {
+            introBlocks.push({
+              type: 'section',
+              fields: contactFields,
+            })
+          }
+        }
+        
+        // Project Information
         const leadFields: any[] = []
         if (leadInfo.projectType) {
           leadFields.push({ type: 'mrkdwn', text: `*Project Type:*\n${leadInfo.projectType}` })

@@ -18,6 +18,8 @@ interface LeadInfo {
   projectType?: string
   timeline?: string
   budget?: string
+  name?: string
+  email?: string
   projectDetails?: string
 }
 
@@ -30,6 +32,9 @@ export default function SlackChatWidget() {
   const [leadInfo, setLeadInfo] = useState<LeadInfo>({})
   const [questionStep, setQuestionStep] = useState<number>(0)
   const [isQuestionnaireComplete, setIsQuestionnaireComplete] = useState(false)
+  const [nameValue, setNameValue] = useState('')
+  const [emailValue, setEmailValue] = useState('')
+  const [isCollectingContactInfo, setIsCollectingContactInfo] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const sessionIdRef = useRef<string>('')
   const chatTokenRef = useRef<string>('')
@@ -389,11 +394,12 @@ export default function SlackChatWidget() {
       }, 100)
       
       if (nextStep >= questions.length) {
-        // All questions answered, ask for project details
+        // All questions answered, now collect name and email
+        setIsCollectingContactInfo(true)
         setTimeout(() => {
           const botMessage: Message = {
             id: Date.now().toString(),
-            text: 'Great! Can you tell us more about your project? (Optional - you can skip this and go straight to chatting)',
+            text: 'Great! We just need your name and email to connect you with our team.',
             sender: 'bot',
             timestamp: new Date(),
           }
@@ -406,48 +412,286 @@ export default function SlackChatWidget() {
     })
   }
 
-  const handleSkipProjectDetails = () => {
+  const handleContactInfoSubmit = async () => {
+    // Validate name and email
+    if (!nameValue.trim()) {
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: 'Please enter your name.',
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+      return
+    }
+    
+    if (!emailValue.trim()) {
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: 'Please enter your email address.',
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+      return
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(emailValue.trim())) {
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: 'Please enter a valid email address.',
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+      return
+    }
+    
+    // Save name and email to leadInfo
+    setLeadInfo((prev) => ({ ...prev, name: nameValue.trim(), email: emailValue.trim() }))
+    setIsCollectingContactInfo(false)
+    
+    // Show user's info as messages
+    const nameMessage: Message = {
+      id: Date.now().toString(),
+      text: `Name: ${nameValue.trim()}`,
+      sender: 'user',
+      timestamp: new Date(),
+    }
+    const emailMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: `Email: ${emailValue.trim()}`,
+      sender: 'user',
+      timestamp: new Date(),
+    }
+    setMessages((prev) => [...prev, nameMessage, emailMessage])
+    
+    // Ask for project details (optional)
+    setTimeout(() => {
+      const botMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        text: 'Perfect! Can you tell us more about your project? (Optional - you can skip this and go straight to chatting)',
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, botMessage])
+      setTimeout(() => scrollToBottom(), 100)
+    }, 300)
+  }
+
+  const handleSkipProjectDetails = async () => {
     setIsQuestionnaireComplete(true)
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('slackChatQuestionnaireComplete', 'true')
     }
     
-    const botMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      text: "Perfect! We have your project information. Send a message and we'll connect you with a team member shortly.",
-      sender: 'bot',
+    // Automatically send a message to connect to agent
+    const autoMessage = "Hi, I'm ready to discuss my project"
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: autoMessage,
+      sender: 'user',
       timestamp: new Date(),
     }
-    setMessages((prev) => [...prev, botMessage])
+    setMessages((prev) => [...prev, userMessage])
+    setIsSending(true)
+    setIsConnecting(true)
+
+      try {
+        console.log('[Chat Widget] Auto-connecting after questionnaire completion:', {
+          message: autoMessage,
+          sessionId: sessionIdRef.current,
+          leadInfo,
+          hasName: !!leadInfo.name,
+          hasEmail: !!leadInfo.email,
+        })
+        
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: autoMessage,
+            timestamp: userMessage.timestamp.toISOString(),
+            sessionId: sessionIdRef.current,
+            pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+            token: chatTokenRef.current || undefined,
+            leadInfo: !chatTokenRef.current ? leadInfo : undefined, // Send lead info with first message (includes name, email, project info)
+          }),
+        })
+
+      const data = await response.json().catch(() => ({ success: false, error: 'Failed to parse response' }))
+      
+      console.log('[Chat Widget] Auto-connect API response:', {
+        ok: response.ok,
+        status: response.status,
+        success: data?.success,
+        error: data?.error,
+        hasToken: !!data?.token,
+        threadTs: data?.threadTs,
+      })
+      
+      if (response.ok && data?.success) {
+        const newToken = data?.token
+        const threadTs = data?.threadTs
+        if (typeof newToken === 'string' && typeof window !== 'undefined') {
+          chatTokenRef.current = newToken
+          window.localStorage.setItem('slackChatToken', newToken)
+        }
+        if (typeof threadTs === 'string') {
+          console.log('[Chat Widget] Thread created, starting polling from thread:', threadTs)
+          pollCursorRef.current = ''
+        }
+
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: "✅ Perfect! We have your project information. Someone from our team will connect with you shortly. Please keep this chat open.",
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, botMessage])
+      } else {
+        const errorText = data?.error || 'Failed to connect'
+        console.error('Chat API error:', errorText, data)
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: `❌ ${errorText}. Please try again or contact us at +1-516-603-7838.`,
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
+      }
+    } catch (error) {
+      console.error('Chat auto-connect error:', error)
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: `❌ Network error: ${error instanceof Error ? error.message : 'Failed to connect'}. Please try again or contact us at +1-516-603-7838.`,
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsSending(false)
+      setIsConnecting(false)
+    }
   }
 
   const sendMessage = async () => {
-    // If questionnaire is not complete and we're on the last step (project details)
-    if (!isQuestionnaireComplete && questionStep === questions.length) {
-      if (inputValue.trim()) {
-        setLeadInfo((prev) => ({ ...prev, projectDetails: inputValue.trim() }))
+    // If we're collecting contact info, handle that first
+    if (isCollectingContactInfo) {
+      handleContactInfoSubmit()
+      return
+    }
+    
+    // If questionnaire is not complete and we're on the project details step
+    if (!isQuestionnaireComplete && !isCollectingContactInfo && questionStep >= questions.length) {
+      const projectDetails = inputValue.trim()
+      // Ensure we have name and email (should already be set, but include them to be safe)
+      const updatedLeadInfo = { 
+        ...leadInfo, 
+        ...(projectDetails ? { projectDetails } : {})
+      }
+      
+      if (projectDetails) {
+        setLeadInfo(updatedLeadInfo)
       }
       setIsQuestionnaireComplete(true)
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('slackChatQuestionnaireComplete', 'true')
       }
       
+      // Show user's project details or indicate skipped
       const userMessage: Message = {
         id: Date.now().toString(),
-        text: inputValue.trim() || 'Skipped',
+        text: projectDetails || 'Skipped',
         sender: 'user',
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, userMessage])
       setInputValue('')
       
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Perfect! We have your project information. Send a message and we'll connect you with a team member shortly.",
-        sender: 'bot',
-        timestamp: new Date(),
+      // Automatically send a message to connect to agent
+      const autoMessage = projectDetails || "Hi, I'm ready to discuss my project"
+      setIsSending(true)
+      setIsConnecting(true)
+
+      try {
+        console.log('[Chat Widget] Auto-connecting after project details:', {
+          message: autoMessage,
+          sessionId: sessionIdRef.current,
+          leadInfo: updatedLeadInfo,
+          hasName: !!updatedLeadInfo.name,
+          hasEmail: !!updatedLeadInfo.email,
+        })
+        
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: autoMessage,
+            timestamp: userMessage.timestamp.toISOString(),
+            sessionId: sessionIdRef.current,
+            pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+            token: chatTokenRef.current || undefined,
+            leadInfo: !chatTokenRef.current ? updatedLeadInfo : undefined, // Includes name, email, and all project info
+          }),
+        })
+
+        const data = await response.json().catch(() => ({ success: false, error: 'Failed to parse response' }))
+        
+        console.log('[Chat Widget] Auto-connect API response:', {
+          ok: response.ok,
+          status: response.status,
+          success: data?.success,
+          error: data?.error,
+          hasToken: !!data?.token,
+          threadTs: data?.threadTs,
+        })
+        
+        if (response.ok && data?.success) {
+          const newToken = data?.token
+          const threadTs = data?.threadTs
+          if (typeof newToken === 'string' && typeof window !== 'undefined') {
+            chatTokenRef.current = newToken
+            window.localStorage.setItem('slackChatToken', newToken)
+          }
+          if (typeof threadTs === 'string') {
+            console.log('[Chat Widget] Thread created, starting polling from thread:', threadTs)
+            pollCursorRef.current = ''
+          }
+
+          const botMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            text: "✅ Perfect! We have your project information. Someone from our team will connect with you shortly. Please keep this chat open.",
+            sender: 'bot',
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, botMessage])
+        } else {
+          const errorText = data?.error || 'Failed to connect'
+          console.error('Chat API error:', errorText, data)
+          const errorMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            text: `❌ ${errorText}. Please try again or contact us at +1-516-603-7838.`,
+            sender: 'bot',
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, errorMessage])
+        }
+      } catch (error) {
+        console.error('Chat auto-connect error:', error)
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: `❌ Network error: ${error instanceof Error ? error.message : 'Failed to connect'}. Please try again or contact us at +1-516-603-7838.`,
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
+      } finally {
+        setIsSending(false)
+        setIsConnecting(false)
       }
-      setMessages((prev) => [...prev, botMessage])
       return
     }
     
@@ -699,8 +943,71 @@ export default function SlackChatWidget() {
                     </Box>
                   ))}
                   
+                  {/* Contact Info Collection */}
+                  {isCollectingContactInfo && (
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 1 }}>
+                      <Paper elevation={1} sx={{ p: 2, borderRadius: '12px', maxWidth: '85%', width: '100%' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 2 }}>
+                          Please provide your contact information:
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <TextField
+                            fullWidth
+                            label="Your Name"
+                            value={nameValue}
+                            onChange={(e) => setNameValue(e.target.value)}
+                            size="small"
+                            required
+                            placeholder="Enter your full name"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: '8px',
+                              },
+                            }}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Your Email"
+                            type="email"
+                            value={emailValue}
+                            onChange={(e) => setEmailValue(e.target.value)}
+                            size="small"
+                            required
+                            placeholder="Enter your email address"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: '8px',
+                              },
+                            }}
+                          />
+                          <Box
+                            onClick={handleContactInfoSubmit}
+                            sx={{
+                              p: 1.5,
+                              borderRadius: '8px',
+                              border: '1px solid #1E3A8A',
+                              cursor: 'pointer',
+                              backgroundColor: '#1E3A8A',
+                              color: 'white',
+                              textAlign: 'center',
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                backgroundColor: '#2563EB',
+                                transform: 'translateY(-1px)',
+                              },
+                            }}
+                          >
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              Continue →
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Paper>
+                    </Box>
+                  )}
+                  
                   {/* Questionnaire - Show current question with options (always at the end) */}
-                  {!isQuestionnaireComplete && questionStep < questions.length && questions[questionStep] && (
+                  {!isQuestionnaireComplete && !isCollectingContactInfo && questionStep < questions.length && questions[questionStep] && (
                     <Box 
                       key={`question-${questionStep}`}
                       sx={{ display: 'flex', justifyContent: 'flex-start', mt: 1 }}
@@ -755,7 +1062,7 @@ export default function SlackChatWidget() {
                     gap: 1,
                   }}
                 >
-                  {!isQuestionnaireComplete && questionStep === questions.length && (
+                  {!isQuestionnaireComplete && !isCollectingContactInfo && questionStep >= questions.length && (
                     <Box sx={{ mb: 1 }}>
                       <Box
                         onClick={handleSkipProjectDetails}
@@ -782,14 +1089,18 @@ export default function SlackChatWidget() {
                     <TextField
                       fullWidth
                       placeholder={
-                        !isQuestionnaireComplete && questionStep === questions.length
+                        !isQuestionnaireComplete && !isCollectingContactInfo && questionStep >= questions.length
                           ? "Tell us about your project (optional)..."
                           : "Type your message..."
                       }
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      disabled={isSending || (!isQuestionnaireComplete && questionStep < questions.length)}
+                      disabled={
+                        isSending || 
+                        (!isQuestionnaireComplete && questionStep < questions.length) ||
+                        isCollectingContactInfo
+                      }
                       size="small"
                       multiline
                       maxRows={3}
@@ -803,9 +1114,10 @@ export default function SlackChatWidget() {
                       color="primary"
                       onClick={sendMessage}
                       disabled={
-                        (!inputValue.trim() && (!isQuestionnaireComplete && questionStep === questions.length)) ||
+                        (!inputValue.trim() && (!isQuestionnaireComplete && !isCollectingContactInfo && questionStep >= questions.length)) ||
                         isSending ||
-                        (!isQuestionnaireComplete && questionStep < questions.length)
+                        (!isQuestionnaireComplete && questionStep < questions.length) ||
+                        isCollectingContactInfo
                       }
                       sx={{
                         backgroundColor: '#1E3A8A',
