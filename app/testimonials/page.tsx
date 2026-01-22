@@ -186,7 +186,7 @@ export default function TestimonialsPage() {
                         fontSize: '1.05rem',
                       }}
                     >
-                      "{testimonial.text}"
+                      &quot;{testimonial.text}&quot;
                     </Typography>
                     <Box sx={{ borderTop: '1px solid #E5E7EB', pt: 2 }}>
                       <Typography variant="h6" sx={{ fontWeight: 600, color: '#1E3A8A' }}>

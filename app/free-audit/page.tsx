@@ -216,7 +216,7 @@ export default function FreeAuditPage() {
                 color: '#1E3A8A',
               }}
             >
-              What's Included
+              What&apos;s Included
             </Typography>
             <Card elevation={2} sx={{ p: 4, borderRadius: 3 }}>
               <List>

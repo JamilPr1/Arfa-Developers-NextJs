@@ -188,7 +188,7 @@ export default function FAQsPage() {
             Still have questions?
           </Typography>
           <Typography variant="body1" sx={{ mb: 4, color: '#6B7280' }}>
-            Contact us and we'll be happy to answer any questions you have.
+            Contact us and we&apos;ll be happy to answer any questions you have.
           </Typography>
         </Box>
 

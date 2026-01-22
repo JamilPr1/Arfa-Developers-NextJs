@@ -19,7 +19,7 @@ import {
   Build as TechnicalSeoIcon,
   LocationOn as LocalSeoIcon,
   Assessment as SeoAuditIcon,
-  Marketing as DigitalMarketingIcon,
+  Campaign as DigitalMarketingIcon,
   AdsClick as GoogleAdsIcon,
   Article as ContentMarketingIcon,
   Email as EmailMarketingIcon,

@@ -99,7 +99,7 @@ export default function PrivacyPolicyPage() {
               7. Changes to This Policy
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
-              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
             </Typography>
           </Box>
 

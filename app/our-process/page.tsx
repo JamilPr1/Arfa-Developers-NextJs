@@ -256,7 +256,7 @@ export default function OurProcessPage() {
               Ready to Start Your Project?
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, color: '#6B7280', maxWidth: 600, mx: 'auto' }}>
-              Let's discuss your project and how our process can help you achieve your goals.
+              Let&apos;s discuss your project and how our process can help you achieve your goals.
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
               <CTA />

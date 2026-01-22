@@ -192,7 +192,7 @@ export default function CaseStudiesPage() {
                 fontSize: { xs: '1.1rem', md: '1.5rem' },
               }}
             >
-              Real results, budgets, and outcomes. See how we've helped businesses achieve their goals.
+              Real results, budgets, and outcomes. See how we&apos;ve helped businesses achieve their goals.
             </Typography>
           </Container>
         </Box>
