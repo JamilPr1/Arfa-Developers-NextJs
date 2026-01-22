@@ -28,11 +28,9 @@ export default function PromotionsBanner() {
   const fetchPromotions = async () => {
     try {
       setIsLoading(true)
-      // Use fetch with no-cache and priority
+      // Use fetch with no-cache for fresh data
       const response = await fetch('/api/promotions', {
         cache: 'no-store',
-        next: { revalidate: 0 },
-        priority: 'high',
       })
       if (response.ok) {
         const data = await response.json()
