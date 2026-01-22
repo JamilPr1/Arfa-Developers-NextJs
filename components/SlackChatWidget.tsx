@@ -14,19 +14,22 @@ interface Message {
   timestamp: Date
 }
 
+interface LeadInfo {
+  projectType?: string
+  timeline?: string
+  budget?: string
+  projectDetails?: string
+}
+
 export default function SlackChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: "Hi! 👋 Welcome to Arfa Developers. Send a message and we'll connect you with a team member shortly.",
-      sender: 'bot',
-      timestamp: new Date(),
-    },
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [leadInfo, setLeadInfo] = useState<LeadInfo>({})
+  const [questionStep, setQuestionStep] = useState<number>(0)
+  const [isQuestionnaireComplete, setIsQuestionnaireComplete] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const sessionIdRef = useRef<string>('')
   const chatTokenRef = useRef<string>('')
@@ -35,6 +38,42 @@ export default function SlackChatWidget() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  const questions = [
+    {
+      id: 'projectType',
+      question: 'What type of project are you looking for?',
+      options: [
+        'Web Application',
+        'Mobile App (iOS/Android)',
+        'E-commerce Platform',
+        'Custom Software',
+        'Other',
+      ],
+    },
+    {
+      id: 'timeline',
+      question: 'What\'s your timeline?',
+      options: [
+        'Urgent (Within 1 month)',
+        '1-3 months',
+        '3-6 months',
+        '6+ months',
+        'Just exploring',
+      ],
+    },
+    {
+      id: 'budget',
+      question: 'What\'s your approximate budget range?',
+      options: [
+        'Under $10,000',
+        '$10,000 - $50,000',
+        '$50,000 - $100,000',
+        '$100,000+',
+        'Not sure yet',
+      ],
+    },
+  ]
 
   useEffect(() => {
     // Stable session id (persists per browser)
@@ -54,7 +93,14 @@ export default function SlackChatWidget() {
       const storedToken = window.localStorage.getItem('slackChatToken')
       if (storedToken && !chatTokenRef.current) {
         chatTokenRef.current = storedToken
+        setIsQuestionnaireComplete(true) // If token exists, questionnaire was already completed
         console.log('[Chat Widget] Restored token from localStorage')
+      }
+      
+      // Check if questionnaire was completed
+      const completed = window.localStorage.getItem('slackChatQuestionnaireComplete')
+      if (completed === 'true') {
+        setIsQuestionnaireComplete(true)
       }
     }
 
@@ -62,6 +108,44 @@ export default function SlackChatWidget() {
       scrollToBottom()
     }
   }, [messages, isOpen])
+  
+  // Initialize welcome message when chat opens
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      if (isQuestionnaireComplete) {
+        // Questionnaire already completed
+        setMessages([
+          {
+            id: '1',
+            text: "Hi! 👋 Thanks for providing your project details. Send a message and we'll connect you with a team member shortly.",
+            sender: 'bot',
+            timestamp: new Date(),
+          },
+        ])
+      } else {
+        // Start questionnaire
+        setMessages([
+          {
+            id: '1',
+            text: "Hi! 👋 Welcome to Arfa Developers. Let's start with a few quick questions to understand your project better.",
+            sender: 'bot',
+            timestamp: new Date(),
+          },
+        ])
+        // Show first question after a brief delay
+        setTimeout(() => {
+          const firstQuestion = questions[0]
+          const botMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            text: firstQuestion.question,
+            sender: 'bot',
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, botMessage])
+        }, 500)
+      }
+    }
+  }, [isOpen])
 
   // Poll Slack thread for agent replies while chat is open
   useEffect(() => {
@@ -292,7 +376,93 @@ export default function SlackChatWidget() {
     }
   }, [isOpen])
 
+  const handleQuestionAnswer = (questionId: string, answer: string) => {
+    setLeadInfo((prev) => ({ ...prev, [questionId]: answer }))
+    
+    // Show user's answer as a message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: answer,
+      sender: 'user',
+      timestamp: new Date(),
+    }
+    setMessages((prev) => [...prev, userMessage])
+    
+    // Move to next question
+    if (questionStep < questions.length - 1) {
+      setQuestionStep(questionStep + 1)
+      
+      // Show next question
+      setTimeout(() => {
+        const nextQuestion = questions[questionStep + 1]
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: nextQuestion.question,
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, botMessage])
+      }, 300)
+    } else {
+      // All questions answered, ask for project details
+      setQuestionStep(questions.length)
+      setTimeout(() => {
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: 'Great! Can you tell us more about your project? (Optional - you can skip this and go straight to chatting)',
+          sender: 'bot',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, botMessage])
+      }, 300)
+    }
+  }
+
+  const handleSkipProjectDetails = () => {
+    setIsQuestionnaireComplete(true)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('slackChatQuestionnaireComplete', 'true')
+    }
+    
+    const botMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: "Perfect! We have your project information. Send a message and we'll connect you with a team member shortly.",
+      sender: 'bot',
+      timestamp: new Date(),
+    }
+    setMessages((prev) => [...prev, botMessage])
+  }
+
   const sendMessage = async () => {
+    // If questionnaire is not complete and we're on the last step (project details)
+    if (!isQuestionnaireComplete && questionStep === questions.length) {
+      if (inputValue.trim()) {
+        setLeadInfo((prev) => ({ ...prev, projectDetails: inputValue.trim() }))
+      }
+      setIsQuestionnaireComplete(true)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('slackChatQuestionnaireComplete', 'true')
+      }
+      
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: inputValue.trim() || 'Skipped',
+        sender: 'user',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, userMessage])
+      setInputValue('')
+      
+      const botMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Perfect! We have your project information. Send a message and we'll connect you with a team member shortly.",
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, botMessage])
+      return
+    }
+    
     if (!inputValue.trim() || isSending) return
 
     const userMessage: Message = {
@@ -312,6 +482,7 @@ export default function SlackChatWidget() {
         message: userMessage.text,
         sessionId: sessionIdRef.current,
         hasToken: !!chatTokenRef.current,
+        leadInfo: isQuestionnaireComplete && !chatTokenRef.current ? leadInfo : undefined,
       })
       
       const response = await fetch('/api/chat', {
@@ -323,6 +494,7 @@ export default function SlackChatWidget() {
           sessionId: sessionIdRef.current,
           pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
           token: chatTokenRef.current || undefined,
+          leadInfo: isQuestionnaireComplete && !chatTokenRef.current ? leadInfo : undefined,
         }),
       })
 
@@ -514,6 +686,42 @@ export default function SlackChatWidget() {
                       </Paper>
                     </Box>
                   )}
+                  
+                  {/* Questionnaire */}
+                  {!isQuestionnaireComplete && questionStep < questions.length && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <Paper elevation={1} sx={{ p: 1.5, borderRadius: '12px', maxWidth: '85%' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                            {questions[questionStep].question}
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {questions[questionStep].options.map((option) => (
+                              <Box
+                                key={option}
+                                onClick={() => handleQuestionAnswer(questions[questionStep].id, option)}
+                                sx={{
+                                  p: 1.5,
+                                  borderRadius: '8px',
+                                  border: '1px solid #e0e0e0',
+                                  cursor: 'pointer',
+                                  backgroundColor: 'white',
+                                  transition: 'all 0.2s',
+                                  '&:hover': {
+                                    backgroundColor: '#f0f0f0',
+                                    borderColor: '#1E3A8A',
+                                  },
+                                }}
+                              >
+                                <Typography variant="body2">{option}</Typography>
+                              </Box>
+                            ))}
+                          </Box>
+                        </Paper>
+                      </Box>
+                    </Box>
+                  )}
+                  
                   {messages.map((msg) => (
                     <Box
                       key={msg.id}
@@ -551,42 +759,76 @@ export default function SlackChatWidget() {
                     borderTop: '1px solid #e0e0e0',
                     backgroundColor: 'white',
                     display: 'flex',
+                    flexDirection: 'column',
                     gap: 1,
                   }}
                 >
-                  <TextField
-                    fullWidth
-                    placeholder="Type your message..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={isSending}
-                    size="small"
-                    multiline
-                    maxRows={3}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '20px',
-                      },
-                    }}
-                  />
-                  <IconButton
-                    color="primary"
-                    onClick={sendMessage}
-                    disabled={!inputValue.trim() || isSending}
-                    sx={{
-                      backgroundColor: '#1E3A8A',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: '#2563EB',
-                      },
-                      '&:disabled': {
-                        backgroundColor: '#ccc',
-                      },
-                    }}
-                  >
-                    <SendIcon />
-                  </IconButton>
+                  {!isQuestionnaireComplete && questionStep === questions.length && (
+                    <Box sx={{ mb: 1 }}>
+                      <Box
+                        onClick={handleSkipProjectDetails}
+                        sx={{
+                          p: 1,
+                          textAlign: 'center',
+                          borderRadius: '8px',
+                          border: '1px solid #e0e0e0',
+                          cursor: 'pointer',
+                          backgroundColor: '#f5f5f5',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            backgroundColor: '#e0e0e0',
+                          },
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
+                          Skip and start chatting →
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <TextField
+                      fullWidth
+                      placeholder={
+                        !isQuestionnaireComplete && questionStep === questions.length
+                          ? "Tell us about your project (optional)..."
+                          : "Type your message..."
+                      }
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      disabled={isSending || (!isQuestionnaireComplete && questionStep < questions.length)}
+                      size="small"
+                      multiline
+                      maxRows={3}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '20px',
+                        },
+                      }}
+                    />
+                    <IconButton
+                      color="primary"
+                      onClick={sendMessage}
+                      disabled={
+                        (!inputValue.trim() && (!isQuestionnaireComplete && questionStep === questions.length)) ||
+                        isSending ||
+                        (!isQuestionnaireComplete && questionStep < questions.length)
+                      }
+                      sx={{
+                        backgroundColor: '#1E3A8A',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: '#2563EB',
+                        },
+                        '&:disabled': {
+                          backgroundColor: '#ccc',
+                        },
+                      }}
+                    >
+                      <SendIcon />
+                    </IconButton>
+                  </Box>
                 </Box>
               </Paper>
             </motion.div>

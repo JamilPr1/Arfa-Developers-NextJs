@@ -10,6 +10,12 @@ interface ChatMessage {
   sessionId?: string
   pageUrl?: string
   token?: string
+  leadInfo?: {
+    projectType?: string
+    timeline?: string
+    budget?: string
+    projectDetails?: string
+  }
 }
 
 type SlackPostMessageResponse = { ok: boolean; ts?: string; error?: string }
@@ -39,7 +45,7 @@ async function slackApi(method: string, token: string, payload: Record<string, a
 export async function POST(request: NextRequest) {
   try {
     const body: ChatMessage = await request.json()
-    const { message, timestamp, sessionId, pageUrl, token } = body
+    const { message, timestamp, sessionId, pageUrl, token, leadInfo } = body
 
     // Validate input
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -162,6 +168,41 @@ export async function POST(request: NextRequest) {
           text: { type: 'mrkdwn', text: `*Page:*\n${safePageUrl}` },
         })
       }
+      
+      // Add lead information if available
+      if (leadInfo && (leadInfo.projectType || leadInfo.timeline || leadInfo.budget || leadInfo.projectDetails)) {
+        introBlocks.push({ type: 'divider' })
+        introBlocks.push({
+          type: 'header',
+          text: { type: 'plain_text', text: '📋 Lead Information' },
+        })
+        
+        const leadFields: any[] = []
+        if (leadInfo.projectType) {
+          leadFields.push({ type: 'mrkdwn', text: `*Project Type:*\n${leadInfo.projectType}` })
+        }
+        if (leadInfo.timeline) {
+          leadFields.push({ type: 'mrkdwn', text: `*Timeline:*\n${leadInfo.timeline}` })
+        }
+        if (leadInfo.budget) {
+          leadFields.push({ type: 'mrkdwn', text: `*Budget:*\n${leadInfo.budget}` })
+        }
+        
+        if (leadFields.length > 0) {
+          introBlocks.push({
+            type: 'section',
+            fields: leadFields,
+          })
+        }
+        
+        if (leadInfo.projectDetails && leadInfo.projectDetails !== 'Skipped') {
+          introBlocks.push({
+            type: 'section',
+            text: { type: 'mrkdwn', text: `*Project Details:*\n${leadInfo.projectDetails}` },
+          })
+        }
+      }
+      
       introBlocks.push({ type: 'divider' })
 
       console.log('[Chat API] Creating new chat thread in Slack:', {
