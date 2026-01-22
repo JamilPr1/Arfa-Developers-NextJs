@@ -335,13 +335,14 @@ export default function ServicesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
       />
       <Header />
-      <Box component="main" sx={{ pt: 8 }}>
+      <Box component="main">
         {/* Hero Section with Pain Points */}
         <Box
           sx={{
             background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
             color: 'white',
-            py: { xs: 8, md: 12 },
+            pt: { xs: 12, md: 16 },
+            pb: { xs: 8, md: 12 },
             textAlign: 'center',
             position: 'relative',
             overflow: 'hidden',

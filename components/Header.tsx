@@ -45,13 +45,16 @@ export default function Header() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Check initial scroll position
+    // Check initial scroll position - ensure we start at top
     const checkScroll = () => {
+      // Use a small threshold to account for any initial scroll
       setScrolled(window.scrollY > 50)
     }
     
-    // Check on mount
-    checkScroll()
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      checkScroll()
+    }, 100)
 
     // Listen for scroll events
     const handleScroll = () => {
@@ -59,8 +62,12 @@ export default function Header() {
     }
     
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [pathname]) // Re-run when pathname changes
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -244,7 +251,19 @@ export default function Header() {
             </Box>
 
             <IconButton
-              sx={{ display: { xs: 'flex', md: 'none' }, color: scrolled ? 'text.primary' : 'white' }}
+              aria-label="Open navigation menu"
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
+              sx={{ 
+                display: { xs: 'flex', md: 'none' }, 
+                color: scrolled || !hasColoredBackground 
+                  ? '#1E3A8A' 
+                  : '#FFFFFF',
+                '&:focus-visible': {
+                  outline: '2px solid #2563EB',
+                  outlineOffset: '2px',
+                },
+              }}
               onClick={handleMenuOpen}
             >
               <MenuIcon />
