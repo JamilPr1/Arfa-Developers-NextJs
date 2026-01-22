@@ -45,13 +45,18 @@ export default function Header() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Check initial scroll position - ensure we start at top
+    // Reset scroll position when pathname changes (navigation to new page)
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0)
+    }
+
+    // Check initial scroll position
     const checkScroll = () => {
-      // Use a small threshold to account for any initial scroll
       setScrolled(window.scrollY > 50)
     }
     
-    // Small delay to ensure DOM is ready
+    // Check immediately and after a small delay to ensure DOM is ready
+    checkScroll()
     const timer = setTimeout(() => {
       checkScroll()
     }, 100)
