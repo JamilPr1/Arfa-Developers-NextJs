@@ -8,8 +8,13 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
-import LocationMap from '@/components/LocationMap'
+import dynamic from 'next/dynamic'
 import Script from 'next/script'
+
+// Dynamically import LocationMap to avoid SSR issues
+const LocationMap = dynamic(() => import('@/components/LocationMap'), {
+  ssr: false,
+})
 
 export const metadata: Metadata = {
   title: 'Contact Us - Get Free Consultation | Arfa Developers',

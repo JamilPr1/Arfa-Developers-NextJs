@@ -25,8 +25,11 @@ const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
 import 'leaflet/dist/leaflet.css'
 
 // Fix for default marker icon issue in Next.js
-import L from 'leaflet'
-
+// Only import L on client side
+let L: any = null
+if (typeof window !== 'undefined') {
+  L = require('leaflet')
+}
 
 const locations = [
   {
@@ -69,13 +72,14 @@ const locations = [
 // Custom red marker icon
 const createRedMarkerIcon = () => {
   if (typeof window !== 'undefined' && L) {
+    const svgString = `
+      <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 10 16 24 16 24s16-14 16-24C32 7.163 24.837 0 16 0z" fill="#DC2626"/>
+        <circle cx="16" cy="16" r="8" fill="#FFFFFF"/>
+      </svg>
+    `
     return L.icon({
-      iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-        <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
-          <path d="M16 0C7.163 0 0 7.163 0 16c0 10 16 24 16 24s16-14 16-24C32 7.163 24.837 0 16 0z" fill="#DC2626"/>
-          <circle cx="16" cy="16" r="8" fill="#FFFFFF"/>
-        </svg>
-      `),
+      iconUrl: 'data:image/svg+xml;base64,' + (typeof btoa !== 'undefined' ? btoa(svgString) : Buffer.from(svgString).toString('base64')),
       iconSize: [32, 40],
       iconAnchor: [16, 40],
       popupAnchor: [0, -40],
@@ -89,10 +93,11 @@ export default function LocationMap() {
 
   useEffect(() => {
     setIsMounted(true)
-    // Fix for default marker icon
-    if (typeof window !== 'undefined' && L) {
-      delete (L.Icon.Default.prototype as any)._getIconUrl
-      L.Icon.Default.mergeOptions({
+    // Fix for default marker icon - only run on client
+    if (typeof window !== 'undefined') {
+      const Leaflet = require('leaflet')
+      delete (Leaflet.Icon.Default.prototype as any)._getIconUrl
+      Leaflet.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
