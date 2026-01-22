@@ -20,7 +20,13 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 
-const navLinks = [
+type NavLink = {
+  label: string
+  href: string
+  hasDropdown?: boolean
+}
+
+const navLinks: NavLink[] = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services', hasDropdown: true },
   { label: 'Portfolio', href: '/portfolio' },
@@ -29,7 +35,12 @@ const navLinks = [
   { label: 'Contact', href: '/contact' },
 ]
 
-const serviceLinks = [
+type ServiceLink = {
+  label: string
+  href: string
+}
+
+const serviceLinks: ServiceLink[] = [
   { label: 'Web Development', href: '/services/web-development' },
   { label: 'Mobile App Development', href: '/services/mobile-app-development' },
   { label: 'Cloud Solutions', href: '/services/cloud-solutions' },
