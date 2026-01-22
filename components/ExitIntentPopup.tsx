@@ -117,14 +117,21 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
 
       console.log('[Exit Popup] Submitting lead before opening Calendly:', leadData)
 
-      // Submit to API (fire and forget - don't wait for response)
-      fetch('/api/leads', {
+      // Submit to API and wait for response
+      const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(leadData),
-      }).catch((error) => {
-        console.error('[Exit Popup] Error submitting lead:', error)
       })
+
+      const result = await response.json()
+      console.log('[Exit Popup] API response:', result)
+
+      if (!response.ok) {
+        console.error('[Exit Popup] ❌ Lead submission failed:', result)
+      } else {
+        console.log('[Exit Popup] ✅ Lead submitted successfully')
+      }
 
       // Close popup
       handleClose()
