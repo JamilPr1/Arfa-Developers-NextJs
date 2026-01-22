@@ -158,11 +158,10 @@ export default function AdminPage() {
     setDataLoading(true)
     setError('')
     try {
-      // Use cache: 'no-store' to ensure fresh data
       const [projectsRes, blogsRes, promotionsRes] = await Promise.all([
-        fetch('/api/admin/projects', { cache: 'no-store' }),
-        fetch('/api/admin/blogs', { cache: 'no-store' }),
-        fetch('/api/admin/promotions', { cache: 'no-store' }),
+        fetch('/api/admin/projects'),
+        fetch('/api/admin/blogs'),
+        fetch('/api/admin/promotions'),
       ])
       
       if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok) {
@@ -173,20 +172,9 @@ export default function AdminPage() {
       const blogsData = await blogsRes.json()
       const promotionsData = await promotionsRes.json()
       
-      // Ensure we have arrays and sort by ID (newest first)
-      const sortedProjects = Array.isArray(projectsData) 
-        ? [...projectsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
-        : []
-      const sortedBlogs = Array.isArray(blogsData)
-        ? [...blogsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
-        : []
-      const sortedPromotions = Array.isArray(promotionsData)
-        ? [...promotionsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
-        : []
-      
-      setProjects(sortedProjects)
-      setBlogs(sortedBlogs)
-      setPromotions(sortedPromotions)
+      setProjects(Array.isArray(projectsData) ? projectsData : [])
+      setBlogs(Array.isArray(blogsData) ? blogsData : [])
+      setPromotions(Array.isArray(promotionsData) ? promotionsData : [])
     } catch (err) {
       console.error('Error loading data:', err)
       setError('Failed to load data. Please refresh the page.')
@@ -302,24 +290,31 @@ export default function AdminPage() {
         const method = editingItem ? 'PUT' : 'POST'
         
         try {
+          console.log('Sending promotion request:', { url, method, data: promotionForm })
           const response = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(promotionForm),
           })
+          
+          console.log('Response status:', response.status)
           const result = await response.json()
+          console.log('Response data:', result)
           
           if (response.ok) {
             setSuccess('Promotion saved successfully!')
-            loadData()
             setOpenDialog(false)
+            // Reload data after a brief delay
+            setTimeout(() => {
+              loadData()
+            }, 300)
           } else {
-            console.error('Promotion save error:', result)
+            console.error('❌ Promotion save error:', result)
             setError(result.error || 'Failed to save promotion')
           }
-        } catch (fetchError) {
-          console.error('Promotion fetch error:', fetchError)
-          setError('Network error. Please try again.')
+        } catch (fetchError: any) {
+          console.error('❌ Promotion fetch error:', fetchError)
+          setError(`Network error: ${fetchError.message || 'Please try again.'}`)
         }
       }
     } catch (err) {
@@ -336,22 +331,25 @@ export default function AdminPage() {
     setError('')
     setSuccess('')
     try {
+      console.log(`Deleting ${type} ${id}`)
       const response = await fetch(`/api/${type}s/${id}`, {
         method: 'DELETE',
       })
+      console.log('Delete response status:', response.status)
       const result = await response.json()
+      console.log('Delete response data:', result)
       if (response.ok) {
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`)
-        // Reload data after a brief delay to ensure server has processed
+        // Reload data after a brief delay
         setTimeout(() => {
           loadData()
-        }, 500)
+        }, 300)
       } else {
         setError(result.error || 'Failed to delete')
       }
-    } catch (err) {
-      console.error('Delete error:', err)
-      setError('An error occurred while deleting')
+    } catch (err: any) {
+      console.error('❌ Delete error:', err)
+      setError(`Delete error: ${err.message || 'An error occurred'}`)
     } finally {
       setLoading(false)
     }
@@ -363,20 +361,35 @@ export default function AdminPage() {
     currentStatus: boolean
   ) => {
     setLoading(true)
+    setError('')
+    setSuccess('')
     try {
       const field = type === 'promotion' ? 'active' : 'published'
+      const newStatus = !currentStatus
+      console.log(`Toggling ${type} ${id} ${field} from ${currentStatus} to ${newStatus}`)
+      
       const response = await fetch(`/api/${type}s/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [field]: !currentStatus }),
+        body: JSON.stringify({ [field]: newStatus }),
       })
+      console.log('Toggle response status:', response.status)
+      const result = await response.json()
+      console.log('Toggle response data:', result)
+      
       if (response.ok) {
-        loadData()
+        const statusText = newStatus ? 'activated' : 'deactivated'
+        setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} ${statusText} successfully!`)
+        // Reload data after a brief delay
+        setTimeout(() => {
+          loadData()
+        }, 300)
       } else {
-        setError('Failed to update status')
+        setError(result.error || 'Failed to update status')
       }
-    } catch (err) {
-      setError('Failed to update status')
+    } catch (err: any) {
+      console.error('❌ Toggle status error:', err)
+      setError(`Toggle error: ${err.message || 'Failed to update status'}`)
     } finally {
       setLoading(false)
     }

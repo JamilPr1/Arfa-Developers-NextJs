@@ -8,11 +8,15 @@ export async function PUT(
   try {
     const { id } = await params
     const updatedPromotion = await request.json()
+    console.log(`📝 Updating promotion ${id}:`, updatedPromotion)
+    
     const promotions = await readDataFile('promotions.json')
+    console.log(`📊 Current promotions count: ${promotions.length}`)
     
     const index = promotions.findIndex((p: any) => p.id === parseInt(id))
     
     if (index === -1) {
+      console.error(`❌ Promotion ${id} not found`)
       return NextResponse.json(
         { error: 'Promotion not found' },
         { status: 404 }
@@ -26,24 +30,14 @@ export async function PUT(
       id: parseInt(id),
     }
 
-    try {
-      await writeDataFile('promotions.json', promotions)
-      console.log('Promotion updated successfully:', id)
-    } catch (writeError: any) {
-      console.error('Write error:', writeError)
-      // If write fails but we're in memory store, still return success
-      if (writeError.message?.includes('memory store')) {
-        console.warn('Using memory store - data will not persist')
-      } else {
-        throw writeError
-      }
-    }
+    await writeDataFile('promotions.json', promotions)
+    console.log(`✅ Promotion ${id} updated successfully`)
 
     return NextResponse.json(promotions[index])
   } catch (error: any) {
-    console.error('Error updating promotion:', error)
+    console.error(`❌ Error updating promotion:`, error)
     return NextResponse.json(
-      { error: error.message || 'Failed to update promotion. Please configure Vercel KV for persistent storage.' },
+      { error: error.message || 'Failed to update promotion' },
       { status: 500 }
     )
   }
@@ -55,26 +49,29 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    console.log(`🗑️ Deleting promotion ${id}`)
+    
     const promotions = await readDataFile('promotions.json')
+    console.log(`📊 Current promotions count: ${promotions.length}`)
+    
     const filteredPromotions = promotions.filter((p: any) => p.id !== parseInt(id))
-
-    try {
-      await writeDataFile('promotions.json', filteredPromotions)
-      console.log('Promotion deleted successfully:', id)
-    } catch (writeError: any) {
-      console.error('Write error:', writeError)
-      if (writeError.message?.includes('memory store')) {
-        console.warn('Using memory store - data will not persist')
-      } else {
-        throw writeError
-      }
+    
+    if (filteredPromotions.length === promotions.length) {
+      console.error(`❌ Promotion ${id} not found`)
+      return NextResponse.json(
+        { error: 'Promotion not found' },
+        { status: 404 }
+      )
     }
+
+    await writeDataFile('promotions.json', filteredPromotions)
+    console.log(`✅ Promotion ${id} deleted successfully. New count: ${filteredPromotions.length}`)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error('Error deleting promotion:', error)
+    console.error(`❌ Error deleting promotion:`, error)
     return NextResponse.json(
-      { error: error.message || 'Failed to delete promotion. Please configure Vercel KV for persistent storage.' },
+      { error: error.message || 'Failed to delete promotion' },
       { status: 500 }
     )
   }

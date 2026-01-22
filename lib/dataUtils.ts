@@ -1,10 +1,10 @@
-// Use KV (Redis) for production, fallback to file system for local dev
+// Simplified data storage: KV for production, file system for local dev
 import fs from 'fs'
 import path from 'path'
 
 const dataDir = path.join(process.cwd(), 'lib', 'data')
 
-// Check if KV is available (Vercel production)
+// Check if KV is available
 const isKvAvailable = () => {
   try {
     return !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN
@@ -13,7 +13,7 @@ const isKvAvailable = () => {
   }
 }
 
-// Lazy load KV to avoid errors if not configured
+// Lazy load KV
 let kv: any = null
 let kvLoadAttempted = false
 
@@ -24,77 +24,81 @@ const getKv = async () => {
   
   if (isKvAvailable()) {
     try {
-      // Dynamic import to avoid errors if package is not available
       const kvModule = await import('@vercel/kv')
       kv = kvModule.kv
+      console.log('✅ KV initialized successfully')
       return kv
     } catch (error: any) {
-      console.warn('KV module not available or not configured:', error?.message)
+      console.warn('⚠️ KV module not available:', error?.message)
       return null
     }
   }
+  console.log('ℹ️ KV not configured (missing env vars)')
   return null
 }
 
-// Fallback to in-memory storage if neither KV nor filesystem works
-const memoryStore: Record<string, any[]> = {
-  'projects.json': [],
-  'blogs.json': [],
-  'promotions.json': [],
-}
-
 export async function readDataFile<T>(filename: string): Promise<T[]> {
+  console.log(`📖 Reading ${filename}...`)
+  
   try {
-    // Try KV first (production)
+    // Try KV first
     const kvInstance = await getKv()
     if (kvInstance) {
       try {
-        const data = await kvInstance.get(filename) as T[] | null | undefined
+        const data = (await kvInstance.get(filename)) as T[] | null | undefined
         if (data !== null && data !== undefined) {
+          console.log(`✅ Read ${data.length} items from KV for ${filename}`)
           return Array.isArray(data) ? data : []
         }
+        console.log(`ℹ️ KV returned null/undefined for ${filename}, trying file system`)
       } catch (kvError: any) {
-        console.warn(`KV read failed for ${filename}, trying fallback:`, kvError?.message)
+        console.error(`❌ KV read error for ${filename}:`, kvError?.message)
       }
     }
 
-    // Fallback to file system (local development)
+    // Fallback to file system (local dev only)
     if (typeof window === 'undefined') {
       try {
         const filePath = path.join(dataDir, filename)
         if (fs.existsSync(filePath)) {
           const fileContents = fs.readFileSync(filePath, 'utf8')
           const parsed = JSON.parse(fileContents)
-          return Array.isArray(parsed) ? parsed : []
+          const data = Array.isArray(parsed) ? parsed : []
+          console.log(`✅ Read ${data.length} items from file system for ${filename}`)
+          return data
         }
+        console.log(`ℹ️ File not found: ${filePath}`)
       } catch (fsError: any) {
-        console.warn(`File read failed for ${filename}:`, fsError?.message)
+        console.error(`❌ File read error for ${filename}:`, fsError?.message)
       }
     }
 
-    // Final fallback to memory store
-    return Array.isArray(memoryStore[filename]) ? memoryStore[filename] : []
+    console.log(`⚠️ No data found for ${filename}, returning empty array`)
+    return []
   } catch (error: any) {
-    console.error(`Error reading ${filename}:`, error?.message || error)
+    console.error(`❌ Error reading ${filename}:`, error?.message || error)
     return []
   }
 }
 
 export async function writeDataFile<T>(filename: string, data: T[]): Promise<void> {
+  console.log(`💾 Writing ${data.length} items to ${filename}...`)
+  
   try {
-    // Try KV first (production)
+    // Try KV first
     const kvInstance = await getKv()
     if (kvInstance) {
       try {
         await kvInstance.set(filename, data)
-        console.log(`Successfully wrote ${filename} to KV`)
-        return // Success, exit early
+        console.log(`✅ Successfully wrote ${filename} to KV`)
+        return
       } catch (kvError: any) {
-        console.warn(`KV write failed for ${filename}, trying fallback:`, kvError?.message)
+        console.error(`❌ KV write error for ${filename}:`, kvError?.message)
+        throw new Error(`KV write failed: ${kvError?.message}`)
       }
     }
 
-    // Fallback to file system (local development)
+    // Fallback to file system (local dev only)
     if (typeof window === 'undefined') {
       try {
         const filePath = path.join(dataDir, filename)
@@ -104,23 +108,20 @@ export async function writeDataFile<T>(filename: string, data: T[]): Promise<voi
         }
         const content = JSON.stringify(data, null, 2)
         fs.writeFileSync(filePath, content, 'utf8')
-        console.log(`Successfully wrote ${filename} to file system`)
-        return // Success, exit early
+        console.log(`✅ Successfully wrote ${filename} to file system`)
+        return
       } catch (fsError: any) {
-        // If filesystem is read-only (Vercel), fall through to memory store
         if (fsError.code === 'EROFS' || fsError.code === 'EACCES') {
-          console.warn(`Filesystem is read-only for ${filename} (${fsError.code}), using memory store`)
-        } else {
-          throw fsError
+          console.error(`❌ Filesystem is read-only for ${filename} (${fsError.code})`)
+          throw new Error(`Cannot write to read-only filesystem. Please configure Vercel KV. Error: ${fsError.message}`)
         }
+        throw new Error(`File write failed: ${fsError.message}`)
       }
     }
 
-    // Final fallback to memory store (temporary, won't persist)
-    memoryStore[filename] = data
-    console.warn(`⚠️ Using in-memory storage for ${filename}. Data will NOT persist across deployments. Please configure Vercel KV.`)
+    throw new Error('Cannot write: KV not configured and filesystem not available')
   } catch (error: any) {
-    console.error(`Error writing ${filename}:`, error?.message || error)
+    console.error(`❌ Error writing ${filename}:`, error?.message || error)
     throw error
   }
 }
