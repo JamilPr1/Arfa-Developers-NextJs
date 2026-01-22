@@ -28,9 +28,10 @@ export async function PUT(
 
     await writeDataFile('promotions.json', promotions)
     return NextResponse.json(promotions[index])
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error updating promotion:', error)
     return NextResponse.json(
-      { error: 'Failed to update promotion' },
+      { error: error.message || 'Failed to update promotion' },
       { status: 500 }
     )
   }

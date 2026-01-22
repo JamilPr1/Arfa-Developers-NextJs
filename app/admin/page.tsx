@@ -331,6 +331,7 @@ export default function AdminPage() {
     currentStatus: boolean
   ) => {
     setLoading(true)
+    setError('')
     try {
       const field = type === 'promotion' ? 'active' : 'published'
       const response = await fetch(`/api/${type}s/${id}`, {
@@ -338,13 +339,17 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: !currentStatus }),
       })
+      const result = await response.json()
+      
       if (response.ok) {
         loadData()
       } else {
-        setError('Failed to update status')
+        console.error('Toggle status error:', result)
+        setError(result.error || 'Failed to update status')
       }
-    } catch (err) {
-      setError('Failed to update status')
+    } catch (err: any) {
+      console.error('Toggle status fetch error:', err)
+      setError('Network error. Please try again.')
     } finally {
       setLoading(false)
     }

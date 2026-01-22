@@ -14,9 +14,11 @@ interface Promotion {
 export default function PromotionsBanner() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [isPaused, setIsPaused] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const bannerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Fetch immediately on mount
     fetchPromotions()
     // Refresh promotions every 30 seconds
     const interval = setInterval(fetchPromotions, 30000)
@@ -25,15 +27,23 @@ export default function PromotionsBanner() {
 
   const fetchPromotions = async () => {
     try {
-      const response = await fetch('/api/promotions')
-      const data = await response.json()
-      setPromotions(data)
+      setIsLoading(true)
+      const response = await fetch('/api/promotions', {
+        cache: 'no-store', // Ensure fresh data
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setPromotions(Array.isArray(data) ? data : [])
+      }
     } catch (error) {
       console.error('Error fetching promotions:', error)
+      setPromotions([])
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  if (promotions.length === 0) return null
+  if (isLoading || promotions.length === 0) return null
 
   // Calculate animation duration - slower speed (60-90 seconds for smooth scrolling)
   const totalWidth = promotions.reduce((sum, p) => sum + p.text.length * 10 + 80, 0)
@@ -53,9 +63,10 @@ export default function PromotionsBanner() {
         overflow: 'hidden',
         bgcolor: '#1E3A8A',
         color: 'white',
-        py: 1.5,
+        py: { xs: 1, sm: 1.5 },
         zIndex: 1300,
         cursor: 'pointer',
+        willChange: 'transform',
       }}
     >
       <Box
@@ -80,7 +91,7 @@ export default function PromotionsBanner() {
             key={`${promotion.id}-${index}`}
             sx={{
               flexShrink: 0,
-              px: 6,
+              px: { xs: 4, sm: 6 },
               whiteSpace: 'nowrap',
             }}
           >
@@ -91,7 +102,7 @@ export default function PromotionsBanner() {
                 color: 'white',
                 textDecoration: 'none',
                 fontWeight: 500,
-                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                fontSize: { xs: '0.8125rem', sm: '0.9375rem' },
                 display: 'inline-block',
                 '&:hover': {
                   textDecoration: 'underline',
