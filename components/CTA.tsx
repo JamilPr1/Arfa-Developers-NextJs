@@ -226,8 +226,8 @@ export default function CTA() {
               maxWidth: 800,
               mx: 'auto',
               background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: 4,
-              p: 4,
+              borderRadius: { xs: 2, sm: 4 },
+              p: { xs: 2.5, sm: 4 },
               boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
             }}
             data-aos="fade-up"
@@ -329,9 +329,10 @@ export default function CTA() {
                   disabled={loading}
                   endIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
                   sx={{
-                    py: 1.5,
+                    py: { xs: 1.25, sm: 1.5 },
+                    minHeight: { xs: '48px', sm: '56px' },
                     backgroundColor: '#F59E0B',
-                    fontSize: '1.1rem',
+                    fontSize: { xs: '0.9375rem', sm: '1.1rem' },
                     fontWeight: 600,
                     '&:hover': {
                       backgroundColor: '#FBBF24',
@@ -391,26 +392,34 @@ export default function CTA() {
             <Box
               sx={{
                 bgcolor: 'white',
-                borderRadius: 2,
-                p: 2,
-                maxWidth: '900px',
+                borderRadius: { xs: 1, sm: 2 },
+                p: { xs: 1.5, sm: 2 },
+                maxWidth: { xs: '95vw', sm: '900px' },
                 width: '100%',
                 maxHeight: '90vh',
                 overflow: 'auto',
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: 2, 
+                  fontWeight: 600,
+                  fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                }}
+              >
                 Schedule Your Free Consultation
               </Typography>
               {/* TODO: Replace with your actual Calendly URL */}
-              <Box sx={{ height: '700px' }}>
+              <Box sx={{ height: { xs: '500px', sm: '700px' } }}>
                 <iframe
                   src="https://calendly.com/jawadparvez-dev"
                   width="100%"
                   height="100%"
                   frameBorder="0"
                   title="Schedule Consultation"
+                  style={{ border: 'none' }}
                 />
               </Box>
             </Box>

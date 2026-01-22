@@ -162,9 +162,10 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
           fullWidth
           PaperProps={{
             sx: {
-              borderRadius: 3,
+              borderRadius: { xs: 2, sm: 3 },
               position: 'relative',
-              maxHeight: '85vh',
+              maxHeight: '90vh',
+              m: { xs: 1, sm: 2 },
             },
           }}
         >
@@ -180,23 +181,38 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
             <CloseIcon />
           </IconButton>
 
-          <DialogContent sx={{ p: 3 }}>
+          <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
               <Box sx={{ mb: 2, textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1E3A8A' }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    mb: 1, 
+                    color: '#1E3A8A',
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  }}
+                >
                   Ready to Start Your Project?
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    mb: 2,
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  }}
+                >
                   Schedule a free consultation with our experts today
                 </Typography>
               </Box>
 
               <Box>
-                <Grid container spacing={2}>
+                <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -278,8 +294,9 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
                         backgroundColor: 'white',
                         border: '1px solid #1E3A8A',
                         color: '#1E3A8A',
-                        py: 1.2,
-                        fontSize: '1rem',
+                        py: { xs: 1.25, sm: 1.2 },
+                        minHeight: { xs: '48px', sm: '56px' },
+                        fontSize: { xs: '0.9375rem', sm: '1rem' },
                         fontWeight: 600,
                         '&:hover': {
                           backgroundColor: '#EFF6FF',

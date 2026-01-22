@@ -435,6 +435,8 @@ export default function Header() {
                 color: scrolled || !hasColoredBackground 
                   ? '#1E3A8A' 
                   : '#FFFFFF',
+                minWidth: '44px',
+                minHeight: '44px',
                 '&:focus-visible': {
                   outline: '2px solid #2563EB',
                   outlineOffset: '2px',
@@ -453,12 +455,16 @@ export default function Header() {
               sx={{ 
                 display: { xs: 'block', md: 'none' },
                 '& .MuiPaper-root': {
-                  minWidth: 200,
+                  minWidth: { xs: '280px', sm: '320px' },
+                  maxWidth: { xs: '90vw', sm: '400px' },
                   mt: 1,
+                  maxHeight: '85vh',
+                  overflowY: 'auto',
                 },
               }}
               MenuListProps={{
                 'aria-labelledby': 'mobile-menu-button',
+                sx: { py: 1 },
               }}
             >
               {navLinks.map((link) => {
@@ -557,6 +563,7 @@ export default function Header() {
                             sx={{
                               px: 2,
                               py: 1.5,
+                              minHeight: '48px',
                               color: '#374151',
                               whiteSpace: 'nowrap',
                               transition: 'all 0.2s ease',
@@ -567,6 +574,10 @@ export default function Header() {
                                 fontWeight: 500,
                                 transform: 'translateX(4px)',
                                 borderLeftColor: '#2563EB',
+                              },
+                              '&:focus-visible': {
+                                outline: '2px solid #2563EB',
+                                outlineOffset: '-2px',
                               },
                             }}
                           >
@@ -586,6 +597,8 @@ export default function Header() {
                       href={link.href} 
                       onClick={handleMenuClose}
                       sx={{
+                        minHeight: '48px',
+                        py: 1.5,
                         '&:focus-visible': {
                           outline: '2px solid #2563EB',
                           outlineOffset: '-2px',
@@ -601,6 +614,8 @@ export default function Header() {
                     key={link.label} 
                     onClick={() => handleNavClick(link.href)}
                     sx={{
+                      minHeight: '48px',
+                      py: 1.5,
                       '&:focus-visible': {
                         outline: '2px solid #2563EB',
                         outlineOffset: '-2px',
@@ -615,6 +630,8 @@ export default function Header() {
                 onClick={() => handleNavClick('#contact')}
                 sx={{ 
                   mt: 1,
+                  minHeight: 'auto',
+                  py: 1.5,
                   '&:focus-visible': {
                     outline: '2px solid #2563EB',
                     outlineOffset: '-2px',
@@ -626,6 +643,10 @@ export default function Header() {
                   fullWidth
                   sx={{
                     backgroundColor: '#1E3A8A',
+                    minHeight: '48px',
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 600,
                     '&:hover': {
                       backgroundColor: '#2563EB',
                     },

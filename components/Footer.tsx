@@ -84,7 +84,7 @@ export default function Footer() {
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 3, sm: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -136,10 +136,18 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#F9FAFB' }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 2, 
+                  color: '#F9FAFB',
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                }}
+              >
                 Quick Links
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.75, sm: 1 } }}>
                 {quickLinks.map((link) => {
                   if (link.isRoute) {
                     return (
@@ -154,6 +162,11 @@ export default function Footer() {
                             color: '#9CA3AF',
                             textDecoration: 'none',
                             cursor: 'pointer',
+                            fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                            py: 0.5,
+                            minHeight: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
                             '&:hover': {
                               color: '#2563EB',
                               textDecoration: 'underline',
@@ -311,10 +324,18 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#F9FAFB' }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 2, 
+                  color: '#F9FAFB',
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                }}
+              >
                 Contact Info
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <EmailIcon sx={{ color: '#2563EB', fontSize: 20 }} />
                   <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
@@ -357,19 +378,41 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#F9FAFB' }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 2, 
+                  color: '#F9FAFB',
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                }}
+              >
                 Newsletter
               </Typography>
-              <Typography variant="body2" sx={{ mb: 2, color: '#9CA3AF' }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mb: 2, 
+                  color: '#9CA3AF',
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Subscribe to get updates on our latest projects and insights.
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
                 <TextField
                   placeholder="Enter your email"
                   size="small"
                   sx={{ flexGrow: 1 }}
                 />
-                <Button variant="contained" sx={{ textTransform: 'none' }}>
+                <Button 
+                  variant="contained" 
+                  sx={{ 
+                    textTransform: 'none',
+                    minHeight: { xs: '48px', sm: '40px' },
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   Subscribe
                 </Button>
               </Box>

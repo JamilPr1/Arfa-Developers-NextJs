@@ -408,14 +408,14 @@ export default function ServicesPage() {
             </Typography>
             
             {/* Pain Points Grid */}
-            <Grid container spacing={3} sx={{ mt: 6, mb: 4, maxWidth: 1000, mx: 'auto' }}>
+            <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: { xs: 4, sm: 6 }, mb: { xs: 3, sm: 4 }, maxWidth: 1000, mx: 'auto', px: { xs: 2, sm: 0 } }}>
               <Grid item xs={12} sm={6} md={4}>
                 <Box
                   sx={{
                     bgcolor: 'rgba(255, 255, 255, 0.1)',
                     backdropFilter: 'blur(10px)',
                     borderRadius: 2,
-                    p: 3,
+                    p: { xs: 2, sm: 3 },
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     height: '100%',
                   }}
@@ -542,7 +542,7 @@ export default function ServicesPage() {
 
         {/* Services Grid */}
         <Container maxWidth="lg" sx={{ py: 8 }}>
-          <Grid container spacing={4}>
+          <Grid container spacing={{ xs: 3, sm: 4 }}>
             {services.map((service, index) => (
               <Grid item xs={12} key={service.id}>
                 <Paper
@@ -602,7 +602,7 @@ export default function ServicesPage() {
                     {service.fullDescription}
                   </Typography>
 
-                  <Grid container spacing={4}>
+                  <Grid container spacing={{ xs: 3, sm: 4 }}>
                     <Grid item xs={12} md={6}>
                       <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
                         Key Features
@@ -688,7 +688,7 @@ export default function ServicesPage() {
             >
               Why Choose Arfa Developers?
             </Typography>
-            <Grid container spacing={4}>
+            <Grid container spacing={{ xs: 3, sm: 4 }}>
               <Grid item xs={12} md={4}>
                 <Card sx={{ height: '100%', p: 3, textAlign: 'center' }}>
                   <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 2 }}>

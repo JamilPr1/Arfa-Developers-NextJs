@@ -739,7 +739,15 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               borderRadius: 3,
             }}
           >
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#1E3A8A' }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 3, 
+                color: '#1E3A8A',
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              }}
+            >
               About This Service
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.8, fontSize: '1.1rem' }}>
@@ -748,9 +756,17 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
 
             <Divider sx={{ my: 4 }} />
 
-            <Grid container spacing={4}>
+            <Grid container spacing={{ xs: 3, sm: 4 }}>
               <Grid item xs={12} md={6}>
-                <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 600, 
+                    mb: 2, 
+                    color: '#1E3A8A',
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  }}
+                >
                   Key Features
                 </Typography>
                 <List>

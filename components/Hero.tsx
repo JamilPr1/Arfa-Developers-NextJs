@@ -105,10 +105,12 @@ export default function Hero() {
                 sx={{
                   background: '#F59E0B',
                   color: '#FFFFFF',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
+                  px: { xs: 3, sm: 4 },
+                  py: { xs: 1.25, sm: 1.5 },
+                  fontSize: { xs: '0.9375rem', sm: '1.1rem' },
                   fontWeight: 600,
+                  minHeight: { xs: '48px', sm: '56px' },
+                  minWidth: { xs: '140px', sm: 'auto' },
                   '&:hover': {
                     background: '#FBBF24',
                     transform: 'translateY(-2px)',
@@ -128,10 +130,12 @@ export default function Hero() {
                 sx={{
                   borderColor: 'white',
                   color: 'white',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
+                  px: { xs: 3, sm: 4 },
+                  py: { xs: 1.25, sm: 1.5 },
+                  fontSize: { xs: '0.9375rem', sm: '1.1rem' },
                   fontWeight: 600,
+                  minHeight: { xs: '48px', sm: '56px' },
+                  minWidth: { xs: '140px', sm: 'auto' },
                   '&:hover': {
                     borderColor: 'white',
                     background: 'rgba(255, 255, 255, 0.1)',

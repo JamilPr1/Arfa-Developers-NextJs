@@ -137,43 +137,90 @@ export default function ContactPage() {
         </Box>
 
         {/* Contact Information & Form */}
-        <Container maxWidth="lg" sx={{ py: 8 }}>
-          <Grid container spacing={6}>
+        <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6, md: 8 } }}>
+          <Grid container spacing={{ xs: 4, sm: 6 }}>
             {/* Contact Information */}
             <Grid item xs={12} md={4}>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 4, color: '#1E3A8A' }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 700, 
+                  mb: 4, 
+                  color: '#1E3A8A',
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                }}
+              >
                 Contact Information
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, sm: 3 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
-                  <EmailIcon sx={{ color: '#1E3A8A', mr: 2, mt: 0.5, fontSize: 28 }} />
+                  <EmailIcon sx={{ color: '#1E3A8A', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: '#1E3A8A' }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        mb: 0.5, 
+                        color: '#1E3A8A',
+                        fontSize: { xs: '1rem', sm: '1.125rem' },
+                      }}
+                    >
                       Email
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography 
+                      variant="body1" 
+                      color="text.secondary"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, wordBreak: 'break-word' }}
+                    >
                       info@arfadevelopers.com
                     </Typography>
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
-                  <PhoneIcon sx={{ color: '#1E3A8A', mr: 2, mt: 0.5, fontSize: 28 }} />
+                  <PhoneIcon sx={{ color: '#1E3A8A', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: '#1E3A8A' }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        mb: 0.5, 
+                        color: '#1E3A8A',
+                        fontSize: { xs: '1rem', sm: '1.125rem' },
+                      }}
+                    >
                       Phone
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography 
+                      variant="body1" 
+                      color="text.secondary"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                    >
                       +1 (555) 123-4567
                     </Typography>
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
-                  <LocationIcon sx={{ color: '#1E3A8A', mr: 2, mt: 0.5, fontSize: 28 }} />
+                  <LocationIcon sx={{ color: '#1E3A8A', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: '#1E3A8A' }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        mb: 0.5, 
+                        color: '#1E3A8A',
+                        fontSize: { xs: '1rem', sm: '1.125rem' },
+                      }}
+                    >
                       Location
                     </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                    <Typography 
+                      variant="body1" 
+                      color="text.secondary" 
+                      sx={{ 
+                        mb: 2,
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                      }}
+                    >
                       Serving USA, UK, Qatar, Saudi Arabia, and Pakistan
                     </Typography>
                     <LocationMap />
