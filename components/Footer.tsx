@@ -20,12 +20,14 @@ const quickLinks = [
 ]
 
 const services = [
-  'Web Development',
-  'Mobile Apps',
-  'Cloud Solutions',
-  'Data Analytics',
-  'Security',
-  'Consulting',
+  { label: 'Web Development', href: '/services/web-development' },
+  { label: 'Mobile App Development', href: '/services/mobile-app-development' },
+  { label: 'Cloud Solutions', href: '/services/cloud-solutions' },
+  { label: 'Data Analytics', href: '/services/data-analytics' },
+  { label: 'Security & Compliance', href: '/services/security-compliance' },
+  { label: 'Performance Optimization', href: '/services/performance-optimization' },
+  { label: 'E-commerce Development', href: '/services/ecommerce-development' },
+  { label: 'Enterprise Solutions', href: '/services/enterprise-solutions' },
 ]
 
 export default function Footer() {
@@ -183,20 +185,27 @@ export default function Footer() {
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {services.map((service) => (
-                  <Typography
-                    key={service}
-                    variant="body2"
-                    sx={{
-                      color: '#9CA3AF',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        color: '#2563EB',
-                      },
-                      transition: 'color 0.3s ease',
-                    }}
+                  <Link
+                    key={service.href}
+                    href={service.href}
+                    style={{ textDecoration: 'none' }}
                   >
-                    {service}
-                  </Typography>
+                    <MuiLink
+                      component="span"
+                      sx={{
+                        color: '#9CA3AF',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          color: '#2563EB',
+                          textDecoration: 'underline',
+                        },
+                        transition: 'color 0.3s ease',
+                      }}
+                    >
+                      {service.label}
+                    </MuiLink>
+                  </Link>
                 ))}
               </Box>
             </motion.div>

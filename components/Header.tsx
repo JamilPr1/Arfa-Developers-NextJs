@@ -15,6 +15,7 @@ import {
   Slide,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -41,6 +42,7 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [servicesMenuAnchor, setServicesMenuAnchor] = useState<null | HTMLElement>(null)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -82,6 +84,14 @@ export default function Header() {
   const handleMenuClose = () => {
     setAnchorEl(null)
     setMobileOpen(false)
+  }
+
+  const handleServicesMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setServicesMenuAnchor(event.currentTarget)
+  }
+
+  const handleServicesMenuClose = () => {
+    setServicesMenuAnchor(null)
   }
 
   const handleNavClick = (href: string) => {
@@ -171,6 +181,78 @@ export default function Header() {
                 const textColor = scrolled || !hasColoredBackground 
                   ? '#111827' // Dark gray for good contrast on white (WCAG AA: 4.5:1)
                   : '#FFFFFF' // White for good contrast on blue (WCAG AA: 4.5:1)
+                
+                // Services dropdown menu
+                if (link.hasDropdown) {
+                  return (
+                    <Box key={link.label}>
+                      <Button
+                        onClick={handleServicesMenuOpen}
+                        aria-label={`${link.label} menu`}
+                        aria-controls={servicesMenuAnchor ? 'services-menu' : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={servicesMenuAnchor ? 'true' : undefined}
+                        endIcon={<ArrowDropDownIcon />}
+                        sx={{
+                          color: textColor,
+                          fontWeight: 500,
+                          fontSize: { md: '0.9rem', lg: '1rem' },
+                          px: { md: 1.5, lg: 2 },
+                          '&:hover': {
+                            color: '#2563EB',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                          },
+                          '&:focus-visible': {
+                            outline: '2px solid #2563EB',
+                            outlineOffset: '2px',
+                          },
+                          transition: 'all 0.3s ease',
+                        }}
+                      >
+                        {link.label}
+                      </Button>
+                      <Menu
+                        id="services-menu"
+                        anchorEl={servicesMenuAnchor}
+                        open={Boolean(servicesMenuAnchor)}
+                        onClose={handleServicesMenuClose}
+                        MenuListProps={{
+                          'aria-labelledby': 'services-button',
+                        }}
+                      >
+                        <MenuItem
+                          component={Link}
+                          href="/services"
+                          onClick={handleServicesMenuClose}
+                          sx={{
+                            '&:focus-visible': {
+                              outline: '2px solid #2563EB',
+                              outlineOffset: '-2px',
+                            },
+                          }}
+                        >
+                          All Services
+                        </MenuItem>
+                        {serviceLinks.map((service) => (
+                          <MenuItem
+                            key={service.href}
+                            component={Link}
+                            href={service.href}
+                            onClick={handleServicesMenuClose}
+                            sx={{
+                              '&:focus-visible': {
+                                outline: '2px solid #2563EB',
+                                outlineOffset: '-2px',
+                              },
+                            }}
+                          >
+                            {service.label}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </Box>
+                  )
+                }
                 
                 if (link.href.startsWith('/')) {
                   return (
@@ -291,6 +373,68 @@ export default function Header() {
               }}
             >
               {navLinks.map((link) => {
+                if (link.hasDropdown) {
+                  return (
+                    <Box key={link.label}>
+                      <MenuItem 
+                        onClick={(e) => {
+                          const target = e.currentTarget
+                          if (servicesMenuAnchor === target) {
+                            handleServicesMenuClose()
+                          } else {
+                            setServicesMenuAnchor(target)
+                          }
+                        }}
+                        sx={{
+                          '&:focus-visible': {
+                            outline: '2px solid #2563EB',
+                            outlineOffset: '-2px',
+                          },
+                        }}
+                      >
+                        {link.label} <ArrowDropDownIcon sx={{ ml: 'auto' }} />
+                      </MenuItem>
+                      <Menu
+                        anchorEl={servicesMenuAnchor}
+                        open={Boolean(servicesMenuAnchor)}
+                        onClose={handleServicesMenuClose}
+                        anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
+                        transformOrigin={{
+                          vertical: 'top',
+                          horizontal: 'left',
+                        }}
+                      >
+                        <MenuItem
+                          component={Link}
+                          href="/services"
+                          onClick={() => {
+                            handleServicesMenuClose()
+                            handleMenuClose()
+                          }}
+                        >
+                          All Services
+                        </MenuItem>
+                        {serviceLinks.map((service) => (
+                          <MenuItem
+                            key={service.href}
+                            component={Link}
+                            href={service.href}
+                            onClick={() => {
+                              handleServicesMenuClose()
+                              handleMenuClose()
+                            }}
+                          >
+                            {service.label}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </Box>
+                  )
+                }
+                
                 if (link.href.startsWith('/')) {
                   return (
                     <MenuItem 
