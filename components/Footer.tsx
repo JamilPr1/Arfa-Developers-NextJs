@@ -1,12 +1,14 @@
 'use client'
 
-import { Box, Container, Typography, Grid, TextField, Button, IconButton, Link as MuiLink } from '@mui/material'
+import { useState } from 'react'
+import { Box, Container, Typography, Grid, TextField, Button, IconButton, Link as MuiLink, Menu, MenuItem } from '@mui/material'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   LocationOn as LocationIcon,
+  ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 
@@ -56,6 +58,16 @@ const legalLinks = [
 export default function Footer() {
   const router = useRouter()
   const pathname = usePathname()
+  const [servicesAnchorEl, setServicesAnchorEl] = useState<null | HTMLElement>(null)
+  const servicesMenuOpen = Boolean(servicesAnchorEl)
+
+  const handleServicesMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setServicesAnchorEl(event.currentTarget)
+  }
+
+  const handleServicesMenuClose = () => {
+    setServicesAnchorEl(null)
+  }
 
   const handleNavClick = (href: string, isRoute: boolean) => {
     if (isRoute) {
@@ -203,75 +215,132 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#F9FAFB' }}>
-                Services
-              </Typography>
-              <Grid container spacing={1}>
-                <Grid item xs={6}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {services.slice(0, Math.ceil(services.length / 2)).map((service) => (
-                      <Link
-                        key={service.href}
-                        href={service.href}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <MuiLink
-                          component="span"
-                          sx={{
-                            color: '#9CA3AF',
-                            textDecoration: 'none',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            display: 'block',
-                            minHeight: '32px',
-                            lineHeight: '1.5',
-                            py: 0.5,
-                            '&:hover': {
-                              color: '#2563EB',
-                              textDecoration: 'underline',
-                            },
-                            transition: 'color 0.3s ease',
-                          }}
-                        >
-                          {service.label}
-                        </MuiLink>
-                      </Link>
-                    ))}
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {services.slice(Math.ceil(services.length / 2)).map((service) => (
-                      <Link
-                        key={service.href}
-                        href={service.href}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <MuiLink
-                          component="span"
-                          sx={{
-                            color: '#9CA3AF',
-                            textDecoration: 'none',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            display: 'block',
-                            minHeight: '32px',
-                            lineHeight: '1.5',
-                            py: 0.5,
-                            '&:hover': {
-                              color: '#2563EB',
-                              textDecoration: 'underline',
-                            },
-                            transition: 'color 0.3s ease',
-                          }}
-                        >
-                          {service.label}
-                        </MuiLink>
-                      </Link>
-                    ))}
-                  </Box>
-                </Grid>
-              </Grid>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#F9FAFB' }}>
+                  Services
+                </Typography>
+                <MuiLink
+                  component="button"
+                  onClick={handleServicesMenuOpen}
+                  sx={{
+                    color: '#9CA3AF',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    border: 'none',
+                    background: 'none',
+                    padding: 0,
+                    fontSize: '0.875rem',
+                    '&:hover': {
+                      color: '#2563EB',
+                    },
+                    transition: 'color 0.3s ease',
+                  }}
+                >
+                  View All
+                  <ArrowDropDownIcon sx={{ fontSize: '1rem' }} />
+                </MuiLink>
+              </Box>
+              <Menu
+                anchorEl={servicesAnchorEl}
+                open={servicesMenuOpen}
+                onClose={handleServicesMenuClose}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    borderRadius: 2,
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                    border: '1px solid rgba(37, 99, 235, 0.1)',
+                    maxHeight: '200px',
+                    overflow: 'auto',
+                    '&::-webkit-scrollbar': {
+                      width: '6px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: '#F3F4F6',
+                      borderRadius: '3px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: '#9CA3AF',
+                      borderRadius: '3px',
+                      '&:hover': {
+                        background: '#6B7280',
+                      },
+                    },
+                  },
+                }}
+                MenuListProps={{
+                  sx: {
+                    py: 0.5,
+                  },
+                }}
+              >
+                {services.map((service, index) => (
+                  <MenuItem
+                    key={service.href}
+                    component={Link}
+                    href={service.href}
+                    onClick={handleServicesMenuClose}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      color: '#374151',
+                      fontSize: '0.875rem',
+                      minHeight: '40px',
+                      '&:hover': {
+                        backgroundColor: '#EFF6FF',
+                        color: '#1E3A8A',
+                        fontWeight: 500,
+                      },
+                      '&:focus-visible': {
+                        outline: '2px solid #2563EB',
+                        outlineOffset: '-2px',
+                        backgroundColor: '#EFF6FF',
+                      },
+                      transition: 'all 0.2s ease',
+                      borderLeft: '3px solid transparent',
+                      '&:hover': {
+                        borderLeftColor: '#2563EB',
+                      },
+                    }}
+                  >
+                    {service.label}
+                  </MenuItem>
+                ))}
+              </Menu>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {services.slice(0, 5).map((service) => (
+                  <Link
+                    key={service.href}
+                    href={service.href}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <MuiLink
+                      component="span"
+                      sx={{
+                        color: '#9CA3AF',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        display: 'block',
+                        py: 0.5,
+                        px: 1,
+                        borderRadius: 1,
+                        '&:hover': {
+                          color: '#2563EB',
+                          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                          textDecoration: 'none',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {service.label}
+                    </MuiLink>
+                  </Link>
+                ))}
+              </Box>
             </motion.div>
           </Grid>
 
