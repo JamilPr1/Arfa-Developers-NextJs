@@ -499,7 +499,7 @@ export default function AdminPage() {
                       {projects.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                            <Typography color="text.secondary">No projects found. Click "Add Project" to create one.</Typography>
+                            <Typography color="text.secondary">No projects found. Click &quot;Add Project&quot; to create one.</Typography>
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -576,7 +576,7 @@ export default function AdminPage() {
                       {blogs.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                            <Typography color="text.secondary">No blogs found. Click "Add Blog" to create one.</Typography>
+                            <Typography color="text.secondary">No blogs found. Click &quot;Add Blog&quot; to create one.</Typography>
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -651,7 +651,7 @@ export default function AdminPage() {
                       {promotions.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                            <Typography color="text.secondary">No promotions found. Click "Add Promotion" to create one.</Typography>
+                            <Typography color="text.secondary">No promotions found. Click &quot;Add Promotion&quot; to create one.</Typography>
                           </TableCell>
                         </TableRow>
                       ) : (
