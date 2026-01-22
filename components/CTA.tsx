@@ -26,12 +26,30 @@ const projectTypes = [
   'Other',
 ]
 
+const timelineOptions = [
+  'Urgent (Within 1 month)',
+  '1-3 months',
+  '3-6 months',
+  '6+ months',
+  'Just exploring',
+]
+
+const budgetOptions = [
+  'Under $10,000',
+  '$10,000 - $50,000',
+  '$50,000 - $100,000',
+  '$100,000+',
+  'Not sure yet',
+]
+
 export default function CTA() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     company: '',
     projectType: '',
+    timeline: '',
+    budget: '',
     message: '',
   })
   const [submitted, setSubmitted] = useState(false)
@@ -52,8 +70,29 @@ export default function CTA() {
     setLoading(true)
     setError('')
 
+    // Format message with timeline and budget if provided
+    let fullMessage = formData.message
+    if (formData.timeline || formData.budget) {
+      const additionalInfo = []
+      if (formData.timeline) {
+        additionalInfo.push(`Timeline: ${formData.timeline}`)
+      }
+      if (formData.budget) {
+        additionalInfo.push(`Budget: ${formData.budget}`)
+      }
+      if (fullMessage) {
+        fullMessage = `${fullMessage}\n\n${additionalInfo.join('\n')}`
+      } else {
+        fullMessage = additionalInfo.join('\n')
+      }
+    }
+
     const leadData: LeadData = {
-      ...formData,
+      name: formData.name,
+      email: formData.email,
+      company: formData.company,
+      projectType: formData.projectType,
+      message: fullMessage,
       source: 'website-form',
       region: detectRegion(),
     }
@@ -79,6 +118,8 @@ export default function CTA() {
             email: '',
             company: '',
             projectType: '',
+            timeline: '',
+            budget: '',
             message: '',
           })
         }, 5000)
@@ -220,6 +261,40 @@ export default function CTA() {
                   {projectTypes.map((type) => (
                     <MenuItem key={type} value={type}>
                       {type}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  select
+                  label="Project Timeline"
+                  name="timeline"
+                  value={formData.timeline}
+                  onChange={handleChange}
+                  variant="outlined"
+                >
+                  {timelineOptions.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  select
+                  label="Budget Range"
+                  name="budget"
+                  value={formData.budget}
+                  onChange={handleChange}
+                  variant="outlined"
+                >
+                  {budgetOptions.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
                     </MenuItem>
                   ))}
                 </TextField>
