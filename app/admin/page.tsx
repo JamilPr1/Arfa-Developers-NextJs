@@ -158,10 +158,11 @@ export default function AdminPage() {
     setDataLoading(true)
     setError('')
     try {
+      // Use cache: 'no-store' to ensure fresh data
       const [projectsRes, blogsRes, promotionsRes] = await Promise.all([
-        fetch('/api/admin/projects'),
-        fetch('/api/admin/blogs'),
-        fetch('/api/admin/promotions'),
+        fetch('/api/admin/projects', { cache: 'no-store' }),
+        fetch('/api/admin/blogs', { cache: 'no-store' }),
+        fetch('/api/admin/promotions', { cache: 'no-store' }),
       ])
       
       if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok) {
@@ -172,9 +173,20 @@ export default function AdminPage() {
       const blogsData = await blogsRes.json()
       const promotionsData = await promotionsRes.json()
       
-      setProjects(Array.isArray(projectsData) ? projectsData : [])
-      setBlogs(Array.isArray(blogsData) ? blogsData : [])
-      setPromotions(Array.isArray(promotionsData) ? promotionsData : [])
+      // Ensure we have arrays and sort by ID (newest first)
+      const sortedProjects = Array.isArray(projectsData) 
+        ? [...projectsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
+      const sortedBlogs = Array.isArray(blogsData)
+        ? [...blogsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
+      const sortedPromotions = Array.isArray(promotionsData)
+        ? [...promotionsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
+      
+      setProjects(sortedProjects)
+      setBlogs(sortedBlogs)
+      setPromotions(sortedPromotions)
     } catch (err) {
       console.error('Error loading data:', err)
       setError('Failed to load data. Please refresh the page.')
@@ -322,6 +334,7 @@ export default function AdminPage() {
     if (!confirm(`Are you sure you want to delete this ${type}?`)) return
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const response = await fetch(`/api/${type}s/${id}`, {
         method: 'DELETE',
@@ -329,12 +342,16 @@ export default function AdminPage() {
       const result = await response.json()
       if (response.ok) {
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`)
-        loadData()
+        // Reload data after a brief delay to ensure server has processed
+        setTimeout(() => {
+          loadData()
+        }, 500)
       } else {
         setError(result.error || 'Failed to delete')
       }
     } catch (err) {
-      setError('An error occurred')
+      console.error('Delete error:', err)
+      setError('An error occurred while deleting')
     } finally {
       setLoading(false)
     }

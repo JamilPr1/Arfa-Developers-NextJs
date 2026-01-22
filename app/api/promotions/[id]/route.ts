@@ -58,11 +58,23 @@ export async function DELETE(
     const promotions = await readDataFile('promotions.json')
     const filteredPromotions = promotions.filter((p: any) => p.id !== parseInt(id))
 
-    await writeDataFile('promotions.json', filteredPromotions)
+    try {
+      await writeDataFile('promotions.json', filteredPromotions)
+      console.log('Promotion deleted successfully:', id)
+    } catch (writeError: any) {
+      console.error('Write error:', writeError)
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
+
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error deleting promotion:', error)
     return NextResponse.json(
-      { error: 'Failed to delete promotion' },
+      { error: error.message || 'Failed to delete promotion. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }

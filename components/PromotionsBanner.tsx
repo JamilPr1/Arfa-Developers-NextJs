@@ -18,36 +18,44 @@ export default function PromotionsBanner() {
   const bannerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Fetch immediately on mount with priority
+    // Fetch immediately on mount
     fetchPromotions()
-    // Refresh promotions every 60 seconds (less frequent for better performance)
-    const interval = setInterval(fetchPromotions, 60000)
+    // Refresh promotions every 30 seconds to keep it active
+    const interval = setInterval(fetchPromotions, 30000)
     return () => clearInterval(interval)
   }, [])
 
   const fetchPromotions = async () => {
     try {
-      setIsLoading(true)
       // Use fetch with no-cache for fresh data
       const response = await fetch('/api/promotions', {
         cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
       })
       if (response.ok) {
         const data = await response.json()
-        const validPromotions = Array.isArray(data) ? data.filter((p: any) => p.active) : []
+        const validPromotions = Array.isArray(data) ? data.filter((p: any) => p && p.active === true) : []
         setPromotions(validPromotions)
+        setIsLoading(false)
       } else {
-        setPromotions([])
+        console.warn('Failed to fetch promotions:', response.status)
+        // Keep existing promotions if fetch fails
+        if (promotions.length === 0) {
+          setIsLoading(false)
+        }
       }
     } catch (error) {
       console.error('Error fetching promotions:', error)
-      setPromotions([])
-    } finally {
-      setIsLoading(false)
+      // Keep existing promotions if fetch fails
+      if (promotions.length === 0) {
+        setIsLoading(false)
+      }
     }
   }
 
-  // Show loading state briefly, then show content
+  // Show loading state only on initial load
   if (isLoading && promotions.length === 0) {
     return (
       <Box
@@ -65,6 +73,7 @@ export default function PromotionsBanner() {
     )
   }
 
+  // Don't render if no active promotions
   if (promotions.length === 0) return null
 
   // Calculate animation duration - slower speed (60-90 seconds for smooth scrolling)
