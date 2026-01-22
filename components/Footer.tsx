@@ -1,6 +1,8 @@
 'use client'
 
-import { Box, Container, Typography, Grid, TextField, Button, IconButton, Link } from '@mui/material'
+import { Box, Container, Typography, Grid, TextField, Button, IconButton, Link as MuiLink } from '@mui/material'
+import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   Facebook as FacebookIcon,
   Twitter as TwitterIcon,
@@ -14,12 +16,12 @@ import {
 import { motion } from 'framer-motion'
 
 const quickLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'Services', href: '#services' },
-  { label: 'Portfolio', href: '#portfolio' },
-  { label: 'About', href: '#about' },
-  { label: 'Blog', href: '#blog' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Home', href: '/', isRoute: true },
+  { label: 'Services', href: '/services', isRoute: true },
+  { label: 'Portfolio', href: '#portfolio', isRoute: false },
+  { label: 'About', href: '#about', isRoute: false },
+  { label: 'Blog', href: '#blog', isRoute: false },
+  { label: 'Contact', href: '#contact', isRoute: false },
 ]
 
 const services = [
@@ -32,10 +34,22 @@ const services = [
 ]
 
 export default function Footer() {
-  const handleNavClick = (href: string) => {
-    const element = document.querySelector(href)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const handleNavClick = (href: string, isRoute: boolean) => {
+    if (isRoute) {
+      router.push(href)
+    } else {
+      // For hash links, navigate to home page first if not already there
+      if (pathname !== '/') {
+        router.push(`/${href}`)
+      } else {
+        const element = document.querySelector(href)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+      }
     }
   }
 
@@ -137,27 +151,58 @@ export default function Footer() {
                 Quick Links
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {quickLinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleNavClick(link.href)
-                    }}
-                    sx={{
-                      color: '#9CA3AF',
-                      textDecoration: 'none',
-                      '&:hover': {
-                        color: '#2563EB',
-                        textDecoration: 'underline',
-                      },
-                      transition: 'color 0.3s ease',
-                    }}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {quickLinks.map((link) => {
+                  if (link.isRoute) {
+                    return (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <MuiLink
+                          component="span"
+                          sx={{
+                            color: '#9CA3AF',
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              color: '#2563EB',
+                              textDecoration: 'underline',
+                            },
+                            transition: 'color 0.3s ease',
+                          }}
+                        >
+                          {link.label}
+                        </MuiLink>
+                      </Link>
+                    )
+                  }
+                  return (
+                    <MuiLink
+                      key={link.label}
+                      component="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleNavClick(link.href, link.isRoute)
+                      }}
+                      sx={{
+                        color: '#9CA3AF',
+                        textDecoration: 'none',
+                        background: 'none',
+                        border: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          color: '#2563EB',
+                          textDecoration: 'underline',
+                        },
+                        transition: 'color 0.3s ease',
+                      }}
+                    >
+                      {link.label}
+                    </MuiLink>
+                  )
+                })}
               </Box>
             </motion.div>
           </Grid>

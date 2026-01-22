@@ -17,7 +17,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -42,14 +42,21 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
+    // On services page, always show header with dark background
+    const isServicesPage = pathname === '/services'
+    if (isServicesPage) {
+      setScrolled(true)
+    }
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+      setScrolled(window.scrollY > 50 || isServicesPage)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [pathname])
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)

@@ -336,39 +336,125 @@ export default function ServicesPage() {
       />
       <Header />
       <Box component="main" sx={{ pt: 8 }}>
-        {/* Hero Section */}
+        {/* Hero Section with Pain Points */}
         <Box
           sx={{
             background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
             color: 'white',
-            py: 10,
+            py: { xs: 8, md: 12 },
             textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <Container maxWidth="lg">
+          {/* Background Pattern */}
+          <Box
+            sx={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              top: 0,
+              left: 0,
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              opacity: 0.5,
+            }}
+          />
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
             <Typography
               variant="h1"
               sx={{
-                fontWeight: 700,
+                fontWeight: 800,
                 mb: 3,
-                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                lineHeight: 1.2,
               }}
             >
-              Our Services
+              Tired of{' '}
+              <Box component="span" sx={{ color: '#ffd700' }}>
+                Failed Projects
+              </Box>
+              {' '}and{' '}
+              <Box component="span" sx={{ color: '#ffd700' }}>
+                Broken Websites
+              </Box>
+              ?
             </Typography>
             <Typography
-              variant="h5"
+              variant="h4"
               sx={{
-                maxWidth: 800,
+                maxWidth: 900,
                 mx: 'auto',
-                opacity: 0.95,
                 mb: 4,
                 lineHeight: 1.6,
+                fontWeight: 500,
+                fontSize: { xs: '1.25rem', md: '1.75rem' },
               }}
             >
-              Comprehensive web development and software solutions tailored to your business needs. 
-              From custom web applications to enterprise software, we deliver solutions that drive growth.
+              We&apos;ve rescued <strong>200+ failed projects</strong> from freelancers and inexperienced developers. 
+              Get enterprise-grade solutions that actually work.
             </Typography>
+            
+            {/* Pain Points Grid */}
+            <Grid container spacing={3} sx={{ mt: 6, mb: 4, maxWidth: 1000, mx: 'auto' }}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 2,
+                    p: 3,
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    height: '100%',
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                    ⚠️ Project Delays
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Missing deadlines? We deliver on time, every time.
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 2,
+                    p: 3,
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    height: '100%',
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                    💸 Wasted Budget
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Throwing money at broken code? We fix it right the first time.
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 2,
+                    p: 3,
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    height: '100%',
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                    🐛 Buggy Code
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Constant crashes? We build stable, scalable solutions.
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+
             <Box sx={{ mt: 4 }}>
               <Button
                 component={Link}
@@ -378,16 +464,19 @@ export default function ServicesPage() {
                 sx={{
                   backgroundColor: '#F59E0B',
                   color: 'white',
-                  px: 4,
-                  py: 1.5,
+                  px: 5,
+                  py: 2,
                   fontSize: '1.1rem',
                   fontWeight: 600,
                   '&:hover': {
                     backgroundColor: '#FBBF24',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
                   },
+                  transition: 'all 0.3s ease',
                 }}
               >
-                Get Free Consultation
+                Get Your Free Consultation
               </Button>
             </Box>
           </Container>
