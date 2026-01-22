@@ -470,9 +470,17 @@ export async function GET(request: NextRequest) {
           
           // Skip if it's a bot message (has bot_id and no real user context)
           // But allow if it's a thread_broadcast from a user (those can have bot_id but are still user messages)
-          if (m.bot_id && m.subtype !== 'thread_broadcast') {
-            console.log(`[Chat Poll] ⏭️ Skipping bot message: ${m.ts} (user: ${m.user}, bot_id: ${m.bot_id}, subtype: ${m.subtype})`)
+          // IMPORTANT: Allow messages with user ID even if they have bot_id (some integrations set both)
+          // Only skip if there's NO user ID AND there's a bot_id
+          if (m.bot_id && !m.user && m.subtype !== 'thread_broadcast') {
+            console.log(`[Chat Poll] ⏭️ Skipping bot message: ${m.ts} (user: ${m.user || 'none'}, bot_id: ${m.bot_id}, subtype: ${m.subtype})`)
             return false
+          }
+          
+          // If message has both user and bot_id, it's likely an agent message posted via integration
+          // Allow it through
+          if (m.user && m.bot_id) {
+            console.log(`[Chat Poll] ✅ Allowing message with both user and bot_id (likely agent via integration): ${m.ts} (user: ${m.user}, bot_id: ${m.bot_id})`)
           }
           
           // Must have text
