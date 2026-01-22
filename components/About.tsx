@@ -98,21 +98,30 @@ export default function About() {
           sx={{
             background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
             borderRadius: 4,
-            p: 5,
+            p: { xs: 4, md: 6 },
             color: 'white',
             mb: 6,
           }}
           data-aos="fade-up"
         >
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, textAlign: 'center' }}>
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 4, 
+              textAlign: 'center',
+              color: 'white',
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+            }}
+          >
             Common Issues We Fix
           </Typography>
           <Grid container spacing={2}>
             {commonIssues.map((issue, index) => (
               <Grid item xs={12} sm={6} key={index}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CheckCircleIcon sx={{ color: '#F59E0B', fontSize: 28 }} />
-                  <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <CheckCircleIcon sx={{ color: '#ffd700', mr: 2, fontSize: 28 }} />
+                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
                     {issue}
                   </Typography>
                 </Box>
