@@ -10,14 +10,12 @@ import {
   Box,
   IconButton,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
+  Grid,
   MenuItem,
-  FormHelperText,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
+import SendIcon from '@mui/icons-material/Send'
 import { motion, AnimatePresence } from 'framer-motion'
 import { detectRegion } from '@/lib/formHandler'
 
@@ -27,24 +25,29 @@ interface ExitIntentPopupProps {
 }
 
 interface FormData {
-  projectType: string
-  timeline: string
-  budget: string
-  description: string
   name: string
   email: string
-  phone: string
+  company: string
+  projectType: string
+  message: string
 }
+
+const projectTypes = [
+  'Web Application',
+  'Mobile App',
+  'Enterprise Solution',
+  'E-Commerce Platform',
+  'SaaS Product',
+  'Other',
+]
 
 export default function ExitIntentPopup({ onClose, onScheduleConsultation }: ExitIntentPopupProps) {
   const [formData, setFormData] = useState<FormData>({
-    projectType: '',
-    timeline: '',
-    budget: '',
-    description: '',
     name: '',
     email: '',
-    phone: '',
+    company: '',
+    projectType: '',
+    message: '',
   })
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -94,35 +97,12 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
     onClose()
   }
 
-  const projectTypeOptions = [
-    'Web Application',
-    'Mobile App (iOS/Android)',
-    'E-commerce Platform',
-    'Custom Software',
-    'Other',
-  ]
-
-  const timelineOptions = [
-    'Urgent (Within 1 month)',
-    '1-3 months',
-    '3-6 months',
-    '6+ months',
-    'Just exploring',
-  ]
-
-  const budgetOptions = [
-    'Under $10,000',
-    '$10,000 - $50,000',
-    '$50,000 - $100,000',
-    '$100,000+',
-    'Not sure yet',
-  ]
-
-  const handleChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
     // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
+    if (errors[name as keyof FormData]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
   }
 
@@ -137,17 +117,14 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address'
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone is required'
+    if (!formData.company.trim()) {
+      newErrors.company = 'Company is required'
     }
     if (!formData.projectType) {
       newErrors.projectType = 'Please select a project type'
     }
-    if (!formData.timeline) {
-      newErrors.timeline = 'Please select a timeline'
-    }
-    if (!formData.budget) {
-      newErrors.budget = 'Please select a budget range'
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required'
     }
 
     setErrors(newErrors)
@@ -164,23 +141,13 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
     setIsSubmitting(true)
 
     try {
-      // Format message with all project details for Slack and Email
-      const messageParts = []
-      messageParts.push(`Phone: ${formData.phone.trim()}`)
-      messageParts.push(`Timeline: ${formData.timeline}`)
-      messageParts.push(`Budget: ${formData.budget}`)
-      if (formData.description.trim()) {
-        messageParts.push(`\nProject Description:\n${formData.description.trim()}`)
-      }
-      const fullMessage = messageParts.join('\n')
-
       // Submit lead data to API (matching LeadData interface)
       const leadData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        company: formData.phone.trim(), // Using company field for phone
+        company: formData.company.trim(),
         projectType: formData.projectType,
-        message: fullMessage,
+        message: formData.message.trim(),
         source: 'exit-intent-popup',
         region: typeof window !== 'undefined' ? detectRegion() : 'US',
       }
@@ -234,13 +201,13 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
         <Dialog
           open={showForm}
           onClose={handleClose}
-          maxWidth="md"
+          maxWidth="sm"
           fullWidth
           PaperProps={{
             sx: {
               borderRadius: 3,
               position: 'relative',
-              maxHeight: '90vh',
+              maxHeight: '85vh',
             },
           }}
         >
@@ -256,179 +223,160 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
             <CloseIcon />
           </IconButton>
 
-          <DialogContent sx={{ p: 4 }}>
+          <DialogContent sx={{ p: 3 }}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <Box sx={{ mb: 3, textAlign: 'center' }}>
-                <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: '#1E3A8A' }}>
-                  Wait! Get a Free Consultation
+              <Box sx={{ mb: 2, textAlign: 'center' }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1E3A8A' }}>
+                  Ready to Start Your Project?
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                  Don&apos;t miss out on transforming your business. Schedule a free 30-minute consultation with our experts.
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Schedule a free consultation with our experts today
                 </Typography>
               </Box>
 
-              <Box 
-                component="form" 
-                onSubmit={handleSubmit} 
-                sx={{ 
-                  maxHeight: 'calc(90vh - 200px)', 
-                  overflowY: 'auto', 
-                  pr: 1,
-                  '&::-webkit-scrollbar': {
-                    width: '8px',
-                  },
-                  '&::-webkit-scrollbar-track': {
-                    background: '#f1f1f1',
-                    borderRadius: '4px',
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    background: '#888',
-                    borderRadius: '4px',
-                    '&:hover': {
-                      background: '#555',
-                    },
-                  },
-                }}
-              >
-                {/* Project Type */}
-                <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.projectType}>
-                  <InputLabel>Project Type *</InputLabel>
-                  <Select
-                    value={formData.projectType}
-                    onChange={(e) => handleChange('projectType', e.target.value)}
-                    label="Project Type *"
-                  >
-                    {projectTypeOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.projectType && <FormHelperText>{errors.projectType}</FormHelperText>}
-                </FormControl>
-
-                {/* Timeline */}
-                <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.timeline}>
-                  <InputLabel>Timeline *</InputLabel>
-                  <Select
-                    value={formData.timeline}
-                    onChange={(e) => handleChange('timeline', e.target.value)}
-                    label="Timeline *"
-                  >
-                    {timelineOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.timeline && <FormHelperText>{errors.timeline}</FormHelperText>}
-                </FormControl>
-
-                {/* Budget */}
-                <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.budget}>
-                  <InputLabel>Budget Range *</InputLabel>
-                  <Select
-                    value={formData.budget}
-                    onChange={(e) => handleChange('budget', e.target.value)}
-                    label="Budget Range *"
-                  >
-                    {budgetOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.budget && <FormHelperText>{errors.budget}</FormHelperText>}
-                </FormControl>
-
-                {/* Description */}
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Project Description (Optional)"
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  sx={{ mb: 2 }}
-                  placeholder="Tell us briefly about your project..."
-                />
-
-                {/* Name */}
-                <TextField
-                  fullWidth
-                  label="Your Name *"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  required
-                  error={!!errors.name}
-                  helperText={errors.name}
-                  sx={{ mb: 2 }}
-                />
-
-                {/* Email */}
-                <TextField
-                  fullWidth
-                  type="email"
-                  label="Your Email *"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  required
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  sx={{ mb: 2 }}
-                  placeholder="your@email.com"
-                />
-
-                {/* Phone */}
-                <TextField
-                  fullWidth
-                  type="tel"
-                  label="Your Phone *"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  required
-                  error={!!errors.phone}
-                  helperText={errors.phone}
-                  sx={{ mb: 3 }}
-                  placeholder="+1 (555) 123-4567"
-                />
-
-                <Button
-                  type="submit"
-                  variant="outlined"
-                  fullWidth
-                  size="large"
-                  disabled={isSubmitting}
-                  startIcon={<CalendarTodayIcon />}
-                  sx={{
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #1E3A8A',
-                    color: '#1E3A8A',
-                    py: 1.5,
-                    fontWeight: 600,
-                    '&:hover': {
-                      backgroundColor: '#EFF6FF',
-                      borderColor: '#1E40AF',
-                      color: '#1E40AF',
-                    },
-                    '&:disabled': {
-                      backgroundColor: '#F3F4F6',
-                      borderColor: '#D1D5DB',
-                      color: '#9CA3AF',
-                    },
-                  }}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Book a Free Consultation'}
-                </Button>
+              <Box component="form" onSubmit={handleSubmit}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Name *"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      error={!!errors.name}
+                      helperText={errors.name}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Email *"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      error={!!errors.email}
+                      helperText={errors.email}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Company *"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      required
+                      error={!!errors.company}
+                      helperText={errors.company}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="Project Type *"
+                      name="projectType"
+                      value={formData.projectType}
+                      onChange={handleChange}
+                      required
+                      error={!!errors.projectType}
+                      helperText={errors.projectType}
+                      variant="outlined"
+                      size="small"
+                    >
+                      {projectTypes.map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="Message *"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      required
+                      error={!!errors.message}
+                      helperText={errors.message}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      disabled={isSubmitting}
+                      endIcon={isSubmitting ? null : <SendIcon />}
+                      sx={{
+                        py: 1.2,
+                        backgroundColor: '#F59E0B',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        '&:hover': {
+                          backgroundColor: '#FBBF24',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Get Free Consultation'}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box sx={{ textAlign: 'center', mt: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: 'block' }}>
+                        Or schedule directly:
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="medium"
+                        startIcon={<CalendarTodayIcon />}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleClose()
+                          setTimeout(() => {
+                            window.open('https://calendly.com/jawadparvez-dev', '_blank')
+                          }, 300)
+                        }}
+                        sx={{
+                          backgroundColor: 'white',
+                          border: '1px solid #1E3A8A',
+                          color: '#1E3A8A',
+                          '&:hover': {
+                            backgroundColor: '#EFF6FF',
+                            borderColor: '#1E40AF',
+                            color: '#1E40AF',
+                          },
+                        }}
+                      >
+                        Book a Free Consultation
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
               </Box>
-
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block', textAlign: 'center' }}>
-                No spam. Unsubscribe anytime.
-              </Typography>
             </motion.div>
           </DialogContent>
         </Dialog>
