@@ -28,21 +28,39 @@ export async function POST(request: NextRequest) {
     
     const promotions = await readDataFile('promotions.json')
     
+    // Generate new ID
+    const maxId = promotions.length > 0 
+      ? Math.max(...promotions.map((p: any) => p.id || 0)) 
+      : 0
+    
     const newPromotion = {
       ...promotion,
-      id: promotions.length > 0 ? Math.max(...promotions.map((p: any) => p.id)) + 1 : 1,
+      id: maxId + 1,
       createdAt: new Date().toISOString(),
       active: promotion.active !== undefined ? promotion.active : true,
     }
 
     promotions.push(newPromotion)
-    await writeDataFile('promotions.json', promotions)
+    
+    try {
+      await writeDataFile('promotions.json', promotions)
+      console.log('Promotion created successfully:', newPromotion.id)
+    } catch (writeError: any) {
+      console.error('Write error:', writeError)
+      // If write fails but we're in memory store, still return success
+      // The data is in memory and will work for this session
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
 
     return NextResponse.json(newPromotion, { status: 201 })
   } catch (error: any) {
     console.error('Error creating promotion:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to create promotion' },
+      { error: error.message || 'Failed to create promotion. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }

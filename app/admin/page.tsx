@@ -277,22 +277,37 @@ export default function AdminPage() {
           setError(result.error || 'Failed to save blog')
         }
       } else if (dialogType === 'promotion') {
+        // Validate promotion form
+        if (!promotionForm.text || !promotionForm.link) {
+          setError('Text and link are required fields')
+          setLoading(false)
+          return
+        }
+        
         const url = editingItem
           ? `/api/promotions/${editingItem.id}`
           : '/api/promotions'
         const method = editingItem ? 'PUT' : 'POST'
-        const response = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(promotionForm),
-        })
-        const result = await response.json()
-        if (response.ok) {
-          setSuccess('Promotion saved successfully!')
-          loadData()
-          setOpenDialog(false)
-        } else {
-          setError(result.error || 'Failed to save promotion')
+        
+        try {
+          const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(promotionForm),
+          })
+          const result = await response.json()
+          
+          if (response.ok) {
+            setSuccess('Promotion saved successfully!')
+            loadData()
+            setOpenDialog(false)
+          } else {
+            console.error('Promotion save error:', result)
+            setError(result.error || 'Failed to save promotion')
+          }
+        } catch (fetchError) {
+          console.error('Promotion fetch error:', fetchError)
+          setError('Network error. Please try again.')
         }
       }
     } catch (err) {
@@ -331,7 +346,6 @@ export default function AdminPage() {
     currentStatus: boolean
   ) => {
     setLoading(true)
-    setError('')
     try {
       const field = type === 'promotion' ? 'active' : 'published'
       const response = await fetch(`/api/${type}s/${id}`, {
@@ -339,17 +353,13 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: !currentStatus }),
       })
-      const result = await response.json()
-      
       if (response.ok) {
         loadData()
       } else {
-        console.error('Toggle status error:', result)
-        setError(result.error || 'Failed to update status')
+        setError('Failed to update status')
       }
-    } catch (err: any) {
-      console.error('Toggle status fetch error:', err)
-      setError('Network error. Please try again.')
+    } catch (err) {
+      setError('Failed to update status')
     } finally {
       setLoading(false)
     }

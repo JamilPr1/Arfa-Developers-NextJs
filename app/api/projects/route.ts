@@ -19,20 +19,34 @@ export async function POST(request: NextRequest) {
     const project = await request.json()
     const projects = await readDataFile('projects.json')
     
+    const maxId = projects.length > 0 
+      ? Math.max(...projects.map((p: any) => p.id || 0)) 
+      : 0
+    
     const newProject = {
       ...project,
-      id: projects.length > 0 ? Math.max(...projects.map((p: any) => p.id)) + 1 : 1,
+      id: maxId + 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
     projects.push(newProject)
-    await writeDataFile('projects.json', projects)
+    
+    try {
+      await writeDataFile('projects.json', projects)
+    } catch (writeError: any) {
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
 
     return NextResponse.json(newProject, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error creating project:', error)
     return NextResponse.json(
-      { error: 'Failed to create project' },
+      { error: error.message || 'Failed to create project. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }

@@ -52,11 +52,20 @@ export async function PUT(
       updatedAt: new Date().toISOString(),
     }
 
-    await writeDataFile('blogs.json', blogs)
+    try {
+      await writeDataFile('blogs.json', blogs)
+    } catch (writeError: any) {
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
     return NextResponse.json(blogs[index])
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error updating blog:', error)
     return NextResponse.json(
-      { error: 'Failed to update blog' },
+      { error: error.message || 'Failed to update blog. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }
@@ -71,11 +80,20 @@ export async function DELETE(
     const blogs = await readDataFile('blogs.json')
     const filteredBlogs = blogs.filter((b: any) => b.id !== parseInt(id))
 
-    await writeDataFile('blogs.json', filteredBlogs)
+    try {
+      await writeDataFile('blogs.json', filteredBlogs)
+    } catch (writeError: any) {
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error deleting blog:', error)
     return NextResponse.json(
-      { error: 'Failed to delete blog' },
+      { error: error.message || 'Failed to delete blog. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }

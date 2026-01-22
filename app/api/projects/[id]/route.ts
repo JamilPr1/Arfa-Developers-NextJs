@@ -52,11 +52,20 @@ export async function PUT(
       updatedAt: new Date().toISOString(),
     }
 
-    await writeDataFile('projects.json', projects)
+    try {
+      await writeDataFile('projects.json', projects)
+    } catch (writeError: any) {
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
     return NextResponse.json(projects[index])
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error updating project:', error)
     return NextResponse.json(
-      { error: 'Failed to update project' },
+      { error: error.message || 'Failed to update project. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }
@@ -71,11 +80,20 @@ export async function DELETE(
     const projects = await readDataFile('projects.json')
     const filteredProjects = projects.filter((p: any) => p.id !== parseInt(id))
 
-    await writeDataFile('projects.json', filteredProjects)
+    try {
+      await writeDataFile('projects.json', filteredProjects)
+    } catch (writeError: any) {
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error deleting project:', error)
     return NextResponse.json(
-      { error: 'Failed to delete project' },
+      { error: error.message || 'Failed to delete project. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }

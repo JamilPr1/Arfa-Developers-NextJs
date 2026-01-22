@@ -19,20 +19,34 @@ export async function POST(request: NextRequest) {
     const blog = await request.json()
     const blogs = await readDataFile('blogs.json')
     
+    const maxId = blogs.length > 0 
+      ? Math.max(...blogs.map((b: any) => b.id || 0)) 
+      : 0
+    
     const newBlog = {
       ...blog,
-      id: blogs.length > 0 ? Math.max(...blogs.map((b: any) => b.id)) + 1 : 1,
+      id: maxId + 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
     blogs.push(newBlog)
-    await writeDataFile('blogs.json', blogs)
+    
+    try {
+      await writeDataFile('blogs.json', blogs)
+    } catch (writeError: any) {
+      if (writeError.message?.includes('memory store')) {
+        console.warn('Using memory store - data will not persist')
+      } else {
+        throw writeError
+      }
+    }
 
     return NextResponse.json(newBlog, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error creating blog:', error)
     return NextResponse.json(
-      { error: 'Failed to create blog' },
+      { error: error.message || 'Failed to create blog. Please configure Vercel KV for persistent storage.' },
       { status: 500 }
     )
   }
