@@ -109,7 +109,7 @@ export default function Header() {
   }
 
   // Determine if page has colored background at top (for initial header state)
-  const hasColoredBackground = pathname === '/' || pathname === '/services'
+  const hasColoredBackground = pathname === '/' || pathname === '/services' || pathname === '/portfolio' || pathname === '/about' || pathname === '/blog' || pathname === '/contact'
   
   return (
     <HideOnScroll>
