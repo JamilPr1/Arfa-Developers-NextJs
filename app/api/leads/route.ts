@@ -239,10 +239,14 @@ export async function POST(request: NextRequest) {
 
     // Send Slack notification (optional)
     console.log('[Leads API] Attempting to send Slack notification...')
-    const slackResult = await sendSlackNotification(leadDataWithMessage).catch((error) => {
+    let slackSent = false
+    try {
+      await sendSlackNotification(leadDataWithMessage)
+      slackSent = true
+      console.log('[Leads API] Slack notification sent')
+    } catch (error) {
       console.error('[Leads API] Slack notification error:', error)
-    })
-    console.log('[Leads API] Slack notification sent')
+    }
 
     // Log for debugging
     console.log('[Leads API] Lead submitted:', {
