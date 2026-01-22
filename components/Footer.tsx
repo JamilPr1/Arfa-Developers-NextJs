@@ -223,6 +223,8 @@ export default function Footer() {
                             cursor: 'pointer',
                             fontSize: '0.875rem',
                             display: 'block',
+                            minHeight: '32px',
+                            lineHeight: '1.5',
                             py: 0.5,
                             '&:hover': {
                               color: '#2563EB',
@@ -253,6 +255,8 @@ export default function Footer() {
                             cursor: 'pointer',
                             fontSize: '0.875rem',
                             display: 'block',
+                            minHeight: '32px',
+                            lineHeight: '1.5',
                             py: 0.5,
                             '&:hover': {
                               color: '#2563EB',

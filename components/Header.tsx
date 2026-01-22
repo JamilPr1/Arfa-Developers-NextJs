@@ -264,22 +264,7 @@ export default function Header() {
                             borderRadius: 2,
                             boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
                             border: '1px solid rgba(37, 99, 235, 0.1)',
-                            maxHeight: { xs: '60vh', md: '70vh' },
-                            overflow: 'auto',
-                            '&::-webkit-scrollbar': {
-                              width: '8px',
-                            },
-                            '&::-webkit-scrollbar-track': {
-                              background: '#F3F4F6',
-                              borderRadius: '4px',
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                              background: '#9CA3AF',
-                              borderRadius: '4px',
-                              '&:hover': {
-                                background: '#6B7280',
-                              },
-                            },
+                            overflow: 'visible',
                           },
                         }}
                       >
@@ -497,23 +482,8 @@ export default function Header() {
                             borderRadius: 2,
                             boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
                             border: '1px solid rgba(37, 99, 235, 0.1)',
-                            maxHeight: '60vh',
-                            overflow: 'auto',
+                            overflow: 'visible',
                             width: { xs: '90vw', sm: '280px' },
-                            '&::-webkit-scrollbar': {
-                              width: '8px',
-                            },
-                            '&::-webkit-scrollbar-track': {
-                              background: '#F3F4F6',
-                              borderRadius: '4px',
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                              background: '#9CA3AF',
-                              borderRadius: '4px',
-                              '&:hover': {
-                                background: '#6B7280',
-                              },
-                            },
                           },
                         }}
                       >
