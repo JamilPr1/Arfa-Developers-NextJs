@@ -289,20 +289,18 @@ export default function Footer() {
                       color: '#374151',
                       fontSize: '0.875rem',
                       minHeight: '40px',
+                      transition: 'all 0.2s ease',
+                      borderLeft: '3px solid transparent',
                       '&:hover': {
                         backgroundColor: '#EFF6FF',
                         color: '#1E3A8A',
                         fontWeight: 500,
+                        borderLeftColor: '#2563EB',
                       },
                       '&:focus-visible': {
                         outline: '2px solid #2563EB',
                         outlineOffset: '-2px',
                         backgroundColor: '#EFF6FF',
-                      },
-                      transition: 'all 0.2s ease',
-                      borderLeft: '3px solid transparent',
-                      '&:hover': {
-                        borderLeftColor: '#2563EB',
                       },
                     }}
                   >
