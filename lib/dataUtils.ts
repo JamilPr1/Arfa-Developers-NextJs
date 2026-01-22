@@ -84,6 +84,9 @@ export async function readDataFile<T>(filename: string): Promise<T[]> {
 export async function writeDataFile<T>(filename: string, data: T[]): Promise<void> {
   console.log(`💾 Writing ${data.length} items to ${filename}...`)
   
+  // Check if we're in production (Vercel)
+  const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
+  
   try {
     // Try KV first
     const kvInstance = await getKv()
@@ -96,6 +99,21 @@ export async function writeDataFile<T>(filename: string, data: T[]): Promise<voi
         console.error(`❌ KV write error for ${filename}:`, kvError?.message)
         throw new Error(`KV write failed: ${kvError?.message}`)
       }
+    }
+
+    // If in production and KV is not available, throw clear error
+    if (isProduction) {
+      const errorMsg = `❌ Vercel KV is not configured. Please set up Vercel KV in your dashboard:
+1. Go to Vercel Dashboard → Storage
+2. Create a KV Database (Upstash KV)
+3. Link it to your project
+4. Environment variables will be added automatically
+
+Current env check:
+- KV_REST_API_URL: ${process.env.KV_REST_API_URL ? '✅ Set' : '❌ Missing'}
+- KV_REST_API_TOKEN: ${process.env.KV_REST_API_TOKEN ? '✅ Set' : '❌ Missing'}`
+      console.error(errorMsg)
+      throw new Error('Vercel KV is not configured. Please set up KV storage in Vercel dashboard. See server logs for details.')
     }
 
     // Fallback to file system (local dev only)
