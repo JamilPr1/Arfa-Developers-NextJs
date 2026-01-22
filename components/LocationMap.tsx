@@ -1,29 +1,25 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 import dynamic from 'next/dynamic'
 
 // Dynamically import to avoid SSR issues
-let MapContainer: any
-let TileLayer: any
-let Marker: any
-let Popup: any
+const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), {
+  ssr: false,
+})
 
-if (typeof window !== 'undefined') {
-  MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), {
-    ssr: false,
-  })
-  TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), {
-    ssr: false,
-  })
-  Marker = dynamic(() => import('react-leaflet').then((mod) => mod.Marker), {
-    ssr: false,
-  })
-  Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
-    ssr: false,
-  })
-}
+const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), {
+  ssr: false,
+})
+
+const Marker = dynamic(() => import('react-leaflet').then((mod) => mod.Marker), {
+  ssr: false,
+})
+
+const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
+  ssr: false,
+})
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css'
@@ -31,15 +27,6 @@ import 'leaflet/dist/leaflet.css'
 // Fix for default marker icon issue in Next.js
 import L from 'leaflet'
 
-// Fix for default marker icon
-if (typeof window !== 'undefined') {
-  delete (L.Icon.Default.prototype as any)._getIconUrl
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  })
-}
 
 const locations = [
   {
@@ -98,21 +85,45 @@ const createRedMarkerIcon = () => {
 }
 
 export default function LocationMap() {
+  const [isMounted, setIsMounted] = useState(false)
+
   useEffect(() => {
-    // Ensure Leaflet CSS is loaded
-    if (typeof window !== 'undefined') {
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='
-      link.crossOrigin = ''
-      document.head.appendChild(link)
+    setIsMounted(true)
+    // Fix for default marker icon
+    if (typeof window !== 'undefined' && L) {
+      delete (L.Icon.Default.prototype as any)._getIconUrl
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      })
     }
   }, [])
 
   // Calculate center point for all locations
   const centerLat = locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length
   const centerLng = locations.reduce((sum, loc) => sum + loc.lng, 0) / locations.length
+
+  if (!isMounted) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: { xs: '400px', md: '500px' },
+          borderRadius: 2,
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          mt: 3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: '#f5f5f5',
+        }}
+      >
+        Loading map...
+      </Box>
+    )
+  }
 
   return (
     <Box
@@ -125,37 +136,35 @@ export default function LocationMap() {
         mt: 3,
       }}
     >
-      {typeof window !== 'undefined' && (
-        <MapContainer
-          center={[centerLat, centerLng]}
-          zoom={3}
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {locations.map((location) => {
-            const redIcon = createRedMarkerIcon()
-            return (
-              <Marker
-                key={location.id}
-                position={[location.lat, location.lng]}
-                icon={redIcon}
-              >
-                <Popup>
-                  <Box sx={{ p: 1 }}>
-                    <strong>{location.name}</strong>
-                    <br />
-                    {location.address}
-                  </Box>
-                </Popup>
-              </Marker>
-            )
-          })}
-        </MapContainer>
-      )}
+      <MapContainer
+        center={[centerLat, centerLng]}
+        zoom={3}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {locations.map((location) => {
+          const redIcon = createRedMarkerIcon()
+          return (
+            <Marker
+              key={location.id}
+              position={[location.lat, location.lng]}
+              icon={redIcon}
+            >
+              <Popup>
+                <Box sx={{ p: 1 }}>
+                  <strong>{location.name}</strong>
+                  <br />
+                  {location.address}
+                </Box>
+              </Popup>
+            </Marker>
+          )
+        })}
+      </MapContainer>
     </Box>
   )
 }
