@@ -134,12 +134,54 @@ export default function CTA() {
     }
   }
 
-  const handleScheduleConsultation = () => {
+  const handleScheduleConsultation = async () => {
+    // Submit form data before opening Calendly
+    try {
+      // Format message with timeline and budget if provided
+      let fullMessage = formData.message
+      if (formData.timeline || formData.budget) {
+        const additionalInfo = []
+        if (formData.timeline) {
+          additionalInfo.push(`Timeline: ${formData.timeline}`)
+        }
+        if (formData.budget) {
+          additionalInfo.push(`Budget: ${formData.budget}`)
+        }
+        if (fullMessage) {
+          fullMessage = `${fullMessage}\n\n${additionalInfo.join('\n')}`
+        } else {
+          fullMessage = additionalInfo.join('\n') || 'User clicked Book a Free Consultation'
+        }
+      } else if (!fullMessage) {
+        fullMessage = 'User clicked Book a Free Consultation'
+      }
+
+      const leadData: LeadData = {
+        name: formData.name || 'Not provided',
+        email: formData.email || 'Not provided',
+        company: formData.company || 'Not provided',
+        projectType: formData.projectType || 'Not specified',
+        message: fullMessage,
+        source: 'website-form-booking',
+        region: detectRegion(),
+      }
+
+      console.log('[CTA] Submitting lead before opening Calendly:', leadData)
+
+      // Submit to API (fire and forget - don't wait for response)
+      submitLead(leadData).catch((error) => {
+        console.error('[CTA] Error submitting lead:', error)
+      })
+    } catch (error) {
+      console.error('[CTA] Error preparing lead data:', error)
+    }
+
     setShowCalendly(true)
     // Track Calendly click
     if (typeof window !== 'undefined' && (window as any).gtag) {
       ;(window as any).gtag('event', 'calendly_click', {
         event_category: 'lead_generation',
+        event_label: 'direct_booking',
       })
     }
   }
@@ -261,40 +303,6 @@ export default function CTA() {
                   {projectTypes.map((type) => (
                     <MenuItem key={type} value={type}>
                       {type}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Project Timeline"
-                  name="timeline"
-                  value={formData.timeline}
-                  onChange={handleChange}
-                  variant="outlined"
-                >
-                  {timelineOptions.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Budget Range"
-                  name="budget"
-                  value={formData.budget}
-                  onChange={handleChange}
-                  variant="outlined"
-                >
-                  {budgetOptions.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
                     </MenuItem>
                   ))}
                 </TextField>

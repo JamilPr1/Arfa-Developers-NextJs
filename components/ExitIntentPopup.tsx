@@ -16,6 +16,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import { motion, AnimatePresence } from 'framer-motion'
+import { detectRegion } from '@/lib/formHandler'
 
 interface ExitIntentPopupProps {
   onClose: () => void
@@ -48,6 +49,7 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
     message: '',
   })
   const [showForm, setShowForm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const hasShownRef = useRef(false)
 
   useEffect(() => {
@@ -98,13 +100,49 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleBookConsultation = () => {
-    // Close popup
-    handleClose()
-    // Open Calendly in new tab
-    setTimeout(() => {
-      window.open('https://calendly.com/jawadparvez-dev', '_blank')
-    }, 300)
+  const handleBookConsultation = async () => {
+    setIsSubmitting(true)
+
+    try {
+      // Submit lead data to API (matching LeadData interface)
+      const leadData = {
+        name: formData.name.trim() || 'Not provided',
+        email: formData.email.trim() || 'Not provided',
+        company: formData.company.trim() || 'Not provided',
+        projectType: formData.projectType || 'Not specified',
+        message: formData.message.trim() || 'User clicked Book a Free Consultation',
+        source: 'exit-intent-popup',
+        region: typeof window !== 'undefined' ? detectRegion() : 'US',
+      }
+
+      console.log('[Exit Popup] Submitting lead before opening Calendly:', leadData)
+
+      // Submit to API (fire and forget - don't wait for response)
+      fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(leadData),
+      }).catch((error) => {
+        console.error('[Exit Popup] Error submitting lead:', error)
+      })
+
+      // Close popup
+      handleClose()
+      
+      // Open Calendly in new tab after a brief delay
+      setTimeout(() => {
+        window.open('https://calendly.com/jawadparvez-dev', '_blank')
+      }, 300)
+    } catch (error) {
+      console.error('[Exit Popup] Error:', error)
+      // Still proceed to open Calendly even if submission fails
+      handleClose()
+      setTimeout(() => {
+        window.open('https://calendly.com/jawadparvez-dev', '_blank')
+      }, 300)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -172,7 +210,6 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
                       type="email"
                       value={formData.email}
                       onChange={handleChange}
-                      helperText={errors.email}
                       variant="outlined"
                       size="small"
                     />
@@ -198,8 +235,6 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
                       value={formData.projectType}
                       onChange={handleChange}
                       required
-                      error={!!errors.projectType}
-                      helperText={errors.projectType}
                       variant="outlined"
                       size="small"
                     >
@@ -229,8 +264,9 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
                       variant="outlined"
                       size="large"
                       fullWidth
+                      disabled={isSubmitting}
                       startIcon={<CalendarTodayIcon />}
-                        onClick={handleBookConsultation}
+                      onClick={handleBookConsultation}
                       sx={{
                         backgroundColor: 'white',
                         border: '1px solid #1E3A8A',
@@ -243,9 +279,14 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
                           borderColor: '#1E40AF',
                           color: '#1E40AF',
                         },
+                        '&:disabled': {
+                          backgroundColor: '#F3F4F6',
+                          borderColor: '#D1D5DB',
+                          color: '#9CA3AF',
+                        },
                       }}
                     >
-                      Book a Free Consultation
+                      {isSubmitting ? 'Submitting...' : 'Book a Free Consultation'}
                     </Button>
                   </Grid>
                 </Grid>
