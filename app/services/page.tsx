@@ -364,6 +364,7 @@ export default function ServicesPage() {
             <Typography
               variant="h1"
               sx={{
+                color: 'white',
                 fontWeight: 800,
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
@@ -383,6 +384,7 @@ export default function ServicesPage() {
             <Typography
               variant="h4"
               sx={{
+                color: 'white',
                 maxWidth: 900,
                 mx: 'auto',
                 mb: 4,
@@ -408,10 +410,25 @@ export default function ServicesPage() {
                     height: '100%',
                   }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: 'white',
+                      fontWeight: 700, 
+                      mb: 1,
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                    }}
+                  >
                     ⚠️ Project Delays
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      lineHeight: 1.6,
+                      fontSize: { xs: '0.875rem', md: '0.9375rem' },
+                    }}
+                  >
                     Missing deadlines? We deliver on time, every time.
                   </Typography>
                 </Box>
@@ -427,10 +444,25 @@ export default function ServicesPage() {
                     height: '100%',
                   }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: 'white',
+                      fontWeight: 700, 
+                      mb: 1,
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                    }}
+                  >
                     💸 Wasted Budget
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      lineHeight: 1.6,
+                      fontSize: { xs: '0.875rem', md: '0.9375rem' },
+                    }}
+                  >
                     Throwing money at broken code? We fix it right the first time.
                   </Typography>
                 </Box>
@@ -446,10 +478,25 @@ export default function ServicesPage() {
                     height: '100%',
                   }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: 'white',
+                      fontWeight: 700, 
+                      mb: 1,
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                    }}
+                  >
                     🐛 Buggy Code
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      lineHeight: 1.6,
+                      fontSize: { xs: '0.875rem', md: '0.9375rem' },
+                    }}
+                  >
                     Constant crashes? We build stable, scalable solutions.
                   </Typography>
                 </Box>
