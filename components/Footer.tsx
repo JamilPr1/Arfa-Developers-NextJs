@@ -206,31 +206,68 @@ export default function Footer() {
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#F9FAFB' }}>
                 Services
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {services.map((service) => (
-                  <Link
-                    key={service.href}
-                    href={service.href}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <MuiLink
-                      component="span"
-                      sx={{
-                        color: '#9CA3AF',
-                        textDecoration: 'none',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          color: '#2563EB',
-                          textDecoration: 'underline',
-                        },
-                        transition: 'color 0.3s ease',
-                      }}
-                    >
-                      {service.label}
-                    </MuiLink>
-                  </Link>
-                ))}
-              </Box>
+              <Grid container spacing={1}>
+                <Grid item xs={6}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {services.slice(0, Math.ceil(services.length / 2)).map((service) => (
+                      <Link
+                        key={service.href}
+                        href={service.href}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <MuiLink
+                          component="span"
+                          sx={{
+                            color: '#9CA3AF',
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            display: 'block',
+                            py: 0.5,
+                            '&:hover': {
+                              color: '#2563EB',
+                              textDecoration: 'underline',
+                            },
+                            transition: 'color 0.3s ease',
+                          }}
+                        >
+                          {service.label}
+                        </MuiLink>
+                      </Link>
+                    ))}
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {services.slice(Math.ceil(services.length / 2)).map((service) => (
+                      <Link
+                        key={service.href}
+                        href={service.href}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <MuiLink
+                          component="span"
+                          sx={{
+                            color: '#9CA3AF',
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            display: 'block',
+                            py: 0.5,
+                            '&:hover': {
+                              color: '#2563EB',
+                              textDecoration: 'underline',
+                            },
+                            transition: 'color 0.3s ease',
+                          }}
+                        >
+                          {service.label}
+                        </MuiLink>
+                      </Link>
+                    ))}
+                  </Box>
+                </Grid>
+              </Grid>
             </motion.div>
           </Grid>
 

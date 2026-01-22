@@ -258,16 +258,49 @@ export default function Header() {
                         MenuListProps={{
                           'aria-labelledby': 'services-button',
                         }}
+                        PaperProps={{
+                          sx: {
+                            mt: 1.5,
+                            borderRadius: 2,
+                            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                            border: '1px solid rgba(37, 99, 235, 0.1)',
+                            maxHeight: { xs: '60vh', md: '70vh' },
+                            overflow: 'auto',
+                            '&::-webkit-scrollbar': {
+                              width: '8px',
+                            },
+                            '&::-webkit-scrollbar-track': {
+                              background: '#F3F4F6',
+                              borderRadius: '4px',
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                              background: '#9CA3AF',
+                              borderRadius: '4px',
+                              '&:hover': {
+                                background: '#6B7280',
+                              },
+                            },
+                          },
+                        }}
                       >
                         <MenuItem
                           component={Link}
                           href="/services"
                           onClick={handleServicesMenuClose}
                           sx={{
+                            fontWeight: 600,
+                            color: '#1E3A8A',
+                            backgroundColor: '#EFF6FF',
+                            borderBottom: '1px solid #DBEAFE',
+                            '&:hover': {
+                              backgroundColor: '#DBEAFE',
+                              color: '#2563EB',
+                            },
                             '&:focus-visible': {
                               outline: '2px solid #2563EB',
                               outlineOffset: '-2px',
                             },
+                            transition: 'all 0.2s ease',
                           }}
                         >
                           All Services
@@ -279,9 +312,24 @@ export default function Header() {
                             href={service.href}
                             onClick={handleServicesMenuClose}
                             sx={{
+                              px: 2,
+                              py: 1.5,
+                              color: '#374151',
+                              '&:hover': {
+                                backgroundColor: '#EFF6FF',
+                                color: '#1E3A8A',
+                                fontWeight: 500,
+                                transform: 'translateX(4px)',
+                              },
                               '&:focus-visible': {
                                 outline: '2px solid #2563EB',
                                 outlineOffset: '-2px',
+                                backgroundColor: '#EFF6FF',
+                              },
+                              transition: 'all 0.2s ease',
+                              borderLeft: '3px solid transparent',
+                              '&:hover': {
+                                borderLeftColor: '#2563EB',
                               },
                             }}
                           >
@@ -445,6 +493,31 @@ export default function Header() {
                           vertical: 'top',
                           horizontal: 'left',
                         }}
+                        PaperProps={{
+                          sx: {
+                            mt: 1,
+                            borderRadius: 2,
+                            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                            border: '1px solid rgba(37, 99, 235, 0.1)',
+                            maxHeight: '60vh',
+                            overflow: 'auto',
+                            width: { xs: '90vw', sm: '280px' },
+                            '&::-webkit-scrollbar': {
+                              width: '8px',
+                            },
+                            '&::-webkit-scrollbar-track': {
+                              background: '#F3F4F6',
+                              borderRadius: '4px',
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                              background: '#9CA3AF',
+                              borderRadius: '4px',
+                              '&:hover': {
+                                background: '#6B7280',
+                              },
+                            },
+                          },
+                        }}
                       >
                         <MenuItem
                           component={Link}
@@ -452,6 +525,17 @@ export default function Header() {
                           onClick={() => {
                             handleServicesMenuClose()
                             handleMenuClose()
+                          }}
+                          sx={{
+                            fontWeight: 600,
+                            color: '#1E3A8A',
+                            backgroundColor: '#EFF6FF',
+                            borderBottom: '1px solid #DBEAFE',
+                            '&:hover': {
+                              backgroundColor: '#DBEAFE',
+                              color: '#2563EB',
+                            },
+                            transition: 'all 0.2s ease',
                           }}
                         >
                           All Services
@@ -464,6 +548,22 @@ export default function Header() {
                             onClick={() => {
                               handleServicesMenuClose()
                               handleMenuClose()
+                            }}
+                            sx={{
+                              px: 2,
+                              py: 1.5,
+                              color: '#374151',
+                              '&:hover': {
+                                backgroundColor: '#EFF6FF',
+                                color: '#1E3A8A',
+                                fontWeight: 500,
+                                transform: 'translateX(4px)',
+                              },
+                              transition: 'all 0.2s ease',
+                              borderLeft: '3px solid transparent',
+                              '&:hover': {
+                                borderLeftColor: '#2563EB',
+                              },
                             }}
                           >
                             {service.label}
