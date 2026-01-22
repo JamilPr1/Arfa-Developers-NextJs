@@ -12,197 +12,125 @@ function assignLeadByRegion(region?: string): string {
   return regionMap[region || 'US'] || regionMap.US
 }
 
-// Send Slack notification (optional)
+// Slack API helper (same as chat route)
+async function slackApi(method: string, token: string, payload: Record<string, any>) {
+  try {
+    const resp = await fetch(`https://slack.com/api/${method}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!resp.ok) {
+      console.error(`[Slack API] HTTP error: ${resp.status} ${resp.statusText}`)
+    }
+    const result = await resp.json()
+    console.log(`[Slack API] ${method} response:`, { ok: result.ok, error: result.error })
+    return result as any
+  } catch (error) {
+    console.error('[Slack API] Network error:', error)
+    throw error
+  }
+}
+
+// Send Slack notification using Bot Token API (same as chat)
 async function sendSlackNotification(data: LeadData): Promise<void> {
-  if (!process.env.SLACK_WEBHOOK_URL) {
-    console.warn('[Slack] ⚠️ SLACK_WEBHOOK_URL not configured in environment variables')
-    return
+  const slackBotToken = process.env.SLACK_BOT_TOKEN
+  const slackChannelId = process.env.SLACK_CHANNEL_ID || 'C0AA2KHR02Z'
+
+  if (!slackBotToken) {
+    console.warn('[Slack] ⚠️ SLACK_BOT_TOKEN not configured in environment variables')
+    throw new Error('SLACK_BOT_TOKEN not configured')
   }
 
-  console.log('[Slack] Sending notification to webhook...')
+  console.log('[Slack] Sending lead notification to channel:', slackChannelId)
+  
   try {
-    const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: `🎯 New Lead: ${data.name} (${data.email}) - ${data.projectType}`,
-        blocks: [
-          {
-            type: 'header',
-            text: {
-              type: 'plain_text',
-              text: '🎯 New Lead Submission',
-            },
+    // Format message with lead details
+    const messageText = `🎯 *New Lead Submission*\n\n` +
+      `*Name:* ${data.name}\n` +
+      `*Email:* ${data.email}\n` +
+      `*Company/Phone:* ${data.company || 'N/A'}\n` +
+      `*Project Type:* ${data.projectType || 'N/A'}\n` +
+      `*Region:* ${data.region || 'US'}\n` +
+      `*Assigned To:* ${assignLeadByRegion(data.region)}\n` +
+      `*Source:* ${data.source || 'website-form'}\n\n` +
+      `*Message:*\n${data.message || 'No message provided'}`
+
+    const result = await slackApi('chat.postMessage', slackBotToken, {
+      channel: slackChannelId,
+      text: `🎯 New Lead: ${data.name} (${data.email}) - ${data.projectType || 'General Inquiry'}`,
+      blocks: [
+        {
+          type: 'header',
+          text: {
+            type: 'plain_text',
+            text: '🎯 New Lead Submission',
           },
-          {
-            type: 'section',
-            fields: [
-              {
-                type: 'mrkdwn',
-                text: `*Name:*\n${data.name}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*Email:*\n${data.email}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*Phone:*\n${data.company || 'N/A'}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*Project Type:*\n${data.projectType || 'N/A'}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*Region:*\n${data.region || 'US'}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*Assigned To:*\n${assignLeadByRegion(data.region)}`,
-              },
-            ],
-          },
-          {
-            type: 'section',
-            text: {
+        },
+        {
+          type: 'section',
+          fields: [
+            {
               type: 'mrkdwn',
-              text: `*Message:*\n${data.message || 'No message provided'}`,
+              text: `*Name:*\n${data.name}`,
             },
+            {
+              type: 'mrkdwn',
+              text: `*Email:*\n${data.email}`,
+            },
+            {
+              type: 'mrkdwn',
+              text: `*Company/Phone:*\n${data.company || 'N/A'}`,
+            },
+            {
+              type: 'mrkdwn',
+              text: `*Project Type:*\n${data.projectType || 'N/A'}`,
+            },
+            {
+              type: 'mrkdwn',
+              text: `*Region:*\n${data.region || 'US'}`,
+            },
+            {
+              type: 'mrkdwn',
+              text: `*Assigned To:*\n${assignLeadByRegion(data.region)}`,
+            },
+          ],
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `*Message:*\n${data.message || 'No message provided'}`,
           },
-        ],
-      }),
+        },
+        {
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: `Source: ${data.source || 'website-form'}`,
+            },
+          ],
+        },
+      ],
     })
 
-    const responseText = await response.text()
-    
-    if (!response.ok) {
-      console.error('[Slack] ❌ Webhook request failed:', response.status, responseText)
-      throw new Error(`Slack webhook failed: ${response.status} - ${responseText}`)
+    if (!result.ok) {
+      console.error('[Slack] ❌ Message post failed:', result.error)
+      throw new Error(`Slack API error: ${result.error || 'Failed to send message'}`)
     }
 
-    console.log('[Slack] ✅ Notification sent successfully. Response:', responseText)
+    console.log('[Slack] ✅ Notification sent successfully to channel:', slackChannelId)
   } catch (error) {
     console.error('[Slack] ❌ Notification error:', error)
     throw error
   }
 }
 
-// Send email directly using Resend API (free tier available)
-async function sendDirectEmail(data: LeadData): Promise<{ success: boolean }> {
-  const recipientEmail = 'jawadparvez.dev@gmail.com'
-  
-  // Use Resend API if API key is provided, otherwise use a simple email service
-  if (process.env.RESEND_API_KEY) {
-    console.log('[Email] Using Resend API...')
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: process.env.EMAIL_FROM || 'noreply@arfadevelopers.com',
-          to: recipientEmail,
-          subject: `🎯 New Lead: ${data.name} - ${data.projectType || 'General Inquiry'}`,
-          html: `
-            <h2>New Lead Submission from Website</h2>
-            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-              <p><strong>Name:</strong> ${data.name}</p>
-              <p><strong>Email:</strong> ${data.email}</p>
-              <p><strong>Company:</strong> ${data.company || 'N/A'}</p>
-              <p><strong>Project Type:</strong> ${data.projectType || 'N/A'}</p>
-              <p><strong>Region:</strong> ${data.region || 'US'}</p>
-              <hr style="margin: 20px 0;">
-              <p><strong>Message:</strong></p>
-              <p style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${data.message || 'No message provided'}</p>
-              <hr style="margin: 20px 0;">
-              <p style="color: #666; font-size: 12px;">Submitted from: ${data.source || 'website-form'}</p>
-            </div>
-          `,
-        }),
-      })
-
-      const responseData = await response.json()
-      
-      if (response.ok) {
-        console.log('[Email] ✅ Resend API success:', responseData)
-        return { success: true }
-      } else {
-        console.error('[Email] ❌ Resend API failed:', response.status, responseData)
-        return { success: false }
-      }
-    } catch (error) {
-      console.error('[Email] ❌ Resend API error:', error)
-      return { success: false }
-    }
-  }
-
-  // Fallback: Use SendGrid if configured
-  if (process.env.SENDGRID_API_KEY) {
-    try {
-      const assignedManager = assignLeadByRegion(data.region)
-      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          personalizations: [
-            {
-              to: [{ email: recipientEmail }],
-              subject: `🎯 New Lead: ${data.name} - ${data.projectType || 'General Inquiry'}`,
-            },
-          ],
-          from: { email: process.env.EMAIL_FROM || 'noreply@arfadevelopers.com', name: 'Arfa Developers' },
-          content: [
-            {
-              type: 'text/html',
-              value: `
-                <h2>New Lead Submission</h2>
-                <p><strong>Name:</strong> ${data.name}</p>
-                <p><strong>Email:</strong> ${data.email}</p>
-                <p><strong>Company:</strong> ${data.company || 'N/A'}</p>
-                <p><strong>Project Type:</strong> ${data.projectType || 'N/A'}</p>
-                <p><strong>Region:</strong> ${data.region || 'US'}</p>
-                <hr>
-                <p><strong>Message:</strong></p>
-                <p>${data.message || 'No message provided'}</p>
-              `,
-            },
-          ],
-        }),
-      })
-
-      if (response.ok) {
-        console.log('[Email] ✅ SendGrid API success')
-        return { success: true }
-      } else {
-        const errorText = await response.text()
-        console.error('[Email] ❌ SendGrid API failed:', response.status, errorText)
-      }
-    } catch (error) {
-      console.error('[Email] ❌ SendGrid error:', error)
-    }
-  }
-
-  // If no email service configured, log the lead (for development)
-  console.warn('[Email] ⚠️ No email service configured (RESEND_API_KEY or SENDGRID_API_KEY missing)')
-  console.log('📧 LEAD SUBMISSION (Email service not configured):', {
-    to: recipientEmail,
-    name: data.name,
-    email: data.email,
-    company: data.company,
-    projectType: data.projectType,
-    message: data.message,
-  })
-
-  // Return success even without email service (for development)
-  // In production, you should configure an email service
-  return { success: true }
-}
+// Email submission removed - only sending to Slack
 
 export async function POST(request: NextRequest) {
   try {
@@ -240,44 +168,32 @@ export async function POST(request: NextRequest) {
       message: finalMessage,
     }
 
-    // Send email directly to jawadparvez.dev@gmail.com
-    console.log('[Leads API] Attempting to send email...')
-    const emailResult = await sendDirectEmail(leadDataWithMessage)
-    console.log('[Leads API] Email result:', emailResult)
-
-    // Send Slack notification (optional)
+    // Send Slack notification only (email removed)
     console.log('[Leads API] Attempting to send Slack notification...')
     let slackSent = false
     try {
       await sendSlackNotification(leadDataWithMessage)
       slackSent = true
-      console.log('[Leads API] Slack notification sent')
+      console.log('[Leads API] ✅ Slack notification sent successfully')
     } catch (error) {
-      console.error('[Leads API] Slack notification error:', error)
+      console.error('[Leads API] ❌ Slack notification error:', error)
+      // Still return success to not block user experience
     }
 
     // Log for debugging
-    const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL
+    const slackBotToken = process.env.SLACK_BOT_TOKEN
+    const slackChannelId = process.env.SLACK_CHANNEL_ID || 'C0AA2KHR02Z'
     console.log('[Leads API] Lead submitted:', {
       name: leadDataWithMessage.name,
       email: leadDataWithMessage.email,
       company: leadDataWithMessage.company,
       projectType: leadDataWithMessage.projectType,
       region: leadDataWithMessage.region,
-      emailSent: emailResult.success,
       slackSent: slackSent,
       assignedTo: assignLeadByRegion(leadDataWithMessage.region),
-      hasResendKey: !!process.env.RESEND_API_KEY,
-      hasSendGridKey: !!process.env.SENDGRID_API_KEY,
-      hasSlackWebhook: !!slackWebhookUrl,
-      slackWebhookUrl: slackWebhookUrl ? slackWebhookUrl.substring(0, 50) + '...' : 'NOT SET',
+      hasSlackBotToken: !!slackBotToken,
+      slackChannelId: slackChannelId,
     })
-
-    // Return success even if email fails (to not block user experience)
-    // But log the issue for debugging
-    if (!emailResult.success) {
-      console.warn('[Leads API] ⚠️ Email sending failed, but continuing...')
-    }
 
     return NextResponse.json({
       success: true,
