@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
       projectType: leadDataWithMessage.projectType,
       region: leadDataWithMessage.region,
       emailSent: emailResult.success,
-      slackSent: !!slackResult,
+      slackSent: slackSent,
       assignedTo: assignLeadByRegion(leadDataWithMessage.region),
       hasResendKey: !!process.env.RESEND_API_KEY,
       hasSendGridKey: !!process.env.SENDGRID_API_KEY,
