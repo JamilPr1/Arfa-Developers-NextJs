@@ -49,7 +49,7 @@ export async function readDataFile<T>(filename: string): Promise<T[]> {
     const kvInstance = await getKv()
     if (kvInstance) {
       try {
-        const data = await kvInstance.get<T[]>(filename)
+        const data = await kvInstance.get(filename) as T[] | null | undefined
         if (data !== null && data !== undefined) {
           return Array.isArray(data) ? data : []
         }
