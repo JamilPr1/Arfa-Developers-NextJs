@@ -1,39 +1,42 @@
-// Simplified data storage: KV for production, file system for local dev
+// Simplified data storage: Upstash Redis for production, file system for local dev
 import fs from 'fs'
 import path from 'path'
 
 const dataDir = path.join(process.cwd(), 'lib', 'data')
 
-// Check if KV is available
-const isKvAvailable = () => {
+// Check if Redis is available
+const isRedisAvailable = () => {
   try {
-    return !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN
+    // Upstash Redis uses UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
+    // Vercel KV uses KV_REST_API_URL and KV_REST_API_TOKEN
+    return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) ||
+           !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
   } catch {
     return false
   }
 }
 
-// Lazy load KV
-let kv: any = null
-let kvLoadAttempted = false
+// Lazy load Redis
+let redis: any = null
+let redisLoadAttempted = false
 
-const getKv = async () => {
-  if (kv) return kv
-  if (kvLoadAttempted) return null
-  kvLoadAttempted = true
+const getRedis = async () => {
+  if (redis) return redis
+  if (redisLoadAttempted) return null
+  redisLoadAttempted = true
   
-  if (isKvAvailable()) {
+  if (isRedisAvailable()) {
     try {
-      const kvModule = await import('@vercel/kv')
-      kv = kvModule.kv
-      console.log('✅ KV initialized successfully')
-      return kv
+      const { Redis } = await import('@upstash/redis')
+      redis = Redis.fromEnv()
+      console.log('✅ Redis initialized successfully')
+      return redis
     } catch (error: any) {
-      console.warn('⚠️ KV module not available:', error?.message)
+      console.warn('⚠️ Redis module not available:', error?.message)
       return null
     }
   }
-  console.log('ℹ️ KV not configured (missing env vars)')
+  console.log('ℹ️ Redis not configured (missing env vars)')
   return null
 }
 
@@ -41,18 +44,18 @@ export async function readDataFile<T>(filename: string): Promise<T[]> {
   console.log(`📖 Reading ${filename}...`)
   
   try {
-    // Try KV first
-    const kvInstance = await getKv()
-    if (kvInstance) {
+    // Try Redis first
+    const redisInstance = await getRedis()
+    if (redisInstance) {
       try {
-        const data = (await kvInstance.get(filename)) as T[] | null | undefined
+        const data = (await redisInstance.get(filename)) as T[] | null | undefined
         if (data !== null && data !== undefined) {
-          console.log(`✅ Read ${data.length} items from KV for ${filename}`)
+          console.log(`✅ Read ${data.length} items from Redis for ${filename}`)
           return Array.isArray(data) ? data : []
         }
-        console.log(`ℹ️ KV returned null/undefined for ${filename}, trying file system`)
-      } catch (kvError: any) {
-        console.error(`❌ KV read error for ${filename}:`, kvError?.message)
+        console.log(`ℹ️ Redis returned null/undefined for ${filename}, trying file system`)
+      } catch (redisError: any) {
+        console.error(`❌ Redis read error for ${filename}:`, redisError?.message)
       }
     }
 
@@ -88,32 +91,34 @@ export async function writeDataFile<T>(filename: string, data: T[]): Promise<voi
   const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
   
   try {
-    // Try KV first
-    const kvInstance = await getKv()
-    if (kvInstance) {
+    // Try Redis first
+    const redisInstance = await getRedis()
+    if (redisInstance) {
       try {
-        await kvInstance.set(filename, data)
-        console.log(`✅ Successfully wrote ${filename} to KV`)
+        await redisInstance.set(filename, data)
+        console.log(`✅ Successfully wrote ${filename} to Redis`)
         return
-      } catch (kvError: any) {
-        console.error(`❌ KV write error for ${filename}:`, kvError?.message)
-        throw new Error(`KV write failed: ${kvError?.message}`)
+      } catch (redisError: any) {
+        console.error(`❌ Redis write error for ${filename}:`, redisError?.message)
+        throw new Error(`Redis write failed: ${redisError?.message}`)
       }
     }
 
-    // If in production and KV is not available, throw clear error
+    // If in production and Redis is not available, throw clear error
     if (isProduction) {
-      const errorMsg = `❌ Vercel KV is not configured. Please set up Vercel KV in your dashboard:
+      const errorMsg = `❌ Upstash Redis is not configured. Please set up Redis in your dashboard:
 1. Go to Vercel Dashboard → Storage
-2. Create a KV Database (Upstash KV)
+2. Create a KV Database (Upstash Redis)
 3. Link it to your project
-4. Environment variables will be added automatically
+4. Run: vercel env pull .env.development.local
 
 Current env check:
-- KV_REST_API_URL: ${process.env.KV_REST_API_URL ? '✅ Set' : '❌ Missing'}
-- KV_REST_API_TOKEN: ${process.env.KV_REST_API_TOKEN ? '✅ Set' : '❌ Missing'}`
+- UPSTASH_REDIS_REST_URL: ${process.env.UPSTASH_REDIS_REST_URL ? '✅ Set' : '❌ Missing'}
+- UPSTASH_REDIS_REST_TOKEN: ${process.env.UPSTASH_REDIS_REST_TOKEN ? '✅ Set' : '❌ Missing'}
+- KV_REST_API_URL: ${process.env.KV_REST_API_URL ? '✅ Set (legacy)' : '❌ Missing'}
+- KV_REST_API_TOKEN: ${process.env.KV_REST_API_TOKEN ? '✅ Set (legacy)' : '❌ Missing'}`
       console.error(errorMsg)
-      throw new Error('Vercel KV is not configured. Please set up KV storage in Vercel dashboard. See server logs for details.')
+      throw new Error('Upstash Redis is not configured. Please set up Redis storage in Vercel dashboard. See server logs for details.')
     }
 
     // Fallback to file system (local dev only)
@@ -131,13 +136,13 @@ Current env check:
       } catch (fsError: any) {
         if (fsError.code === 'EROFS' || fsError.code === 'EACCES') {
           console.error(`❌ Filesystem is read-only for ${filename} (${fsError.code})`)
-          throw new Error(`Cannot write to read-only filesystem. Please configure Vercel KV. Error: ${fsError.message}`)
+          throw new Error(`Cannot write to read-only filesystem. Please configure Upstash Redis. Error: ${fsError.message}`)
         }
         throw new Error(`File write failed: ${fsError.message}`)
       }
     }
 
-    throw new Error('Cannot write: KV not configured and filesystem not available')
+    throw new Error('Cannot write: Redis not configured and filesystem not available')
   } catch (error: any) {
     console.error(`❌ Error writing ${filename}:`, error?.message || error)
     throw error
