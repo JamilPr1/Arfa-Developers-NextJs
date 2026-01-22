@@ -56,16 +56,6 @@ const legalLinks = [
 export default function Footer() {
   const router = useRouter()
   const pathname = usePathname()
-  const [servicesAnchorEl, setServicesAnchorEl] = useState<null | HTMLElement>(null)
-  const servicesMenuOpen = Boolean(servicesAnchorEl)
-
-  const handleServicesMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setServicesAnchorEl(event.currentTarget)
-  }
-
-  const handleServicesMenuClose = () => {
-    setServicesAnchorEl(null)
-  }
 
   const handleNavClick = (href: string, isRoute: boolean) => {
     if (isRoute) {
