@@ -34,7 +34,7 @@ const navLinks: NavLink[] = [
   { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Hire Talent', href: '/hire-talent' },
+  { label: 'Hire Our Talent', href: '/hire-talent' },
 ]
 
 type ServiceLink = {
@@ -194,6 +194,7 @@ export default function Header() {
                 <Typography
                   variant="h5"
                   component="div"
+                  noWrap
                   sx={{
                     fontWeight: 700,
                     color: scrolled || !hasColoredBackground 
@@ -201,6 +202,7 @@ export default function Header() {
                       : '#FFFFFF', // White for good contrast on blue background
                     cursor: 'pointer',
                     transition: 'color 0.3s ease',
+                    whiteSpace: 'nowrap',
                     '&:hover': {
                       color: '#2563EB',
                     },
@@ -217,10 +219,11 @@ export default function Header() {
               aria-label="Main navigation"
               sx={{ 
                 display: { xs: 'none', md: 'flex' }, 
-                gap: { md: 2, lg: 3 }, 
+                gap: { md: 1, lg: 1.5 }, 
                 alignItems: 'center',
                 flexWrap: 'nowrap',
                 overflow: 'hidden',
+                minWidth: 0,
               }}
             >
               {navLinks.map((link) => {
@@ -364,7 +367,9 @@ export default function Header() {
                           color: textColor,
                           fontWeight: 500,
                           fontSize: { md: '0.9rem', lg: '1rem' },
-                          px: { md: 1.5, lg: 2 },
+                          px: { md: 1, lg: 1.25 },
+                          minWidth: 'auto',
+                          whiteSpace: 'nowrap',
                           '&:hover': {
                             color: '#2563EB',
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -390,7 +395,9 @@ export default function Header() {
                       color: textColor,
                       fontWeight: 500,
                       fontSize: { md: '0.9rem', lg: '1rem' },
-                      px: { md: 1.5, lg: 2 },
+                      px: { md: 1, lg: 1.25 },
+                      minWidth: 'auto',
+                      whiteSpace: 'nowrap',
                       '&:hover': {
                         color: '#2563EB',
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -419,6 +426,7 @@ export default function Header() {
                   px: { md: 2, lg: 3 },
                   py: 1,
                   whiteSpace: 'nowrap',
+                  minWidth: 'auto',
                   '&:hover': {
                     backgroundColor: '#2563EB',
                     transform: 'translateY(-2px)',
