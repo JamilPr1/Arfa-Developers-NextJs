@@ -241,13 +241,32 @@ export default function HireTalentPage() {
                           <Box
                             sx={{
                               height: 200,
-                              backgroundImage: `url(${talent.image || '/api/placeholder/300/200'})`,
+                              backgroundImage: talent.image 
+                                ? `url(${talent.image})` 
+                                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                               backgroundSize: 'cover',
                               backgroundPosition: 'center',
                               position: 'relative',
                               bgcolor: '#E5E7EB',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              overflow: 'hidden',
                             }}
                           >
+                            {!talent.image && (
+                              <Typography
+                                variant="h6"
+                                sx={{
+                                  color: 'white',
+                                  fontWeight: 600,
+                                  textAlign: 'center',
+                                  px: 2,
+                                }}
+                              >
+                                {talent.name.charAt(0).toUpperCase()}
+                              </Typography>
+                            )}
                             {/* Top Rated Badge */}
                             {talent.rating && talent.rating >= 4.5 && (
                               <Box

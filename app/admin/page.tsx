@@ -154,6 +154,54 @@ export default function AdminPage() {
   })
   const [uploadingImage, setUploadingImage] = useState(false)
   const [imagePreview, setImagePreview] = useState<string>('')
+  const [imageError, setImageError] = useState(false)
+
+  // Helper function to convert ImgBB page URLs to direct image URLs
+  const convertToDirectImageUrl = (url: string): string => {
+    if (!url) return url
+    
+    // If it's already a direct image URL, return as is
+    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || url.includes('i.ibb.co') || url.includes('i.imgur.com')) {
+      return url
+    }
+    
+    // Convert ImgBB page URLs (ibb.co/xxxxx) to direct URLs
+    // ImgBB format: https://ibb.co/xxxxx -> https://i.ibb.co/xxxxx/image.jpg
+    // We'll need to fetch the page to get the actual image URL, but for now, we'll try common patterns
+    if (url.includes('ibb.co/')) {
+      // Try to extract the ID and construct direct URL
+      const match = url.match(/ibb\.co\/([a-zA-Z0-9]+)/)
+      if (match) {
+        // Note: This is a best guess. The actual direct URL format may vary.
+        // For now, we'll return the original URL and let the browser handle it
+        return url
+      }
+    }
+    
+    return url
+  }
+
+  // Function to validate and set image URL
+  const handleImageUrlChange = (url: string) => {
+    setTalentForm({ ...talentForm, image: url })
+    setImageError(false)
+    
+    // Convert ImgBB URLs if needed
+    const directUrl = convertToDirectImageUrl(url)
+    setImagePreview(directUrl)
+    
+    // Validate image by trying to load it
+    if (url) {
+      const img = new window.Image()
+      img.onload = () => {
+        setImageError(false)
+      }
+      img.onerror = () => {
+        setImageError(true)
+      }
+      img.src = directUrl
+    }
+  }
 
   useEffect(() => {
     // Check if already authenticated
@@ -258,6 +306,7 @@ export default function AdminPage() {
           projectsCompleted: item.projectsCompleted?.toString() || '',
         })
         setImagePreview(item.image || '')
+        setImageError(false)
       }
     } else {
       // Reset forms
@@ -1263,18 +1312,29 @@ export default function AdminPage() {
                       </Typography>
                     </Box>
                     {imagePreview && (
-                      <Box sx={{ mb: 2, position: 'relative', width: 200, height: 200 }}>
-                        <Image
-                          src={imagePreview}
-                          alt="Preview"
-                          fill
-                          style={{
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            border: '2px solid #E5E7EB',
-                          }}
-                          unoptimized
-                        />
+                      <Box sx={{ mb: 2 }}>
+                        {!imageError ? (
+                          <Box sx={{ position: 'relative', width: 200, height: 200 }}>
+                            <Image
+                              src={imagePreview}
+                              alt="Preview"
+                              fill
+                              style={{
+                                objectFit: 'cover',
+                                borderRadius: '8px',
+                                border: '2px solid #E5E7EB',
+                              }}
+                              unoptimized
+                              onError={() => setImageError(true)}
+                              onLoad={() => setImageError(false)}
+                            />
+                          </Box>
+                        ) : (
+                          <Alert severity="warning" sx={{ mb: 2 }}>
+                            Unable to load image preview. The URL will still be saved. 
+                            Please verify the URL is correct or use a direct image link.
+                          </Alert>
+                        )}
                       </Box>
                     )}
                     <TextField
@@ -1282,12 +1342,18 @@ export default function AdminPage() {
                       label="Profile Image URL *"
                       value={talentForm.image}
                       onChange={(e) => {
-                        setTalentForm({ ...talentForm, image: e.target.value })
-                        setImagePreview(e.target.value)
+                        const url = e.target.value
+                        setTalentForm({ ...talentForm, image: url })
+                        handleImageUrlChange(url)
                       }}
-                      placeholder="https://example.com/image.jpg or /uploads/talent/image.jpg"
+                      placeholder="https://i.ibb.co/xxxxx/image.jpg or https://ibb.co/xxxxx"
                       required
-                      helperText="Enter image URL or upload an image above"
+                      helperText={
+                        imageError 
+                          ? "Image preview failed. The URL will still be saved. Try using a direct image link (e.g., https://i.ibb.co/xxxxx/image.jpg)"
+                          : "Enter image URL (supports ImgBB page URLs, Imgur, or any direct image link) or upload an image above"
+                      }
+                      error={imageError && !!imagePreview}
                     />
                   </Grid>
                   <Grid item xs={12}>

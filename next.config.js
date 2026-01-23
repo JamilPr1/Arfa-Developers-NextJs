@@ -2,7 +2,21 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['images.unsplash.com', 'via.placeholder.com'],
+    domains: ['images.unsplash.com', 'via.placeholder.com', 'i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.ibb.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.imgur.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.imgbb.com',
+      },
+    ],
   },
   eslint: {
     ignoreDuringBuilds: false,
