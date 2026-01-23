@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
+import { getSupabaseClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-// Disable body parsing, we'll handle it manually
-export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,36 +41,78 @@ export async function POST(request: NextRequest) {
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
     const ext = path.extname(file.name) || '.jpg'
     const filename = `talent_${timestamp}${ext}`
-    
-    // Determine upload directory
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'talent')
-    const filepath = path.join(uploadDir, filename)
+    const filePath = `talent/${filename}`
 
+    // Try Supabase Storage first
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        const supabase = getSupabaseClient()
+        if (supabase) {
+          const bytes = await file.arrayBuffer()
+          const buffer = Buffer.from(bytes)
+          
+          // Upload to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('talent-images')
+            .upload(filePath, buffer, {
+              contentType: file.type,
+              upsert: false,
+            })
+          
+          if (uploadError) {
+            console.error('❌ Supabase upload error:', uploadError.message)
+            throw uploadError
+          }
+          
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('talent-images')
+            .getPublicUrl(filePath)
+          
+          const publicUrl = urlData.publicUrl
+          
+          console.log(`✅ Image uploaded successfully to Supabase: ${publicUrl}`)
+          
+          return NextResponse.json({ 
+            url: publicUrl,
+            filename: filename 
+          })
+        }
+      } catch (supabaseError: any) {
+        console.error('❌ Supabase upload failed:', supabaseError?.message)
+        // Continue to fallback
+      }
+    }
+
+    // Fallback to local filesystem (local dev only)
     try {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'talent')
+      const localFilePath = path.join(uploadDir, filename)
+      
       // Create directory if it doesn't exist
       await mkdir(uploadDir, { recursive: true })
       
       // Convert file to buffer and save
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      await writeFile(filepath, buffer)
+      await writeFile(localFilePath, buffer)
       
       // Return the public URL
       const publicUrl = `/uploads/talent/${filename}`
       
-      console.log(`✅ Image uploaded successfully: ${publicUrl}`)
+      console.log(`✅ Image uploaded successfully to local filesystem: ${publicUrl}`)
       
       return NextResponse.json({ 
         url: publicUrl,
         filename: filename 
       })
     } catch (fsError: any) {
-      // If filesystem write fails (e.g., on Vercel), return error with instructions
+      // If filesystem write fails (e.g., on Vercel), return error
       if (fsError.code === 'EROFS' || fsError.code === 'EACCES') {
-        console.error('❌ Filesystem is read-only. Cannot save file locally.')
+        console.error('❌ Filesystem is read-only. Supabase Storage not configured.')
         return NextResponse.json(
           { 
-            error: 'File upload not available in production. Please use an image URL instead, or configure cloud storage (e.g., Cloudinary, AWS S3, Vercel Blob).',
+            error: 'File upload requires Supabase Storage. Please configure Supabase or use an image URL instead.',
             useUrl: true 
           },
           { status: 500 }

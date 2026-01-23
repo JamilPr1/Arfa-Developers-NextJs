@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readDataFile, writeDataFile } from '@/lib/dataUtils'
+import { insertDataToSupabase, readDataFromSupabase } from '@/lib/supabaseDataUtils'
+import { getSupabaseClient } from '@/lib/supabase'
 
 // Force dynamic rendering - never cache this route
 export const dynamic = 'force-dynamic'
@@ -7,11 +9,31 @@ export const revalidate = 0
 
 export async function GET(request: NextRequest) {
   try {
-    const talents = await readDataFile('talent.json')
-    // Return only published talents for public API
-    const publishedTalents = talents.filter((t: any) => t && t.published === true)
+    // Try Supabase first
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        const supabase = getSupabaseClient()
+        if (supabase) {
+          const { data: talents, error } = await supabase
+            .from('talent')
+            .select('*')
+            .eq('published', true)
+            .order('rating', { ascending: false })
+          
+          if (!error && talents) {
+            const response = NextResponse.json(talents)
+            response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+            return response
+          }
+        }
+      } catch (supabaseError: any) {
+        console.warn('⚠️ Supabase read error, falling back:', supabaseError?.message)
+      }
+    }
     
-    // Sort by rating (highest first)
+    // Fallback to file-based system
+    const talents = await readDataFile('talent.json')
+    const publishedTalents = talents.filter((t: any) => t && t.published === true)
     publishedTalents.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
     
     const response = NextResponse.json(publishedTalents)
@@ -43,30 +65,42 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const talents = await readDataFile('talent.json')
-    console.log(`📊 Current talents count: ${talents.length}`)
-    
-    // Generate new ID
-    const maxId = talents.length > 0 
-      ? Math.max(...talents.map((t: any) => t.id || 0)) 
-      : 0
-    
     const newTalent = {
       ...talent,
-      id: maxId + 1,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       published: talent.published !== undefined ? talent.published : true,
       rating: talent.rating || 0,
       projectsCompleted: talent.projectsCompleted || 0,
     }
 
-    console.log(`🆕 New talent ID: ${newTalent.id}`)
-    talents.push(newTalent)
+    // Try Supabase first
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        const created = await insertDataToSupabase('talent', newTalent)
+        console.log(`✅ Talent created successfully in Supabase: ${created.id}`)
+        return NextResponse.json(created, { status: 201 })
+      } catch (supabaseError: any) {
+        console.warn('⚠️ Supabase insert error, falling back:', supabaseError?.message)
+      }
+    }
     
-    await writeDataFile('talent.json', talents)
-    console.log(`✅ Talent created successfully: ${newTalent.id}`)
+    // Fallback to file-based system
+    const talents = await readDataFile('talent.json')
+    const maxId = talents.length > 0 
+      ? Math.max(...talents.map((t: any) => t.id || 0)) 
+      : 0
+    
+    const talentWithId = {
+      ...newTalent,
+      id: maxId + 1,
+    }
 
-    return NextResponse.json(newTalent, { status: 201 })
+    talents.push(talentWithId)
+    await writeDataFile('talent.json', talents)
+    console.log(`✅ Talent created successfully: ${talentWithId.id}`)
+
+    return NextResponse.json(talentWithId, { status: 201 })
   } catch (error: any) {
     console.error('❌ Error creating talent:', error)
     return NextResponse.json(

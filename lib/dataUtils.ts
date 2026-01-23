@@ -1,8 +1,17 @@
-// Simplified data storage: Upstash Redis for production, file system for local dev
+// Data storage: Supabase (primary), Upstash Redis (fallback), file system (local dev)
 import fs from 'fs'
 import path from 'path'
+import { readDataFromSupabase, writeDataToSupabase } from './supabaseDataUtils'
 
 const dataDir = path.join(process.cwd(), 'lib', 'data')
+
+// Map JSON filenames to Supabase table names
+const tableMap: Record<string, string> = {
+  'projects.json': 'projects',
+  'blogs.json': 'blogs',
+  'promotions.json': 'promotions',
+  'talent.json': 'talent',
+}
 
 // Check if Redis is available
 const isRedisAvailable = () => {
@@ -43,15 +52,28 @@ const getRedis = async () => {
 export async function readDataFile<T>(filename: string): Promise<T[]> {
   console.log(`📖 Reading ${filename}...`)
   
-  // During build time (static generation), skip Redis and use filesystem
-  // Redis is only available at runtime in serverless functions
-  // Check for build phase or if we're in a static generation context
+  const tableName = tableMap[filename]
   const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
-                      process.env.NEXT_PHASE === 'phase-development-build' ||
-                      (typeof process.env.VERCEL === 'undefined' && typeof window === 'undefined')
+                      process.env.NEXT_PHASE === 'phase-development-build'
   
   try {
-    // Try Redis first (only at runtime, not during build)
+    // Try Supabase first (only at runtime, not during build)
+    if (!isBuildTime && tableName && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        const data = await readDataFromSupabase<T>(tableName)
+        if (data && data.length > 0) {
+          return data
+        }
+        console.log(`ℹ️ Supabase returned empty array for ${filename}, trying fallback`)
+      } catch (supabaseError: any) {
+        console.warn(`⚠️ Supabase read error for ${filename}:`, supabaseError?.message)
+        // Continue to fallback
+      }
+    } else if (isBuildTime) {
+      console.log(`ℹ️ Build time detected, using file system for ${filename}`)
+    }
+    
+    // Fallback to Redis (only at runtime, not during build)
     if (!isBuildTime) {
       const redisInstance = await getRedis()
       if (redisInstance) {
@@ -61,20 +83,10 @@ export async function readDataFile<T>(filename: string): Promise<T[]> {
             console.log(`✅ Read ${data.length} items from Redis for ${filename}`)
             return Array.isArray(data) ? data : []
           }
-          console.log(`ℹ️ Redis returned null/undefined for ${filename}, trying file system`)
         } catch (redisError: any) {
-          // Check if error is related to build-time restrictions
-          const isBuildError = redisError?.message?.includes('Dynamic server usage') ||
-                               redisError?.message?.includes('no-store')
-          if (isBuildError) {
-            console.log(`ℹ️ Redis not available during build for ${filename}, using file system`)
-          } else {
-            console.error(`❌ Redis read error for ${filename}:`, redisError?.message)
-          }
+          console.warn(`⚠️ Redis read error for ${filename}:`, redisError?.message)
         }
       }
-    } else {
-      console.log(`ℹ️ Build time detected, using file system for ${filename}`)
     }
 
     // Fallback to file system (local dev only)
