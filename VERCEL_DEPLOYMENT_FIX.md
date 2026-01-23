@@ -1,7 +1,27 @@
 # Vercel Deployment Fix - Supabase Integration
 
+## ⚠️ CRITICAL: Resource Suspension Issue
+
+**If you see "Resource has been suspended" in Vercel (like `arfa-devel`):**
+
+### Immediate Steps:
+1. **Go to Vercel Dashboard** → Your Project → **Settings** → **Integrations**
+2. **Remove ALL Supabase integrations** (especially any showing as suspended)
+3. **Remove any other suspended resources** (like `arfa-devel` if it's listed)
+4. **Go to Settings → General** and check for any suspension notices
+5. **Contact Vercel Support** if your account/project is suspended
+6. **Check billing/payment status** if applicable
+7. **Redeploy** after removing suspended integrations
+
+### Why This Happens:
+- Vercel detects `@supabase/supabase-js` in `package.json` and tries to auto-provision
+- If a previous integration was suspended, it blocks new deployments
+- Removing suspended integrations allows the build to proceed
+
 ## Problem
-Vercel deployment fails with "Provisioning integrations failed" because Vercel tries to auto-provision Supabase during build.
+Vercel deployment fails with "Provisioning integrations failed" because:
+1. Vercel tries to auto-provision Supabase during build, OR
+2. A Vercel resource/integration has been suspended
 
 ## Solution Implemented
 
@@ -33,11 +53,18 @@ Vercel deployment fails with "Provisioning integrations failed" because Vercel t
    ```
 3. **Redeploy** your project
 
-### Option 2: Remove Auto-Provisioning
-If Vercel keeps trying to auto-provision:
+### Option 2: Remove Auto-Provisioning & Suspended Resources
+**CRITICAL:** If you see "Resource has been suspended":
 1. Go to Vercel Dashboard → Your Project → **Settings** → **Integrations**
-2. If Supabase integration is listed, **remove it**
-3. We're using environment variables, not Vercel's integration
+2. **Remove ALL Supabase integrations** (especially any showing as suspended)
+3. Remove any other suspended integrations
+4. We're using environment variables, not Vercel's integration
+5. **Redeploy**
+
+### Option 3: Disable Integration Auto-Provisioning
+1. Go to Vercel Dashboard → Your Project → **Settings** → **General**
+2. Look for "Integration Auto-Provisioning" and **disable it**
+3. This prevents Vercel from automatically trying to provision Supabase
 4. **Redeploy**
 
 ## How It Works Now
