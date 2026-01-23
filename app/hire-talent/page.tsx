@@ -241,11 +241,6 @@ export default function HireTalentPage() {
                           <Box
                             sx={{
                               height: 200,
-                              backgroundImage: talent.image 
-                                ? `url(${talent.image})` 
-                                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
                               position: 'relative',
                               bgcolor: '#E5E7EB',
                               display: 'flex',
@@ -254,18 +249,45 @@ export default function HireTalentPage() {
                               overflow: 'hidden',
                             }}
                           >
-                            {!talent.image && (
-                              <Typography
-                                variant="h6"
+                            {talent.image ? (
+                              <Box
+                                component="img"
+                                src={talent.image}
+                                alt={talent.name}
                                 sx={{
-                                  color: 'white',
-                                  fontWeight: 600,
-                                  textAlign: 'center',
-                                  px: 2,
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'contain',
+                                  objectPosition: 'center',
+                                }}
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement
+                                  target.style.display = 'none'
+                                }}
+                              />
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: '100%',
+                                  height: '100%',
+                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
                                 }}
                               >
-                                {talent.name.charAt(0).toUpperCase()}
-                              </Typography>
+                                <Typography
+                                  variant="h6"
+                                  sx={{
+                                    color: 'white',
+                                    fontWeight: 600,
+                                    textAlign: 'center',
+                                    px: 2,
+                                  }}
+                                >
+                                  {talent.name.charAt(0).toUpperCase()}
+                                </Typography>
+                              </Box>
                             )}
                             {/* Top Rated Badge */}
                             {talent.rating && talent.rating >= 4.5 && (
