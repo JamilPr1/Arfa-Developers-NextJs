@@ -33,6 +33,7 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Input,
 } from '@mui/material'
 import {
   Edit as EditIcon,
@@ -46,6 +47,7 @@ import {
   Settings as SettingsIcon,
 } from '@mui/icons-material'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Project {
   id: number
@@ -150,6 +152,8 @@ export default function AdminPage() {
     location: '',
     published: true,
   })
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string>('')
 
   useEffect(() => {
     // Check if already authenticated
@@ -253,6 +257,7 @@ export default function AdminPage() {
           rating: item.rating?.toString() || '',
           projectsCompleted: item.projectsCompleted?.toString() || '',
         })
+        setImagePreview(item.image || '')
       }
     } else {
       // Reset forms
@@ -1203,12 +1208,86 @@ export default function AdminPage() {
                     />
                   </Grid>
                   <Grid item xs={12}>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: '#374151' }}>
+                      Profile Image *
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <input
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id="talent-image-upload"
+                        type="file"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          
+                          setUploadingImage(true)
+                          try {
+                            const formData = new FormData()
+                            formData.append('file', file)
+                            
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData,
+                            })
+                            
+                            const result = await response.json()
+                            
+                            if (response.ok && result.url) {
+                              setTalentForm({ ...talentForm, image: result.url })
+                              setImagePreview(result.url)
+                            } else {
+                              setError(result.error || 'Failed to upload image. Please use URL instead.')
+                            }
+                          } catch (err: any) {
+                            console.error('Upload error:', err)
+                            setError('Failed to upload image. Please use URL instead.')
+                          } finally {
+                            setUploadingImage(false)
+                          }
+                        }}
+                      />
+                      <label htmlFor="talent-image-upload">
+                        <Button
+                          variant="outlined"
+                          component="span"
+                          disabled={uploadingImage}
+                          startIcon={uploadingImage ? <CircularProgress size={20} /> : <AddIcon />}
+                          sx={{ mb: 2, mr: 2 }}
+                        >
+                          {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                        </Button>
+                      </label>
+                      <Typography variant="body2" sx={{ color: '#6B7280', mb: 2, display: 'inline-block' }}>
+                        or enter URL below
+                      </Typography>
+                    </Box>
+                    {imagePreview && (
+                      <Box sx={{ mb: 2, position: 'relative', width: 200, height: 200 }}>
+                        <Image
+                          src={imagePreview}
+                          alt="Preview"
+                          fill
+                          style={{
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            border: '2px solid #E5E7EB',
+                          }}
+                          unoptimized
+                        />
+                      </Box>
+                    )}
                     <TextField
                       fullWidth
                       label="Profile Image URL *"
                       value={talentForm.image}
-                      onChange={(e) => setTalentForm({ ...talentForm, image: e.target.value })}
+                      onChange={(e) => {
+                        setTalentForm({ ...talentForm, image: e.target.value })
+                        setImagePreview(e.target.value)
+                      }}
+                      placeholder="https://example.com/image.jpg or /uploads/talent/image.jpg"
                       required
+                      helperText="Enter image URL or upload an image above"
                     />
                   </Grid>
                   <Grid item xs={12}>
