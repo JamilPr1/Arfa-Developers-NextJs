@@ -31,10 +31,10 @@ const navLinks: NavLink[] = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services', hasDropdown: true },
   { label: 'Portfolio', href: '/portfolio' },
-  { label: 'Hire Talent', href: '/hire-talent' },
   { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
+  { label: 'Hire Talent', href: '/hire-talent' },
 ]
 
 type ServiceLink = {
@@ -218,7 +218,9 @@ export default function Header() {
               sx={{ 
                 display: { xs: 'none', md: 'flex' }, 
                 gap: { md: 2, lg: 3 }, 
-                alignItems: 'center' 
+                alignItems: 'center',
+                flexWrap: 'nowrap',
+                overflow: 'hidden',
               }}
             >
               {navLinks.map((link) => {
@@ -242,6 +244,7 @@ export default function Header() {
                           fontWeight: 500,
                           fontSize: { md: '0.9rem', lg: '1rem' },
                           px: { md: 1.5, lg: 2 },
+                          whiteSpace: 'nowrap',
                           '&:hover': {
                             color: '#2563EB',
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -415,6 +418,7 @@ export default function Header() {
                   fontSize: { md: '0.9rem', lg: '1rem' },
                   px: { md: 2, lg: 3 },
                   py: 1,
+                  whiteSpace: 'nowrap',
                   '&:hover': {
                     backgroundColor: '#2563EB',
                     transform: 'translateY(-2px)',
@@ -604,6 +608,7 @@ export default function Header() {
                       sx={{
                         minHeight: '48px',
                         py: 1.5,
+                        whiteSpace: 'nowrap',
                         '&:focus-visible': {
                           outline: '2px solid #2563EB',
                           outlineOffset: '-2px',
@@ -652,6 +657,7 @@ export default function Header() {
                     py: 1.5,
                     fontSize: '1rem',
                     fontWeight: 600,
+                    whiteSpace: 'nowrap',
                     '&:hover': {
                       backgroundColor: '#2563EB',
                     },
