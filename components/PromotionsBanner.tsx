@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Box, Link as MuiLink } from '@mui/material'
 import Link from 'next/link'
 
@@ -15,7 +15,34 @@ export default function PromotionsBanner() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [isPaused, setIsPaused] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const bannerRef = useRef<HTMLDivElement>(null)
+
+  const fetchPromotions = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      // Use fetch with no-cache and timestamp to ensure fresh data
+      const response = await fetch(`/api/promotions?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        const validPromotions = Array.isArray(data) ? data.filter((p: any) => p && p.active === true) : []
+        setPromotions(validPromotions)
+        setHasLoaded(true)
+      } else {
+        console.warn('Failed to fetch promotions:', response.status)
+      }
+    } catch (error) {
+      console.error('Error fetching promotions:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     // Fetch immediately on mount
@@ -23,40 +50,10 @@ export default function PromotionsBanner() {
     // Refresh promotions every 30 seconds to keep it active
     const interval = setInterval(fetchPromotions, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchPromotions])
 
-  const fetchPromotions = async () => {
-    try {
-      // Use fetch with no-cache for fresh data
-      const response = await fetch('/api/promotions', {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        const validPromotions = Array.isArray(data) ? data.filter((p: any) => p && p.active === true) : []
-        setPromotions(validPromotions)
-        setIsLoading(false)
-      } else {
-        console.warn('Failed to fetch promotions:', response.status)
-        // Keep existing promotions if fetch fails
-        if (promotions.length === 0) {
-          setIsLoading(false)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching promotions:', error)
-      // Keep existing promotions if fetch fails
-      if (promotions.length === 0) {
-        setIsLoading(false)
-      }
-    }
-  }
-
-  // Show loading state only on initial load
-  if (isLoading && promotions.length === 0) {
+  // Show loading state only on initial load (first time)
+  if (!hasLoaded && isLoading) {
     return (
       <Box
         sx={{

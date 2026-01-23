@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readDataFile, writeDataFile } from '@/lib/dataUtils'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Add cache control headers to prevent caching
     const promotions = await readDataFile('promotions.json')
-    const activePromotions = promotions.filter((p: any) => p.active)
-    return NextResponse.json(activePromotions)
+    const activePromotions = promotions.filter((p: any) => p && p.active === true)
+    
+    const response = NextResponse.json(activePromotions)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
   } catch (error) {
+    console.error('Error fetching promotions:', error)
     return NextResponse.json(
       { error: 'Failed to fetch promotions' },
       { status: 500 }

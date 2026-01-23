@@ -158,10 +158,12 @@ export default function AdminPage() {
     setDataLoading(true)
     setError('')
     try {
+      // Use cache busting to ensure fresh data
+      const timestamp = Date.now()
       const [projectsRes, blogsRes, promotionsRes] = await Promise.all([
-        fetch('/api/admin/projects'),
-        fetch('/api/admin/blogs'),
-        fetch('/api/admin/promotions'),
+        fetch(`/api/admin/projects?t=${timestamp}`, { cache: 'no-store' }),
+        fetch(`/api/admin/blogs?t=${timestamp}`, { cache: 'no-store' }),
+        fetch(`/api/admin/promotions?t=${timestamp}`, { cache: 'no-store' }),
       ])
       
       if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok) {
@@ -172,9 +174,20 @@ export default function AdminPage() {
       const blogsData = await blogsRes.json()
       const promotionsData = await promotionsRes.json()
       
-      setProjects(Array.isArray(projectsData) ? projectsData : [])
-      setBlogs(Array.isArray(blogsData) ? blogsData : [])
-      setPromotions(Array.isArray(promotionsData) ? promotionsData : [])
+      // Ensure we have arrays and sort by ID (newest first)
+      const sortedProjects = Array.isArray(projectsData) 
+        ? [...projectsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
+      const sortedBlogs = Array.isArray(blogsData)
+        ? [...blogsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
+      const sortedPromotions = Array.isArray(promotionsData)
+        ? [...promotionsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
+      
+      setProjects(sortedProjects)
+      setBlogs(sortedBlogs)
+      setPromotions(sortedPromotions)
     } catch (err) {
       console.error('Error loading data:', err)
       setError('Failed to load data. Please refresh the page.')
@@ -271,8 +284,8 @@ export default function AdminPage() {
         const result = await response.json()
         if (response.ok) {
           setSuccess('Blog saved successfully!')
-          loadData()
           setOpenDialog(false)
+          await loadData()
         } else {
           setError(result.error || 'Failed to save blog')
         }
@@ -304,10 +317,8 @@ export default function AdminPage() {
           if (response.ok) {
             setSuccess('Promotion saved successfully!')
             setOpenDialog(false)
-            // Reload data after a brief delay
-            setTimeout(() => {
-              loadData()
-            }, 300)
+            // Reload data immediately
+            await loadData()
           } else {
             console.error('❌ Promotion save error:', result)
             setError(result.error || 'Failed to save promotion')
@@ -340,10 +351,8 @@ export default function AdminPage() {
       console.log('Delete response data:', result)
       if (response.ok) {
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`)
-        // Reload data after a brief delay
-        setTimeout(() => {
-          loadData()
-        }, 300)
+        // Reload data immediately
+        await loadData()
       } else {
         setError(result.error || 'Failed to delete')
       }
@@ -380,10 +389,8 @@ export default function AdminPage() {
       if (response.ok) {
         const statusText = newStatus ? 'activated' : 'deactivated'
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} ${statusText} successfully!`)
-        // Reload data after a brief delay
-        setTimeout(() => {
-          loadData()
-        }, 300)
+        // Reload data immediately
+        await loadData()
       } else {
         setError(result.error || 'Failed to update status')
       }
