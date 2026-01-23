@@ -9,8 +9,11 @@ export const revalidate = 0
 
 export async function GET(request: NextRequest) {
   try {
-    // Try Supabase first
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    // Try Supabase first (only if env vars are set and not during build)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PHASE !== 'phase-production-build' &&
+        process.env.NEXT_PHASE !== 'phase-development-build') {
       try {
         const supabase = await getSupabaseClient()
         if (supabase) {
@@ -27,7 +30,8 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (supabaseError: any) {
-        console.warn('⚠️ Supabase read error, falling back:', supabaseError?.message)
+        // Silently fail - never throw
+        // Continue to fallback
       }
     }
     
@@ -74,14 +78,18 @@ export async function POST(request: NextRequest) {
       projectsCompleted: talent.projectsCompleted || 0,
     }
 
-    // Try Supabase first
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    // Try Supabase first (only if env vars are set and not during build)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PHASE !== 'phase-production-build' &&
+        process.env.NEXT_PHASE !== 'phase-development-build') {
       try {
         const created = await insertDataToSupabase('talent', newTalent)
         console.log(`✅ Talent created successfully in Supabase: ${created.id}`)
         return NextResponse.json(created, { status: 201 })
       } catch (supabaseError: any) {
-        console.warn('⚠️ Supabase insert error, falling back:', supabaseError?.message)
+        // Silently fail - never throw
+        // Continue to fallback
       }
     }
     

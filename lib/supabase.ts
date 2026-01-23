@@ -24,19 +24,24 @@ async function loadSupabaseLib() {
   if (supabaseLib) return supabaseLib
   
   // Only load Supabase module at runtime, not during build
-  if (isBuildTime()) {
-    // During build phase, don't load Supabase
+  // Be extra defensive - check if we're in any build context
+  if (isBuildTime() || 
+      process.env.CI === 'true' ||
+      !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    // During build phase or if not configured, don't load Supabase
     return null
   }
   
   try {
-    supabaseLib = await import('@supabase/supabase-js')
-    return supabaseLib
-  } catch (error) {
-    // Silently fail during build - this is expected
-    if (!isBuildTime()) {
-      console.warn('⚠️ Failed to load Supabase module:', error)
+    // Use dynamic import with error handling
+    const supabaseModule = await import('@supabase/supabase-js').catch(() => null)
+    if (supabaseModule) {
+      supabaseLib = supabaseModule
+      return supabaseLib
     }
+    return null
+  } catch (error) {
+    // Silently fail - never throw during build
     return null
   }
 }

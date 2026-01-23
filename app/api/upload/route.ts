@@ -43,8 +43,11 @@ export async function POST(request: NextRequest) {
     const filename = `talent_${timestamp}${ext}`
     const filePath = `talent/${filename}`
 
-    // Try Supabase Storage first
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    // Try Supabase Storage first (only if env vars are set and not during build)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PHASE !== 'phase-production-build' &&
+        process.env.NEXT_PHASE !== 'phase-development-build') {
       try {
         const supabase = await getSupabaseClient()
         if (supabase) {

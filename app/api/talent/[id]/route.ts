@@ -14,8 +14,11 @@ export async function GET(
     const { id } = await params
     const talentId = parseInt(id)
     
-    // Try Supabase first
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    // Try Supabase first (only if env vars are set and not during build)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PHASE !== 'phase-production-build' &&
+        process.env.NEXT_PHASE !== 'phase-development-build') {
       try {
         const supabase = await getSupabaseClient()
         if (supabase) {
@@ -28,12 +31,11 @@ export async function GET(
           if (!error && talent) {
             return NextResponse.json(talent)
           }
-          if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-            throw error
-          }
+          // Silently continue to fallback
         }
       } catch (supabaseError: any) {
-        console.warn('⚠️ Supabase read error, falling back:', supabaseError?.message)
+        // Silently fail - never throw
+        // Continue to fallback
       }
     }
     
@@ -129,8 +131,11 @@ export async function DELETE(
     const talentId = parseInt(id)
     console.log(`🗑️ Deleting talent ${id}`)
     
-    // Try Supabase first
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    // Try Supabase first (only if env vars are set and not during build)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PHASE !== 'phase-production-build' &&
+        process.env.NEXT_PHASE !== 'phase-development-build') {
       try {
         await deleteDataFromSupabase('talent', talentId)
         console.log(`✅ Talent deleted successfully from Supabase: ${id}`)
@@ -142,7 +147,7 @@ export async function DELETE(
             { status: 404 }
           )
         }
-        console.warn('⚠️ Supabase delete error, falling back:', supabaseError?.message)
+        // Silently continue to fallback
       }
     }
     

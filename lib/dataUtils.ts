@@ -52,28 +52,15 @@ const getRedis = async () => {
 export async function readDataFile<T>(filename: string): Promise<T[]> {
   console.log(`📖 Reading ${filename}...`)
   
-  const tableName = tableMap[filename]
+  // During build time (static generation), skip Redis and use filesystem
+  // Redis is only available at runtime in serverless functions
+  // Check for build phase or if we're in a static generation context
   const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
-                      process.env.NEXT_PHASE === 'phase-development-build'
+                      process.env.NEXT_PHASE === 'phase-development-build' ||
+                      (typeof process.env.VERCEL === 'undefined' && typeof window === 'undefined')
   
   try {
-    // Try Supabase first (only at runtime, not during build)
-    if (!isBuildTime && tableName && process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      try {
-        const data = await readDataFromSupabase<T>(tableName)
-        if (data && data.length > 0) {
-          return data
-        }
-        console.log(`ℹ️ Supabase returned empty array for ${filename}, trying fallback`)
-      } catch (supabaseError: any) {
-        console.warn(`⚠️ Supabase read error for ${filename}:`, supabaseError?.message)
-        // Continue to fallback
-      }
-    } else if (isBuildTime) {
-      console.log(`ℹ️ Build time detected, using file system for ${filename}`)
-    }
-    
-    // Fallback to Redis (only at runtime, not during build)
+    // Try Redis first (only at runtime, not during build)
     if (!isBuildTime) {
       const redisInstance = await getRedis()
       if (redisInstance) {
@@ -83,10 +70,20 @@ export async function readDataFile<T>(filename: string): Promise<T[]> {
             console.log(`✅ Read ${data.length} items from Redis for ${filename}`)
             return Array.isArray(data) ? data : []
           }
+          console.log(`ℹ️ Redis returned null/undefined for ${filename}, trying file system`)
         } catch (redisError: any) {
-          console.warn(`⚠️ Redis read error for ${filename}:`, redisError?.message)
+          // Check if error is related to build-time restrictions
+          const isBuildError = redisError?.message?.includes('Dynamic server usage') ||
+                               redisError?.message?.includes('no-store')
+          if (isBuildError) {
+            console.log(`ℹ️ Redis not available during build for ${filename}, using file system`)
+          } else {
+            console.error(`❌ Redis read error for ${filename}:`, redisError?.message)
+          }
         }
       }
+    } else {
+      console.log(`ℹ️ Build time detected, using file system for ${filename}`)
     }
 
     // Fallback to file system (local dev only)
@@ -117,11 +114,31 @@ export async function readDataFile<T>(filename: string): Promise<T[]> {
 export async function writeDataFile<T>(filename: string, data: T[]): Promise<void> {
   console.log(`💾 Writing ${data.length} items to ${filename}...`)
   
-  // Check if we're in production (Vercel)
+  const tableName = tableMap[filename]
   const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
   
   try {
-    // Try Redis first
+    // Try Supabase first (if configured and not during build)
+    // Be extra defensive - check env vars and build time
+    const isBuildTimeCheck = process.env.NEXT_PHASE === 'phase-production-build' || 
+                             process.env.NEXT_PHASE === 'phase-development-build' ||
+                             process.env.CI === 'true'
+    
+    if (!isBuildTimeCheck && 
+        tableName && 
+        process.env.NEXT_PUBLIC_SUPABASE_URL &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      try {
+        await writeDataToSupabase(tableName, data as any[])
+        console.log(`✅ Successfully wrote ${filename} to Supabase`)
+        return
+      } catch (supabaseError: any) {
+        // Silently fail - never throw during build
+        // Continue to fallback
+      }
+    }
+    
+    // Fallback to Redis
     const redisInstance = await getRedis()
     if (redisInstance) {
       try {
@@ -130,25 +147,21 @@ export async function writeDataFile<T>(filename: string, data: T[]): Promise<voi
         return
       } catch (redisError: any) {
         console.error(`❌ Redis write error for ${filename}:`, redisError?.message)
-        throw new Error(`Redis write failed: ${redisError?.message}`)
+        // Continue to fallback
       }
     }
 
-    // If in production and Redis is not available, throw clear error
+    // If in production and neither Supabase nor Redis is available, throw error
     if (isProduction) {
-      const errorMsg = `❌ Upstash Redis is not configured. Please set up Redis in your dashboard:
-1. Go to Vercel Dashboard → Storage
-2. Create a KV Database (Upstash Redis)
-3. Link it to your project
-4. Run: vercel env pull .env.development.local
+      const errorMsg = `❌ No storage configured. Please set up Supabase or Redis:
+1. Supabase: Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+2. Or Redis: Go to Vercel Dashboard → Storage → Create KV Database
 
 Current env check:
-- UPSTASH_REDIS_REST_URL: ${process.env.UPSTASH_REDIS_REST_URL ? '✅ Set' : '❌ Missing'}
-- UPSTASH_REDIS_REST_TOKEN: ${process.env.UPSTASH_REDIS_REST_TOKEN ? '✅ Set' : '❌ Missing'}
-- KV_REST_API_URL: ${process.env.KV_REST_API_URL ? '✅ Set (legacy)' : '❌ Missing'}
-- KV_REST_API_TOKEN: ${process.env.KV_REST_API_TOKEN ? '✅ Set (legacy)' : '❌ Missing'}`
+- NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing'}
+- UPSTASH_REDIS_REST_URL: ${process.env.UPSTASH_REDIS_REST_URL ? '✅ Set' : '❌ Missing'}`
       console.error(errorMsg)
-      throw new Error('Upstash Redis is not configured. Please set up Redis storage in Vercel dashboard. See server logs for details.')
+      throw new Error('No storage configured. Please set up Supabase or Redis. See server logs for details.')
     }
 
     // Fallback to file system (local dev only)
@@ -166,13 +179,13 @@ Current env check:
       } catch (fsError: any) {
         if (fsError.code === 'EROFS' || fsError.code === 'EACCES') {
           console.error(`❌ Filesystem is read-only for ${filename} (${fsError.code})`)
-          throw new Error(`Cannot write to read-only filesystem. Please configure Upstash Redis. Error: ${fsError.message}`)
+          throw new Error(`Cannot write to read-only filesystem. Please configure Supabase or Redis. Error: ${fsError.message}`)
         }
         throw new Error(`File write failed: ${fsError.message}`)
       }
     }
 
-    throw new Error('Cannot write: Redis not configured and filesystem not available')
+    throw new Error('Cannot write: No storage configured and filesystem not available')
   } catch (error: any) {
     console.error(`❌ Error writing ${filename}:`, error?.message || error)
     throw error
