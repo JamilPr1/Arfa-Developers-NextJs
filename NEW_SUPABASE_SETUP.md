@@ -111,8 +111,8 @@ USING (bucket_id = 'talent-images');
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://romerjhgmbuydyiccxfo.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_yvMRfWsa7RIPJkkmcDZ3UA_XmNO25-l
-SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key-from-step-1>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvbWVyamhnbWJ1eWR5aWNjeGZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxOTY5OTcsImV4cCI6MjA4NDc3Mjk5N30.QytsTM2RYYw1-5cRGcjDP-ZxPOMhtpCFYParDKaDuJQ
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvbWVyamhnbWJ1eWR5aWNjeGZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTE5Njk5NywiZXhwIjoyMDg0NzcyOTk3fQ.U3_wtVd-KiQZpUFN200YvuGtMECSRVSuFM_9mxtqMnU
 ```
 
 3. Click **Save** for each environment (Production, Preview, Development)
@@ -129,13 +129,23 @@ SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key-from-step-1>
 
 ## Step 6: Test the Setup
 
-1. **Test Database Connection**:
+### Quick Connection Test
+
+1. **Test Supabase Connection**:
    - Start your dev server: `npm run dev`
+   - Open: http://localhost:3000/api/test-supabase
+   - This will show you:
+     - ✅ Environment variables status
+     - ✅ Connection status
+     - ✅ Database tables status
+     - ✅ Storage buckets status
+
+2. **Test Database Connection**:
    - Go to `/admin` page
    - Try creating a project, blog, or talent profile
    - Check Supabase Dashboard → **Table Editor** to verify data is saved
 
-2. **Test Image Upload**:
+3. **Test Image Upload**:
    - Go to `/admin` → Talent tab
    - Try uploading an image for a talent profile
    - Check Supabase Dashboard → **Storage** → `talent-images` bucket
