@@ -112,6 +112,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={`${poppins.variable} ${roboto.variable}`}>
+        {/* Prefetch promotions API for immediate loading */}
+        <link rel="prefetch" href="/api/promotions" as="fetch" crossOrigin="anonymous" />
         {/* Google Tag Manager */}
         <Script
           id="google-tag-manager"

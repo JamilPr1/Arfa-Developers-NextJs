@@ -15,15 +15,15 @@ export default function PromotionsBanner() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [isPaused, setIsPaused] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [hasLoaded, setHasLoaded] = useState(false)
   const bannerRef = useRef<HTMLDivElement>(null)
 
   const fetchPromotions = useCallback(async () => {
     try {
+      setIsLoading(true)
       // Use fetch with no-cache and timestamp to ensure fresh data
       // Priority fetch for immediate loading - use AbortController for timeout
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout for faster fail
       
       const response = await fetch(`/api/promotions?t=${Date.now()}`, {
         cache: 'no-store',
@@ -41,42 +41,38 @@ export default function PromotionsBanner() {
         const data = await response.json()
         const validPromotions = Array.isArray(data) ? data.filter((p: any) => p && p.active === true) : []
         setPromotions(validPromotions)
-        setHasLoaded(true)
-        setIsLoading(false)
       } else {
         console.warn('Failed to fetch promotions:', response.status)
-        setIsLoading(false)
-        setHasLoaded(true) // Mark as loaded even on error to prevent infinite loading
       }
     } catch (error: any) {
       if (error.name !== 'AbortError') {
         console.error('Error fetching promotions:', error)
       }
+    } finally {
       setIsLoading(false)
-      setHasLoaded(true) // Mark as loaded to prevent infinite loading state
     }
   }, [])
 
   useEffect(() => {
-    // Fetch immediately on mount
-    fetchPromotions()
-    // Refresh promotions every 30 seconds to keep it active
-    const interval = setInterval(fetchPromotions, 30000)
-    return () => clearInterval(interval)
+    // Fetch immediately on mount - highest priority
+    if (typeof window !== 'undefined') {
+      // Fetch immediately, don't wait
+      fetchPromotions()
+      // Refresh promotions every 30 seconds to keep it active
+      const interval = setInterval(fetchPromotions, 30000)
+      return () => clearInterval(interval)
+    }
   }, [fetchPromotions])
 
-  // Show loading state only on initial load (first time) - but don't block rendering
-  // Render immediately with empty state, then update when data loads
-  if (!hasLoaded && isLoading && promotions.length === 0) {
-    // Return minimal loading state that doesn't block
-    return null
-  }
-
-  // Don't render if no active promotions after loading
-  if (hasLoaded && promotions.length === 0) return null
+  // Always render the banner container immediately
+  // Show loading skeleton or actual promotions
+  // Only hide if we've loaded and there are no active promotions
+  if (!isLoading && promotions.length === 0) return null
 
   // Calculate animation duration - slower speed (60-90 seconds for smooth scrolling)
-  const totalWidth = promotions.reduce((sum, p) => sum + (p.text?.length || 0) * 10 + 80, 0)
+  const totalWidth = promotions.length > 0 
+    ? promotions.reduce((sum, p) => sum + (p.text?.length || 0) * 10 + 80, 0)
+    : 200 // Default width for loading state
   const duration = Math.max(60, Math.min(90, totalWidth / 20)) // Slower, capped at 90s for smooth scrolling
 
   return (
@@ -95,7 +91,7 @@ export default function PromotionsBanner() {
         color: 'white',
         py: { xs: 1, sm: 1.5 },
         zIndex: 1300,
-        cursor: 'pointer',
+        cursor: promotions.length > 0 ? 'pointer' : 'default',
         willChange: 'transform',
       }}
     >
@@ -103,7 +99,7 @@ export default function PromotionsBanner() {
         sx={{
           display: 'flex',
           width: 'max-content',
-          animation: `scroll ${duration}s linear infinite`,
+          animation: promotions.length > 0 ? `scroll ${duration}s linear infinite` : 'none',
           animationPlayState: isPaused ? 'paused' : 'running',
           '@keyframes scroll': {
             '0%': {
@@ -115,35 +111,61 @@ export default function PromotionsBanner() {
           },
         }}
       >
-        {/* Duplicate promotions multiple times for seamless loop */}
-        {[...promotions, ...promotions, ...promotions].map((promotion, index) => (
+        {isLoading && promotions.length === 0 ? (
+          // Loading skeleton - show immediately
           <Box
-            key={`${promotion.id}-${index}`}
             sx={{
               flexShrink: 0,
               px: { xs: 4, sm: 6 },
               whiteSpace: 'nowrap',
+              opacity: 0.7,
             }}
           >
-            <MuiLink
-              component={Link}
-              href={promotion.link}
+            <Box
               sx={{
-                color: 'white',
-                textDecoration: 'none',
-                fontWeight: 500,
-                fontSize: { xs: '0.8125rem', sm: '0.9375rem' },
-                display: 'inline-block',
-                '&:hover': {
-                  textDecoration: 'underline',
+                width: '200px',
+                height: '20px',
+                bgcolor: 'rgba(255, 255, 255, 0.3)',
+                borderRadius: 1,
+                animation: 'pulse 1.5s ease-in-out infinite',
+                '@keyframes pulse': {
+                  '0%, 100%': { opacity: 0.7 },
+                  '50%': { opacity: 0.4 },
                 },
-                transition: 'all 0.2s ease',
+              }}
+            />
+          </Box>
+        ) : (
+          // Duplicate promotions multiple times for seamless loop
+          promotions.length > 0 && [...promotions, ...promotions, ...promotions].map((promotion, index) => (
+            <Box
+              key={`${promotion.id}-${index}`}
+              sx={{
+                flexShrink: 0,
+                px: { xs: 4, sm: 6 },
+                whiteSpace: 'nowrap',
               }}
             >
-              {promotion.text}
-            </MuiLink>
-          </Box>
-        ))}
+              <MuiLink
+                component={Link}
+                href={promotion.link}
+                sx={{
+                  color: 'white',
+                  textDecoration: 'none',
+                  fontWeight: 500,
+                  fontSize: { xs: '0.8125rem', sm: '0.9375rem' },
+                  display: 'inline-block',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {promotion.text}
+              </MuiLink>
+            </Box>
+          ))
+        )}
       </Box>
     </Box>
   )
