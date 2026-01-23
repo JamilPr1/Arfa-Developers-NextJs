@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readDataFile } from '@/lib/dataUtils'
 
+// Force dynamic rendering - never cache this route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Admin route to get all promotions (including inactive)
 export async function GET(request: NextRequest) {
   try {

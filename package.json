@@ -5,10 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "next build",
+    "postbuild": "node scripts/clear-cache-on-deploy.js --force",
     "start": "next start",
     "lint": "next lint",
     "revalidate": "node scripts/revalidate-cache.js",
-    "revalidate:all": "node scripts/revalidate-cache.js --tag=all"
+    "revalidate:all": "node scripts/revalidate-cache.js --tag=all",
+    "clear-cache": "node scripts/clear-cache-on-deploy.js --force"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",

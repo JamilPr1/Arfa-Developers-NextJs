@@ -20,27 +20,40 @@ export default function PromotionsBanner() {
 
   const fetchPromotions = useCallback(async () => {
     try {
-      setIsLoading(true)
       // Use fetch with no-cache and timestamp to ensure fresh data
+      // Priority fetch for immediate loading - use AbortController for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+      
       const response = await fetch(`/api/promotions?t=${Date.now()}`, {
         cache: 'no-store',
+        signal: controller.signal,
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Cache-Control': 'no-cache, no-store, must-revalidate, proxy-revalidate',
           'Pragma': 'no-cache',
+          'Expires': '0',
         },
       })
+      
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         const data = await response.json()
         const validPromotions = Array.isArray(data) ? data.filter((p: any) => p && p.active === true) : []
         setPromotions(validPromotions)
         setHasLoaded(true)
+        setIsLoading(false)
       } else {
         console.warn('Failed to fetch promotions:', response.status)
+        setIsLoading(false)
+        setHasLoaded(true) // Mark as loaded even on error to prevent infinite loading
       }
-    } catch (error) {
-      console.error('Error fetching promotions:', error)
-    } finally {
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error fetching promotions:', error)
+      }
       setIsLoading(false)
+      setHasLoaded(true) // Mark as loaded to prevent infinite loading state
     }
   }, [])
 
@@ -52,26 +65,15 @@ export default function PromotionsBanner() {
     return () => clearInterval(interval)
   }, [fetchPromotions])
 
-  // Show loading state only on initial load (first time)
-  if (!hasLoaded && isLoading) {
-    return (
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          width: '100%',
-          bgcolor: '#1E3A8A',
-          py: { xs: 1, sm: 1.5 },
-          zIndex: 1300,
-        }}
-      />
-    )
+  // Show loading state only on initial load (first time) - but don't block rendering
+  // Render immediately with empty state, then update when data loads
+  if (!hasLoaded && isLoading && promotions.length === 0) {
+    // Return minimal loading state that doesn't block
+    return null
   }
 
-  // Don't render if no active promotions
-  if (promotions.length === 0) return null
+  // Don't render if no active promotions after loading
+  if (hasLoaded && promotions.length === 0) return null
 
   // Calculate animation duration - slower speed (60-90 seconds for smooth scrolling)
   const totalWidth = promotions.reduce((sum, p) => sum + (p.text?.length || 0) * 10 + 80, 0)

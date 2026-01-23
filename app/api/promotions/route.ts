@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readDataFile, writeDataFile } from '@/lib/dataUtils'
 
+// Force dynamic rendering - never cache this route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(request: NextRequest) {
   try {
     // Add cache control headers to prevent caching
