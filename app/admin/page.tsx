@@ -266,8 +266,8 @@ export default function AdminPage() {
         const result = await response.json()
         if (response.ok) {
           setSuccess('Project saved successfully!')
-          loadData()
           setOpenDialog(false)
+          await loadData()
         } else {
           setError(result.error || 'Failed to save project')
         }
@@ -351,7 +351,6 @@ export default function AdminPage() {
       console.log('Delete response data:', result)
       if (response.ok) {
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`)
-        // Reload data immediately
         await loadData()
       } else {
         setError(result.error || 'Failed to delete')
