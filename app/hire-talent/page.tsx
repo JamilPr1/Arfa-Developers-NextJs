@@ -248,6 +248,32 @@ export default function HireTalentPage() {
                               bgcolor: '#E5E7EB',
                             }}
                           >
+                            {/* Top Rated Badge */}
+                            {talent.rating && talent.rating >= 4.5 && (
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  top: 8,
+                                  left: 8,
+                                  bgcolor: '#F59E0B',
+                                  color: 'white',
+                                  borderRadius: 1,
+                                  px: 1.5,
+                                  py: 0.5,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.5,
+                                  fontWeight: 600,
+                                  fontSize: '0.75rem',
+                                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)',
+                                  zIndex: 2,
+                                }}
+                              >
+                                <StarIcon sx={{ fontSize: 16 }} />
+                                Top Rated
+                              </Box>
+                            )}
+                            {/* Rating Badge */}
                             <Box
                               sx={{
                                 position: 'absolute',

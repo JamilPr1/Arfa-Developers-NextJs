@@ -190,19 +190,21 @@ export default function AdminPage() {
     try {
       // Use cache busting to ensure fresh data
       const timestamp = Date.now()
-      const [projectsRes, blogsRes, promotionsRes] = await Promise.all([
+      const [projectsRes, blogsRes, promotionsRes, talentsRes] = await Promise.all([
         fetch(`/api/admin/projects?t=${timestamp}`, { cache: 'no-store' }),
         fetch(`/api/admin/blogs?t=${timestamp}`, { cache: 'no-store' }),
         fetch(`/api/admin/promotions?t=${timestamp}`, { cache: 'no-store' }),
+        fetch(`/api/admin/talent?t=${timestamp}`, { cache: 'no-store' }),
       ])
       
-      if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok) {
+      if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok || !talentsRes.ok) {
         throw new Error('Failed to load data')
       }
       
       const projectsData = await projectsRes.json()
       const blogsData = await blogsRes.json()
       const promotionsData = await promotionsRes.json()
+      const talentsData = await talentsRes.json()
       
       // Ensure we have arrays and sort by ID (newest first)
       const sortedProjects = Array.isArray(projectsData) 
@@ -214,10 +216,14 @@ export default function AdminPage() {
       const sortedPromotions = Array.isArray(promotionsData)
         ? [...promotionsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
         : []
+      const sortedTalents = Array.isArray(talentsData)
+        ? [...talentsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
       
       setProjects(sortedProjects)
       setBlogs(sortedBlogs)
       setPromotions(sortedPromotions)
+      setTalents(sortedTalents)
     } catch (err) {
       console.error('Error loading data:', err)
       setError('Failed to load data. Please refresh the page.')
@@ -380,34 +386,82 @@ export default function AdminPage() {
           setError(`Network error: ${fetchError.message || 'Please try again.'}`)
         }
       } else if (dialogType === 'talent') {
-        // Validate talent form
-        if (!talentForm.name || !talentForm.skills || !talentForm.hourlyRate) {
+        // Validate talent form - check for empty strings and trim
+        const name = talentForm.name?.trim()
+        const skills = talentForm.skills?.trim()
+        const hourlyRate = talentForm.hourlyRate?.trim()
+        
+        if (!name || !skills || !hourlyRate) {
           setError('Name, skills, and hourly rate are required fields')
           setLoading(false)
           return
         }
         
+        // Validate hourly rate is a valid number
+        const hourlyRateNum = parseFloat(hourlyRate)
+        if (isNaN(hourlyRateNum) || hourlyRateNum <= 0) {
+          setError('Hourly rate must be a valid positive number')
+          setLoading(false)
+          return
+        }
+        
+        // Validate skills array is not empty after splitting
+        const skillsArray = skills.split(',').map((s) => s.trim()).filter(Boolean)
+        if (skillsArray.length === 0) {
+          setError('Please provide at least one skill')
+          setLoading(false)
+          return
+        }
+        
         const talentData = {
-          ...talentForm,
-          skills: talentForm.skills.split(',').map((s) => s.trim()).filter(Boolean),
-          hourlyRate: parseFloat(talentForm.hourlyRate) || 0,
+          name: name,
+          title: talentForm.title?.trim() || '',
+          image: talentForm.image?.trim() || '',
+          skills: skillsArray,
+          hourlyRate: hourlyRateNum,
           rating: parseFloat(talentForm.rating) || 0,
           projectsCompleted: parseInt(talentForm.projectsCompleted) || 0,
+          description: talentForm.description?.trim() || '',
+          experience: talentForm.experience?.trim() || '',
+          location: talentForm.location?.trim() || '',
+          published: talentForm.published !== undefined ? talentForm.published : true,
         }
         
         const url = editingItem
           ? `/api/talent/${editingItem.id}`
           : '/api/talent'
         const method = editingItem ? 'PUT' : 'POST'
+        
+        console.log('Saving talent:', { url, method, data: talentData })
+        
         const response = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(talentData),
         })
+        
+        console.log('Talent save response status:', response.status)
         const result = await response.json()
+        console.log('Talent save response data:', result)
+        
         if (response.ok) {
           setSuccess('Talent saved successfully!')
           setOpenDialog(false)
+          // Reset form
+          setTalentForm({
+            name: '',
+            title: '',
+            image: '',
+            skills: '',
+            hourlyRate: '',
+            rating: '',
+            projectsCompleted: '',
+            description: '',
+            experience: '',
+            location: '',
+            published: true,
+          })
+          // Reload data immediately
           await loadData()
         } else {
           setError(result.error || 'Failed to save talent')
