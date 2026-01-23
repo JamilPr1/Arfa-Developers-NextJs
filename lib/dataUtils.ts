@@ -43,20 +43,38 @@ const getRedis = async () => {
 export async function readDataFile<T>(filename: string): Promise<T[]> {
   console.log(`📖 Reading ${filename}...`)
   
+  // During build time (static generation), skip Redis and use filesystem
+  // Redis is only available at runtime in serverless functions
+  // Check for build phase or if we're in a static generation context
+  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                      process.env.NEXT_PHASE === 'phase-development-build' ||
+                      (typeof process.env.VERCEL === 'undefined' && typeof window === 'undefined')
+  
   try {
-    // Try Redis first
-    const redisInstance = await getRedis()
-    if (redisInstance) {
-      try {
-        const data = (await redisInstance.get(filename)) as T[] | null | undefined
-        if (data !== null && data !== undefined) {
-          console.log(`✅ Read ${data.length} items from Redis for ${filename}`)
-          return Array.isArray(data) ? data : []
+    // Try Redis first (only at runtime, not during build)
+    if (!isBuildTime) {
+      const redisInstance = await getRedis()
+      if (redisInstance) {
+        try {
+          const data = (await redisInstance.get(filename)) as T[] | null | undefined
+          if (data !== null && data !== undefined) {
+            console.log(`✅ Read ${data.length} items from Redis for ${filename}`)
+            return Array.isArray(data) ? data : []
+          }
+          console.log(`ℹ️ Redis returned null/undefined for ${filename}, trying file system`)
+        } catch (redisError: any) {
+          // Check if error is related to build-time restrictions
+          const isBuildError = redisError?.message?.includes('Dynamic server usage') ||
+                               redisError?.message?.includes('no-store')
+          if (isBuildError) {
+            console.log(`ℹ️ Redis not available during build for ${filename}, using file system`)
+          } else {
+            console.error(`❌ Redis read error for ${filename}:`, redisError?.message)
+          }
         }
-        console.log(`ℹ️ Redis returned null/undefined for ${filename}, trying file system`)
-      } catch (redisError: any) {
-        console.error(`❌ Redis read error for ${filename}:`, redisError?.message)
       }
+    } else {
+      console.log(`ℹ️ Build time detected, using file system for ${filename}`)
     }
 
     // Fallback to file system (local dev only)
