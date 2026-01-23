@@ -1,15 +1,30 @@
 // Lazy import Supabase to avoid build-time issues
-import type { SupabaseClient } from '@supabase/supabase-js'
+// Using 'any' type to avoid importing types that trigger Vercel provisioning
+type SupabaseClient = any
 
 let supabaseClient: SupabaseClient | null = null
 let supabaseAdminClient: SupabaseClient | null = null
 let supabaseLib: any = null
 
+function isBuildTime(): boolean {
+  // Check multiple build indicators
+  return !!(
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.NEXT_PHASE === 'phase-development-build' ||
+    process.env.NEXT_PHASE === 'phase-production-export' ||
+    process.env.NEXT_PHASE === 'phase-export' ||
+    (typeof window === 'undefined' && 
+     !process.env.VERCEL && 
+     process.env.NODE_ENV === 'production' &&
+     !process.env.VERCEL_ENV)
+  )
+}
+
 async function loadSupabaseLib() {
   if (supabaseLib) return supabaseLib
   
   // Only load Supabase module at runtime, not during build
-  if (typeof window === 'undefined' && process.env.NEXT_PHASE) {
+  if (isBuildTime()) {
     // During build phase, don't load Supabase
     return null
   }
@@ -18,15 +33,17 @@ async function loadSupabaseLib() {
     supabaseLib = await import('@supabase/supabase-js')
     return supabaseLib
   } catch (error) {
-    console.warn('⚠️ Failed to load Supabase module:', error)
+    // Silently fail during build - this is expected
+    if (!isBuildTime()) {
+      console.warn('⚠️ Failed to load Supabase module:', error)
+    }
     return null
   }
 }
 
 async function initializeSupabase() {
   // Skip during build time
-  if (process.env.NEXT_PHASE === 'phase-production-build' || 
-      process.env.NEXT_PHASE === 'phase-development-build') {
+  if (isBuildTime()) {
     return null
   }
   
@@ -59,7 +76,10 @@ async function initializeSupabase() {
 
     return { client, adminClient }
   } catch (error) {
-    console.warn('⚠️ Failed to initialize Supabase client:', error)
+    // Only log if not during build
+    if (!isBuildTime()) {
+      console.warn('⚠️ Failed to initialize Supabase client:', error)
+    }
     return null
   }
 }
@@ -67,8 +87,7 @@ async function initializeSupabase() {
 // Helper to get the appropriate client (async for lazy loading)
 export async function getSupabaseClient(): Promise<SupabaseClient | null> {
   // Skip during build time
-  if (process.env.NEXT_PHASE === 'phase-production-build' || 
-      process.env.NEXT_PHASE === 'phase-development-build') {
+  if (isBuildTime()) {
     return null
   }
   
@@ -92,8 +111,7 @@ export async function getSupabaseClient(): Promise<SupabaseClient | null> {
 
 // Synchronous version for compatibility (returns null if not initialized)
 export function getSupabaseClientSync(): SupabaseClient | null {
-  if (process.env.NEXT_PHASE === 'phase-production-build' || 
-      process.env.NEXT_PHASE === 'phase-development-build') {
+  if (isBuildTime()) {
     return null
   }
   return supabaseClient

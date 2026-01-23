@@ -1,0 +1,2 @@
+# Ignore Supabase-related files during Vercel build
+# This prevents Vercel from auto-detecting and provisioning Supabase
