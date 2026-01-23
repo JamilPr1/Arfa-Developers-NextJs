@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     // Try Supabase Storage first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       try {
-        const supabase = getSupabaseClient()
+        const supabase = await getSupabaseClient()
         if (supabase) {
           const bytes = await file.arrayBuffer()
           const buffer = Buffer.from(bytes)

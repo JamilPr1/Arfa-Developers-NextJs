@@ -8,7 +8,7 @@ export async function readDataFromSupabase<T>(tableName: string): Promise<T[]> {
   console.log(`📖 Reading ${tableName} from Supabase...`)
   
   try {
-    const supabase = getSupabaseClient()
+    const supabase = await getSupabaseClient()
     if (!supabase) {
       console.warn(`⚠️ Supabase not configured, skipping read for ${tableName}`)
       return []
@@ -43,7 +43,7 @@ export async function writeDataToSupabase<T extends { id?: number }>(
   console.log(`💾 Writing ${items.length} items to Supabase ${tableName}...`)
   
   try {
-    const supabase = getSupabaseClient()
+    const supabase = await getSupabaseClient()
     if (!supabase) {
       throw new Error('Supabase not configured')
     }
@@ -77,7 +77,7 @@ export async function insertDataToSupabase<T>(
   console.log(`➕ Inserting item into Supabase ${tableName}...`)
   
   try {
-    const supabase = getSupabaseClient()
+    const supabase = await getSupabaseClient()
     if (!supabase) {
       throw new Error('Supabase not configured')
     }
@@ -112,7 +112,7 @@ export async function updateDataInSupabase<T>(
   console.log(`✏️ Updating item ${id} in Supabase ${tableName}...`)
   
   try {
-    const supabase = getSupabaseClient()
+    const supabase = await getSupabaseClient()
     if (!supabase) {
       throw new Error('Supabase not configured')
     }
@@ -151,7 +151,7 @@ export async function deleteDataFromSupabase(
   console.log(`🗑️ Deleting item ${id} from Supabase ${tableName}...`)
   
   try {
-    const supabase = getSupabaseClient()
+    const supabase = await getSupabaseClient()
     if (!supabase) {
       throw new Error('Supabase not configured')
     }

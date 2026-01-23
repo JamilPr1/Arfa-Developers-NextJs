@@ -17,7 +17,7 @@ export async function GET(
     // Try Supabase first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       try {
-        const supabase = getSupabaseClient()
+        const supabase = await getSupabaseClient()
         if (supabase) {
           const { data: talent, error } = await supabase
             .from('talent')

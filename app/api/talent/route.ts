@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     // Try Supabase first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       try {
-        const supabase = getSupabaseClient()
+        const supabase = await getSupabaseClient()
         if (supabase) {
           const { data: talents, error } = await supabase
             .from('talent')
