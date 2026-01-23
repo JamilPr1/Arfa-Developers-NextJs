@@ -77,6 +77,21 @@ interface Promotion {
   active: boolean
 }
 
+interface Talent {
+  id: number
+  name: string
+  title: string
+  image: string
+  skills: string[]
+  hourlyRate: number
+  rating: number
+  projectsCompleted: number
+  description: string
+  experience?: string
+  location?: string
+  published: boolean
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -84,12 +99,13 @@ export default function AdminPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [promotions, setPromotions] = useState<Promotion[]>([])
+  const [talents, setTalents] = useState<Talent[]>([])
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [openDialog, setOpenDialog] = useState(false)
-  const [dialogType, setDialogType] = useState<'project' | 'blog' | 'promotion' | null>(null)
+  const [dialogType, setDialogType] = useState<'project' | 'blog' | 'promotion' | 'talent' | null>(null)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -119,6 +135,20 @@ export default function AdminPage() {
     text: '',
     link: '/contact',
     active: true,
+  })
+
+  const [talentForm, setTalentForm] = useState({
+    name: '',
+    title: '',
+    image: '',
+    skills: '',
+    hourlyRate: '',
+    rating: '',
+    projectsCompleted: '',
+    description: '',
+    experience: '',
+    location: '',
+    published: true,
   })
 
   useEffect(() => {
@@ -196,7 +226,7 @@ export default function AdminPage() {
     }
   }
 
-  const handleOpenDialog = (type: 'project' | 'blog' | 'promotion', item?: any) => {
+  const handleOpenDialog = (type: 'project' | 'blog' | 'promotion' | 'talent', item?: any) => {
     setDialogType(type)
     setEditingItem(item || null)
     if (item) {
@@ -207,8 +237,16 @@ export default function AdminPage() {
         })
       } else if (type === 'blog') {
         setBlogForm(item)
-      } else {
+      } else if (type === 'promotion') {
         setPromotionForm(item)
+      } else if (type === 'talent') {
+        setTalentForm({
+          ...item,
+          skills: Array.isArray(item.skills) ? item.skills.join(', ') : item.skills || '',
+          hourlyRate: item.hourlyRate?.toString() || '',
+          rating: item.rating?.toString() || '',
+          projectsCompleted: item.projectsCompleted?.toString() || '',
+        })
       }
     } else {
       // Reset forms
@@ -233,11 +271,25 @@ export default function AdminPage() {
           readTime: '5 min read',
           published: true,
         })
-      } else {
+      } else if (type === 'promotion') {
         setPromotionForm({
           text: '',
           link: '/contact',
           active: true,
+        })
+      } else if (type === 'talent') {
+        setTalentForm({
+          name: '',
+          title: '',
+          image: '',
+          skills: '',
+          hourlyRate: '',
+          rating: '',
+          projectsCompleted: '',
+          description: '',
+          experience: '',
+          location: '',
+          published: true,
         })
       }
     }
@@ -327,6 +379,39 @@ export default function AdminPage() {
           console.error('❌ Promotion fetch error:', fetchError)
           setError(`Network error: ${fetchError.message || 'Please try again.'}`)
         }
+      } else if (dialogType === 'talent') {
+        // Validate talent form
+        if (!talentForm.name || !talentForm.skills || !talentForm.hourlyRate) {
+          setError('Name, skills, and hourly rate are required fields')
+          setLoading(false)
+          return
+        }
+        
+        const talentData = {
+          ...talentForm,
+          skills: talentForm.skills.split(',').map((s) => s.trim()).filter(Boolean),
+          hourlyRate: parseFloat(talentForm.hourlyRate) || 0,
+          rating: parseFloat(talentForm.rating) || 0,
+          projectsCompleted: parseInt(talentForm.projectsCompleted) || 0,
+        }
+        
+        const url = editingItem
+          ? `/api/talent/${editingItem.id}`
+          : '/api/talent'
+        const method = editingItem ? 'PUT' : 'POST'
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(talentData),
+        })
+        const result = await response.json()
+        if (response.ok) {
+          setSuccess('Talent saved successfully!')
+          setOpenDialog(false)
+          await loadData()
+        } else {
+          setError(result.error || 'Failed to save talent')
+        }
       }
     } catch (err) {
       console.error('Save error:', err)
@@ -336,14 +421,15 @@ export default function AdminPage() {
     }
   }
 
-  const handleDelete = async (type: 'project' | 'blog' | 'promotion', id: number) => {
+  const handleDelete = async (type: 'project' | 'blog' | 'promotion' | 'talent', id: number) => {
     if (!confirm(`Are you sure you want to delete this ${type}?`)) return
     setLoading(true)
     setError('')
     setSuccess('')
     try {
       console.log(`Deleting ${type} ${id}`)
-      const response = await fetch(`/api/${type}s/${id}`, {
+      const apiPath = type === 'talent' ? `/api/talent/${id}` : `/api/${type}s/${id}`
+      const response = await fetch(apiPath, {
         method: 'DELETE',
       })
       console.log('Delete response status:', response.status)
@@ -364,7 +450,7 @@ export default function AdminPage() {
   }
 
   const handleToggleStatus = async (
-    type: 'project' | 'blog' | 'promotion',
+    type: 'project' | 'blog' | 'promotion' | 'talent',
     id: number,
     currentStatus: boolean
   ) => {
@@ -513,6 +599,7 @@ export default function AdminPage() {
               <Tab label="Projects" />
               <Tab label="Blogs" />
               <Tab label="Promotions" />
+              <Tab label="Talent" />
             </Tabs>
           </Paper>
 
@@ -753,10 +840,90 @@ export default function AdminPage() {
             </Paper>
           )}
 
+          {/* Talent Tab */}
+          {tabValue === 3 && (
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>Talent Profiles ({talents.length})</Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenDialog('talent')}
+                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                >
+                  Add Talent
+                </Button>
+              </Box>
+              {dataLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Rate</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Rating</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Published</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {talents.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                            <Typography color="text.secondary">No talent profiles found. Click &quot;Add Talent&quot; to create one.</Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        talents.map((talent) => (
+                          <TableRow key={talent.id} hover>
+                            <TableCell>{talent.name}</TableCell>
+                            <TableCell>{talent.title}</TableCell>
+                            <TableCell>${talent.hourlyRate}/hr</TableCell>
+                            <TableCell>
+                              <Chip label={talent.rating?.toFixed(1) || '0.0'} size="small" color="primary" variant="outlined" />
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={talent.published || false}
+                                onChange={() => handleToggleStatus('talent', talent.id, talent.published || false)}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <IconButton 
+                                onClick={() => handleOpenDialog('talent', talent)}
+                                size="small"
+                                sx={{ color: '#1E3A8A' }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton 
+                                onClick={() => handleDelete('talent', talent.id)}
+                                size="small"
+                                sx={{ color: '#DC2626' }}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Paper>
+          )}
+
           {/* Dialog for Add/Edit */}
           <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
             <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
-              {editingItem ? 'Edit' : 'Add'} {dialogType === 'project' ? 'Project' : dialogType === 'blog' ? 'Blog' : 'Promotion'}
+              {editingItem ? 'Edit' : 'Add'} {dialogType === 'project' ? 'Project' : dialogType === 'blog' ? 'Blog' : dialogType === 'promotion' ? 'Promotion' : 'Talent'}
             </DialogTitle>
             <DialogContent sx={{ mt: 2 }}>
               {dialogType === 'project' && (
@@ -955,6 +1122,121 @@ export default function AdminPage() {
                         />
                       }
                       label="Active (will display on website)"
+                    />
+                  </Grid>
+                </Grid>
+              )}
+
+              {dialogType === 'talent' && (
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Name *"
+                      value={talentForm.name}
+                      onChange={(e) => setTalentForm({ ...talentForm, name: e.target.value })}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Job Title *"
+                      value={talentForm.title}
+                      onChange={(e) => setTalentForm({ ...talentForm, title: e.target.value })}
+                      placeholder="e.g., Senior Full Stack Developer"
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Profile Image URL *"
+                      value={talentForm.image}
+                      onChange={(e) => setTalentForm({ ...talentForm, image: e.target.value })}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Skills (comma-separated) *"
+                      value={talentForm.skills}
+                      onChange={(e) => setTalentForm({ ...talentForm, skills: e.target.value })}
+                      placeholder="React, Node.js, TypeScript, AWS"
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Hourly Rate ($) *"
+                      value={talentForm.hourlyRate}
+                      onChange={(e) => setTalentForm({ ...talentForm, hourlyRate: e.target.value })}
+                      type="number"
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Rating (0-5)"
+                      value={talentForm.rating}
+                      onChange={(e) => setTalentForm({ ...talentForm, rating: e.target.value })}
+                      type="number"
+                      inputProps={{ min: 0, max: 5, step: 0.1 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Projects Completed"
+                      value={talentForm.projectsCompleted}
+                      onChange={(e) => setTalentForm({ ...talentForm, projectsCompleted: e.target.value })}
+                      type="number"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      label="Description *"
+                      value={talentForm.description}
+                      onChange={(e) => setTalentForm({ ...talentForm, description: e.target.value })}
+                      placeholder="Brief description about the developer..."
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="Experience"
+                      value={talentForm.experience}
+                      onChange={(e) => setTalentForm({ ...talentForm, experience: e.target.value })}
+                      placeholder="Years of experience, notable projects, achievements..."
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Location"
+                      value={talentForm.location}
+                      onChange={(e) => setTalentForm({ ...talentForm, location: e.target.value })}
+                      placeholder="e.g., New York, USA"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={talentForm.published}
+                          onChange={(e) => setTalentForm({ ...talentForm, published: e.target.checked })}
+                        />
+                      }
+                      label="Published (visible on website)"
                     />
                   </Grid>
                 </Grid>
