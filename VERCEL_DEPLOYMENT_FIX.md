@@ -47,10 +47,11 @@ Vercel deployment fails with "Provisioning integrations failed" because:
 1. Go to Vercel Dashboard → Your Project → **Settings** → **Environment Variables**
 2. Add these variables for **Production**, **Preview**, and **Development**:
    ```
-   NEXT_PUBLIC_SUPABASE_URL=https://nqosbgchdojiipndblqv.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   NEXT_PUBLIC_SUPABASE_URL=https://romerjhgmbuydyiccxfo.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_yvMRfWsa7RIPJkkmcDZ3UA_XmNO25-l
+   SUPABASE_SERVICE_ROLE_KEY=<get-from-supabase-dashboard>
    ```
+   **Note**: Get `SUPABASE_SERVICE_ROLE_KEY` from Supabase Dashboard → Settings → API → service_role key
 3. **Redeploy** your project
 
 ### Option 2: Remove Auto-Provisioning & Suspended Resources

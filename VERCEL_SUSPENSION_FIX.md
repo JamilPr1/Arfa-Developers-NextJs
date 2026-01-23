@@ -29,10 +29,11 @@ Vercel is trying to auto-provision Supabase, but a previous integration/resource
 1. Go to **Settings** → **Environment Variables**
 2. Add these for **Production**, **Preview**, and **Development**:
    ```
-   NEXT_PUBLIC_SUPABASE_URL=https://nqosbgchdojiipndblqv.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xb3NiZ2NoZG9qaWlwbmRibHF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0MjgyMjYsImV4cCI6MjA4NDAwNDIyNn0.wu0AQtmqzXS2Ma-flcJzt62THDgNTSjeTlrUmHipCqU
-   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xb3NiZ2NoZG9qaWlwbmRibHF2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODQyODIyNiwiZXhwIjoyMDg0MDA0MjI2fQ.XzGHlr_LY-cmH7dC_n03X0apwTLQBO0dMebDvFGTVn0
+   NEXT_PUBLIC_SUPABASE_URL=https://romerjhgmbuydyiccxfo.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_yvMRfWsa7RIPJkkmcDZ3UA_XmNO25-l
+   SUPABASE_SERVICE_ROLE_KEY=<get-this-from-supabase-dashboard-settings-api>
    ```
+   **Note**: Get `SUPABASE_SERVICE_ROLE_KEY` from Supabase Dashboard → Settings → API → service_role key
 3. Click **Save**
 
 ### Step 4: Check Project Status
