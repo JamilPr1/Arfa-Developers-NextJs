@@ -75,8 +75,8 @@ export async function GET() {
             results.storage.status = `❌ Error: ${bucketsError.message}`
           } else {
             results.storage.status = '✅ Connected'
-            results.storage.buckets = buckets?.map(b => b.name) || []
-            results.storage.talentImagesBucket = buckets?.some(b => b.name === 'talent-images')
+            results.storage.buckets = buckets?.map((b: any) => b.name) || []
+            results.storage.talentImagesBucket = buckets?.some((b: any) => b.name === 'talent-images')
               ? '✅ Exists'
               : '⚠️ Not found (create it in Supabase Dashboard)'
           }
