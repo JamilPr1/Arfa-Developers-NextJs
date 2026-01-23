@@ -49,4 +49,5 @@ export function getSupabaseClient(): SupabaseClient | null {
 }
 
 // Export client for direct use (will be null if not configured)
+// Only initialize on client-side to avoid build-time issues
 export const supabase = typeof window !== 'undefined' ? getSupabaseClient() : null
