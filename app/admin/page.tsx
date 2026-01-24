@@ -536,28 +536,42 @@ export default function AdminPage() {
   }
 
   const handleDelete = async (type: 'project' | 'blog' | 'promotion' | 'talent', id: number) => {
-    if (!confirm(`Are you sure you want to delete this ${type}?`)) return
+    if (!confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) return
     setLoading(true)
     setError('')
     setSuccess('')
     try {
-      console.log(`Deleting ${type} ${id}`)
-      const apiPath = type === 'talent' ? `/api/talent/${id}` : `/api/${type}s/${id}`
+      console.log(`🗑️ Deleting ${type} ${id}`)
+      
+      // Handle different API paths for different types
+      let apiPath = ''
+      if (type === 'talent') {
+        apiPath = `/api/talent/${id}`
+      } else if (type === 'promotion') {
+        apiPath = `/api/promotions/${id}`
+      } else {
+        apiPath = `/api/${type}s/${id}`
+      }
+      
       const response = await fetch(apiPath, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
       })
       console.log('Delete response status:', response.status)
       const result = await response.json()
       console.log('Delete response data:', result)
+      
       if (response.ok) {
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`)
+        // Immediately reload data to reflect changes
         await loadData()
       } else {
-        setError(result.error || 'Failed to delete')
+        console.error('❌ Delete failed:', result)
+        setError(result.error || `Failed to delete ${type}. Please try again.`)
       }
     } catch (err: any) {
       console.error('❌ Delete error:', err)
-      setError(`Delete error: ${err.message || 'An error occurred'}`)
+      setError(`Delete error: ${err.message || 'An error occurred. Please try again.'}`)
     } finally {
       setLoading(false)
     }
