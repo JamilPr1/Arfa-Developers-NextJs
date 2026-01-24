@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
           
           if (!error && talents) {
             // Ensure projectsCompleted is set for all talents
-            const talentsWithDefaults = talents.map((t: any) => ({
+            const talentsData = talents as any[]
+            const talentsWithDefaults = talentsData.map((t: any) => ({
               ...t,
               projectsCompleted: t.projectsCompleted ?? 0,
             }))

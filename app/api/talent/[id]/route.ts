@@ -30,9 +30,10 @@ export async function GET(
           
           if (!error && talent) {
             // Ensure projectsCompleted is set
+            const talentData = talent as any
             const talentWithDefaults = {
-              ...talent,
-              projectsCompleted: talent.projectsCompleted ?? 0,
+              ...talentData,
+              projectsCompleted: talentData.projectsCompleted ?? 0,
             }
             return NextResponse.json(talentWithDefaults)
           }
@@ -46,7 +47,7 @@ export async function GET(
     
     // Fallback to file-based system
     const talents = await readDataFile('talent.json')
-    const talent = talents.find((t: any) => t.id === talentId)
+    const talent = talents.find((t: any) => t.id === talentId) as any
     
     if (!talent) {
       return NextResponse.json(

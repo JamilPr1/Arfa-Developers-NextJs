@@ -24,7 +24,8 @@ export async function GET() {
           
           if (!error && talents) {
             // Sort by rating (highest first), then by creation date
-            talents.sort((a: any, b: any) => {
+            const talentsData = talents as any[]
+            talentsData.sort((a: any, b: any) => {
               if ((b.rating || 0) !== (a.rating || 0)) {
                 return (b.rating || 0) - (a.rating || 0)
               }
@@ -32,7 +33,7 @@ export async function GET() {
             })
             
             // Ensure projectsCompleted is set for all talents
-            const talentsWithDefaults = talents.map((t: any) => ({
+            const talentsWithDefaults = talentsData.map((t: any) => ({
               ...t,
               projectsCompleted: t.projectsCompleted ?? 0,
             }))
