@@ -155,6 +155,8 @@ export default function AdminPage() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [imagePreview, setImagePreview] = useState<string>('')
   const [imageError, setImageError] = useState(false)
+  const [projectImagePreview, setProjectImagePreview] = useState<string>('')
+  const [blogImagePreview, setBlogImagePreview] = useState<string>('')
 
   // Helper function to convert ImgBB page URLs to direct image URLs
   const convertToDirectImageUrl = (url: string): string => {
@@ -321,6 +323,8 @@ export default function AdminPage() {
           fullDescription: '',
           published: true,
         })
+        setProjectImagePreview('')
+        setImageError(false)
       } else if (type === 'blog') {
         setBlogForm({
           title: '',
@@ -331,6 +335,8 @@ export default function AdminPage() {
           readTime: '5 min read',
           published: true,
         })
+        setBlogImagePreview('')
+        setImageError(false)
       } else if (type === 'promotion') {
         setPromotionForm({
           text: '',
@@ -570,7 +576,17 @@ export default function AdminPage() {
       const newStatus = !currentStatus
       console.log(`Toggling ${type} ${id} ${field} from ${currentStatus} to ${newStatus}`)
       
-      const response = await fetch(`/api/${type}s/${id}`, {
+      // Handle different API paths for different types
+      let apiPath = ''
+      if (type === 'talent') {
+        apiPath = `/api/talent/${id}`
+      } else if (type === 'promotion') {
+        apiPath = `/api/promotions/${id}`
+      } else {
+        apiPath = `/api/${type}s/${id}`
+      }
+      
+      const response = await fetch(apiPath, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: newStatus }),
@@ -580,7 +596,7 @@ export default function AdminPage() {
       console.log('Toggle response data:', result)
       
       if (response.ok) {
-        const statusText = newStatus ? 'activated' : 'deactivated'
+        const statusText = newStatus ? (type === 'promotion' ? 'activated' : 'published') : (type === 'promotion' ? 'paused' : 'unpublished')
         setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} ${statusText} successfully!`)
         // Reload data immediately
         await loadData()
@@ -1061,12 +1077,87 @@ export default function AdminPage() {
                     </TextField>
                   </Grid>
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: '#374151' }}>
+                      Project Image *
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <input
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id="project-image-upload"
+                        type="file"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          
+                          setUploadingImage(true)
+                          try {
+                            const formData = new FormData()
+                            formData.append('file', file)
+                            
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData,
+                            })
+                            
+                            const result = await response.json()
+                            
+                            if (response.ok && result.url) {
+                              setProjectForm({ ...projectForm, image: result.url })
+                              setProjectImagePreview(result.url)
+                              setSuccess('Image uploaded successfully!')
+                            } else {
+                              setError(result.error || 'Failed to upload image. Please use URL instead.')
+                            }
+                          } catch (err: any) {
+                            console.error('Upload error:', err)
+                            setError('Failed to upload image. Please use URL instead.')
+                          } finally {
+                            setUploadingImage(false)
+                          }
+                        }}
+                      />
+                      <label htmlFor="project-image-upload">
+                        <Button
+                          variant="outlined"
+                          component="span"
+                          disabled={uploadingImage}
+                          sx={{ mb: 1, mr: 1 }}
+                        >
+                          {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                        </Button>
+                      </label>
+                      {projectImagePreview && (
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                          <Image
+                            src={projectImagePreview}
+                            alt="Project preview"
+                            width={200}
+                            height={120}
+                            style={{ objectFit: 'contain', borderRadius: 8 }}
+                            onError={() => setImageError(true)}
+                          />
+                        </Box>
+                      )}
+                      {imageError && projectImagePreview && (
+                        <Alert severity="warning" sx={{ mt: 1 }}>
+                          Image preview failed. The URL will still be saved. Try using a direct image link.
+                        </Alert>
+                      )}
+                    </Box>
                     <TextField
                       fullWidth
                       label="Image URL *"
                       value={projectForm.image}
-                      onChange={(e) => setProjectForm({ ...projectForm, image: e.target.value })}
+                      onChange={(e) => {
+                        const url = e.target.value
+                        setProjectForm({ ...projectForm, image: url })
+                        setProjectImagePreview(url)
+                        setImageError(false)
+                      }}
+                      placeholder="https://i.ibb.co/xxxxx/image.jpg or https://ibb.co/xxxxx"
                       required
+                      helperText="Enter image URL or upload an image above"
                     />
                   </Grid>
                   <Grid item xs={12}>
