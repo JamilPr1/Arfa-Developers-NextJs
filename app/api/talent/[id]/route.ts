@@ -29,7 +29,12 @@ export async function GET(
             .single()
           
           if (!error && talent) {
-            return NextResponse.json(talent)
+            // Ensure projectsCompleted is set
+            const talentWithDefaults = {
+              ...talent,
+              projectsCompleted: talent.projectsCompleted ?? 0,
+            }
+            return NextResponse.json(talentWithDefaults)
           }
           // Silently continue to fallback
         }
@@ -50,7 +55,13 @@ export async function GET(
       )
     }
     
-    return NextResponse.json(talent)
+    // Ensure projectsCompleted is set
+    const talentWithDefaults = {
+      ...talent,
+      projectsCompleted: talent.projectsCompleted ?? 0,
+    }
+    
+    return NextResponse.json(talentWithDefaults)
   } catch (error: any) {
     console.error('Error fetching talent:', error)
     return NextResponse.json(

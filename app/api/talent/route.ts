@@ -24,7 +24,12 @@ export async function GET(request: NextRequest) {
             .order('rating', { ascending: false })
           
           if (!error && talents) {
-            const response = NextResponse.json(talents)
+            // Ensure projectsCompleted is set for all talents
+            const talentsWithDefaults = talents.map((t: any) => ({
+              ...t,
+              projectsCompleted: t.projectsCompleted ?? 0,
+            }))
+            const response = NextResponse.json(talentsWithDefaults)
             response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
             return response
           }
@@ -40,7 +45,13 @@ export async function GET(request: NextRequest) {
     const publishedTalents = talents.filter((t: any) => t && t.published === true)
     publishedTalents.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
     
-    const response = NextResponse.json(publishedTalents)
+    // Ensure projectsCompleted is set for all talents
+    const talentsWithDefaults = publishedTalents.map((t: any) => ({
+      ...t,
+      projectsCompleted: t.projectsCompleted ?? 0,
+    }))
+    
+    const response = NextResponse.json(talentsWithDefaults)
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
