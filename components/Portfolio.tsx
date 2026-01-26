@@ -353,6 +353,60 @@ export default function Portfolio() {
         <DialogContent sx={{ p: 0 }}>
           {selectedProject && (
             <Box>
+              {/* Project Details - Overview Section First */}
+              <Box sx={{ p: 4, pb: 3 }}>
+                {/* Type and URL */}
+                <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Chip
+                    label={selectedProject.type}
+                    color="primary"
+                    sx={{ fontWeight: 600 }}
+                  />
+                  {selectedProject.url && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      href={selectedProject.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      startIcon={<LaunchIcon />}
+                      sx={{
+                        borderColor: '#1E3A8A',
+                        color: '#1E3A8A',
+                        '&:hover': {
+                          borderColor: '#2563EB',
+                          backgroundColor: 'rgba(30, 58, 138, 0.04)',
+                        },
+                      }}
+                    >
+                      View Project
+                    </Button>
+                  )}
+                </Box>
+
+                {/* Overview */}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: '#111827',
+                  }}
+                >
+                  Overview
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    mb: 0,
+                    color: '#6B7280',
+                    lineHeight: 1.8,
+                  }}
+                >
+                  {selectedProject.fullDescription || selectedProject.description}
+                </Typography>
+              </Box>
+
               {/* Project Image */}
               <Box
                 sx={{
@@ -384,60 +438,9 @@ export default function Portfolio() {
                 />
               </Box>
 
-              {/* Project Details */}
-              <Box sx={{ p: 4 }}>
-                {/* Type and URL */}
-                <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Chip
-                    label={selectedProject.type}
-                    color="primary"
-                    sx={{ fontWeight: 600 }}
-                  />
-                  {selectedProject.url && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      href={selectedProject.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      startIcon={<LaunchIcon />}
-                      sx={{
-                        borderColor: '#1E3A8A',
-                        color: '#1E3A8A',
-                        '&:hover': {
-                          borderColor: '#2563EB',
-                          backgroundColor: 'rgba(30, 58, 138, 0.04)',
-                        },
-                      }}
-                    >
-                      View Project
-                    </Button>
-                  )}
-                </Box>
-
-                {/* Description */}
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#111827',
-                  }}
-                >
-                  Overview
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mb: 3,
-                    color: '#6B7280',
-                    lineHeight: 1.8,
-                  }}
-                >
-                  {selectedProject.fullDescription || selectedProject.description}
-                </Typography>
-
-                <Divider sx={{ my: 3 }} />
+              {/* Project Details - Technologies Section */}
+              <Box sx={{ p: 4, pt: 3 }}>
+                <Divider sx={{ mb: 3 }} />
 
                 {/* Technologies */}
                 <Typography
