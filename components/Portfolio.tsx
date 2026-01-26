@@ -61,7 +61,7 @@ export default function Portfolio() {
   const filteredProjects =
     selectedType === 'All'
       ? projects
-      : projects.filter((project) => project.type === selectedType)
+      : projects.filter((project) => project && project.type === selectedType)
 
   if (loading) {
     return (
@@ -120,20 +120,23 @@ export default function Portfolio() {
           width: '100%',
           mx: 'auto',
         }}>
-          <SimpleCarousel
-            items={filteredProjects}
-            autoPlay={true}
-            autoPlayInterval={2500}
-            showDots={true}
-            showArrows={true}
-            renderItem={(project, index, isActive) => (
+          {filteredProjects.length > 0 ? (
+            <SimpleCarousel
+              items={filteredProjects}
+              autoPlay={true}
+              autoPlayInterval={2500}
+              showDots={true}
+              showArrows={true}
+              renderItem={(project, index, isActive) => {
+                if (!project || !project.image) return null
+                return (
               <motion.div
                 whileHover={isActive ? { scale: 1.02 } : {}}
                 transition={{ duration: 0.3 }}
               >
                 <Card
                   onClick={() => {
-                    if (isActive) {
+                    if (isActive && project) {
                       setSelectedProject(project)
                       setOpenModal(true)
                     }
@@ -162,8 +165,8 @@ export default function Portfolio() {
                   <Box sx={{ position: 'relative', flex: 1, minHeight: '280px' }}>
                     <Box
                       component="img"
-                      src={project.image}
-                      alt={project.title}
+                      src={project?.image || ''}
+                      alt={project?.title || 'Project'}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         target.src = 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&auto=format&fit=crop&q=80'
@@ -197,7 +200,7 @@ export default function Portfolio() {
                           textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                         }}
                       >
-                        {project.title}
+                        {project?.title || 'Project'}
                       </Typography>
                       <Typography 
                         variant="body2" 
@@ -211,10 +214,10 @@ export default function Portfolio() {
                           overflow: 'hidden',
                         }}
                       >
-                        {project.description}
+                        {project?.description || ''}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        {project.tech.slice(0, 3).map((tech: string) => (
+                        {(project?.tech || []).slice(0, 3).map((tech: string) => (
                           <Chip
                             key={tech}
                             label={tech}
@@ -233,7 +236,7 @@ export default function Portfolio() {
                   </Box>
                   <CardContent sx={{ pt: 1, pb: 2 }}>
                     <Chip 
-                      label={project.type} 
+                      label={project?.type || 'Project'} 
                       size="small" 
                       color="primary"
                       sx={{ fontWeight: 600 }}
@@ -241,8 +244,16 @@ export default function Portfolio() {
                   </CardContent>
                 </Card>
               </motion.div>
-            )}
-          />
+              )
+            }}
+            />
+          ) : (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Typography variant="h6" color="text.secondary">
+                No projects found in this category.
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         <Grid container spacing={3} sx={{ display: { xs: 'flex', md: 'none' } }}>
@@ -346,9 +357,13 @@ export default function Portfolio() {
               <Box
                 sx={{
                   width: '100%',
-                  height: '300px',
+                  maxHeight: '500px',
                   position: 'relative',
                   overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#f5f5f5',
                 }}
               >
                 <Box
@@ -361,8 +376,9 @@ export default function Portfolio() {
                   }}
                   sx={{
                     width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
+                    height: 'auto',
+                    maxHeight: '500px',
+                    objectFit: 'contain',
                     display: 'block',
                   }}
                 />

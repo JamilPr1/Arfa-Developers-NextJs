@@ -132,81 +132,87 @@ export default function SimpleCarousel({
         }}
       >
         {/* Left Slide - More visible and positioned further out */}
-        <motion.div
-          key={`left-${getSlideIndex(-1)}`}
-          initial={{ opacity: 0, x: 100, scale: 0.75 }}
-          animate={{ 
-            opacity: 0.85,
-            x: -240,
-            scale: 0.75,
-          }}
-          transition={{
-            duration: 0.6,
-            ease: [0.4, 0, 0.2, 1],
-          }}
-          style={{
-            position: 'absolute',
-            width: '320px',
-            zIndex: 2,
-            pointerEvents: 'none',
-          }}
-        >
-          <Box sx={{ width: '100%' }}>
-            {renderItem(items[getSlideIndex(-1)], getSlideIndex(-1), false)}
-          </Box>
-        </motion.div>
-
-        {/* Center Slide (Active) - Scrolls from right to left */}
-        <AnimatePresence mode="wait">
+        {items[getSlideIndex(-1)] && (
           <motion.div
-            key={`center-${currentIndex}`}
-            initial={{ opacity: 0, x: 400, scale: 0.9 }} // Start from right (off-screen)
+            key={`left-${getSlideIndex(-1)}`}
+            initial={{ opacity: 0, x: 100, scale: 0.75 }}
             animate={{ 
-              opacity: 1, 
-              x: 0, // Move to center
-              scale: 1 
+              opacity: 0.85,
+              x: -240,
+              scale: 0.75,
             }}
-            exit={{ opacity: 0, x: -400, scale: 0.9 }} // Exit to left
             transition={{
               duration: 0.6,
               ease: [0.4, 0, 0.2, 1],
             }}
             style={{
-              position: 'relative',
-              width: '400px',
-              zIndex: 5,
+              position: 'absolute',
+              width: '320px',
+              zIndex: 2,
+              pointerEvents: 'none',
             }}
           >
             <Box sx={{ width: '100%' }}>
-              {renderItem(items[currentIndex], currentIndex, true)}
+              {renderItem(items[getSlideIndex(-1)], getSlideIndex(-1), false)}
             </Box>
           </motion.div>
-        </AnimatePresence>
+        )}
+
+        {/* Center Slide (Active) - Scrolls from right to left */}
+        {items[currentIndex] && (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`center-${currentIndex}`}
+              initial={{ opacity: 0, x: 400, scale: 0.9 }} // Start from right (off-screen)
+              animate={{ 
+                opacity: 1, 
+                x: 0, // Move to center
+                scale: 1 
+              }}
+              exit={{ opacity: 0, x: -400, scale: 0.9 }} // Exit to left
+              transition={{
+                duration: 0.6,
+                ease: [0.4, 0, 0.2, 1],
+              }}
+              style={{
+                position: 'relative',
+                width: '400px',
+                zIndex: 5,
+              }}
+            >
+              <Box sx={{ width: '100%' }}>
+                {renderItem(items[currentIndex], currentIndex, true)}
+              </Box>
+            </motion.div>
+          </AnimatePresence>
+        )}
 
         {/* Right Slide - More visible and positioned further out */}
-        <motion.div
-          key={`right-${getSlideIndex(1)}`}
-          initial={{ opacity: 0, x: 400, scale: 0.75 }}
-          animate={{ 
-            opacity: 0.85,
-            x: 240,
-            scale: 0.75,
-          }}
-          transition={{
-            duration: 0.6,
-            ease: [0.4, 0, 0.2, 1],
-          }}
-          style={{
-            position: 'absolute',
-            width: '320px',
-            zIndex: 2,
-            pointerEvents: 'none',
-          }}
-        >
-          <Box sx={{ width: '100%' }}>
-            {renderItem(items[getSlideIndex(1)], getSlideIndex(1), false)}
-          </Box>
-        </motion.div>
+        {items[getSlideIndex(1)] && (
+          <motion.div
+            key={`right-${getSlideIndex(1)}`}
+            initial={{ opacity: 0, x: 400, scale: 0.75 }}
+            animate={{ 
+              opacity: 0.85,
+              x: 240,
+              scale: 0.75,
+            }}
+            transition={{
+              duration: 0.6,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+            style={{
+              position: 'absolute',
+              width: '320px',
+              zIndex: 2,
+              pointerEvents: 'none',
+            }}
+          >
+            <Box sx={{ width: '100%' }}>
+              {renderItem(items[getSlideIndex(1)], getSlideIndex(1), false)}
+            </Box>
+          </motion.div>
+        )}
       </Box>
 
       {/* Dots Navigation */}
