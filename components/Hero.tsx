@@ -60,6 +60,7 @@ export default function Hero() {
                   lineHeight: 1.2,
                 }}
                 data-aos="fade-up"
+                suppressHydrationWarning
               >
                 From Startups to Enterprises – We Build{' '}
                 <Box component="span" sx={{ color: '#ffd700' }}>
@@ -84,6 +85,7 @@ export default function Hero() {
                 }}
                 data-aos="fade-up"
                 data-aos-delay="100"
+                suppressHydrationWarning
               >
                 Transform your digital presence with cutting-edge web solutions. 
                 We combine innovation, expertise, and global reach to deliver 
@@ -120,6 +122,7 @@ export default function Hero() {
                 }}
                 data-aos="fade-up"
                 data-aos-delay="200"
+                suppressHydrationWarning
               >
                 Get a Free Consultation
               </Button>
@@ -145,6 +148,7 @@ export default function Hero() {
                 }}
                 data-aos="fade-up"
                 data-aos-delay="300"
+                suppressHydrationWarning
               >
                 View Portfolio
               </Button>
@@ -167,6 +171,7 @@ export default function Hero() {
                   mt: { xs: 4, md: 0 },
                 }}
                 data-aos="fade-left"
+                suppressHydrationWarning
               >
                 {['React', 'Next.js', 'Node.js', 'TypeScript'].map((tech, index) => (
                   <Box

@@ -48,7 +48,7 @@ export default function Services() {
   return (
     <Box id="services" sx={{ py: 10, bgcolor: '#F9FAFB' }}>
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up">
+        <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up" suppressHydrationWarning>
           <Typography
             variant="h2"
             sx={{
@@ -86,6 +86,7 @@ export default function Services() {
                   }}
                   data-aos="fade-up"
                   data-aos-delay={index * 100}
+                  suppressHydrationWarning
                 >
                   <CardContent sx={{ flexGrow: 1, p: 4 }}>
                     <Box

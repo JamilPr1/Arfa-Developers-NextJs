@@ -40,7 +40,7 @@ export default function About() {
   return (
     <Box id="about" sx={{ py: 10, bgcolor: '#F9FAFB' }}>
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up">
+        <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up" suppressHydrationWarning>
           <Typography
             variant="h2"
             sx={{
@@ -78,6 +78,7 @@ export default function About() {
                   }}
                   data-aos="fade-up"
                   data-aos-delay={index * 100}
+                  suppressHydrationWarning
                 >
                   <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
                     {story.icon}
@@ -138,6 +139,7 @@ export default function About() {
             border: '2px solid #E5E7EB',
           }}
           data-aos="fade-up"
+          suppressHydrationWarning
         >
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1E3A8A', textAlign: 'center' }}>
             Why Choose Us Over Freelancers?

@@ -440,6 +440,7 @@ export default function Footer() {
             {legalLinks.map((link) => (
               <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
                 <MuiLink
+                  component="span"
                   sx={{
                     color: '#9CA3AF',
                     fontSize: '0.875rem',
