@@ -25,8 +25,8 @@ const roboto = Roboto({
 })
 
 export const metadata: Metadata = {
-  title: 'Arfa Developers - Top Web Development Agency USA, UK, Qatar, KSA | Custom Web Apps & Software Solutions',
-  description: 'Expert web development agency serving USA, UK, Qatar, and Saudi Arabia. We rescue failed projects from freelancers and build custom web applications, mobile apps, and enterprise software. Free consultation available. 200+ projects rescued.',
+  title: 'Arfa Developers | Web Development Agency USA | Project Rescue & Custom Web Apps',
+  description: 'US-focused web development agency. We build custom web applications and rescue failed projects (takeover + recovery). Fast turnaround, clean code, and ongoing support. Free consultation.',
   keywords: [
     'web development agency USA',
     'custom web apps US',
@@ -65,11 +65,11 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Arfa Developers - Web Solutions That Scale Globally | Rescue Failed Projects',
-    description: 'Expert web development agency rescuing 200+ failed projects from freelancers. Custom web apps, mobile apps, and enterprise solutions for USA, UK, Qatar, and Saudi Arabia. Free consultation.',
+    title: 'Arfa Developers | Web Development Agency USA | Project Rescue & Custom Web Apps',
+    description: 'US-focused web development agency. Custom web apps + project rescue (takeover + recovery). Free consultation.',
     type: 'website',
     locale: 'en_US',
-    url: 'https://arfadevelopers.com',
+    url: 'https://www.arfadevelopers.com',
     siteName: 'Arfa Developers',
     images: [
       {
@@ -82,18 +82,18 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Arfa Developers - Web Solutions That Scale Globally',
-    description: 'Expert web development agency rescuing failed projects. Custom web apps, mobile apps, and enterprise solutions. Free consultation.',
-    images: ['https://arfadevelopers.com/og-image.jpg'],
+    title: 'Arfa Developers | Web Development Agency USA',
+    description: 'US-focused web development agency. Custom web apps + project rescue (takeover + recovery). Free consultation.',
+    images: ['https://www.arfadevelopers.com/og-image.jpg'],
   },
   alternates: {
-    canonical: 'https://arfadevelopers.com',
+    canonical: 'https://www.arfadevelopers.com',
   },
   category: 'Technology',
   classification: 'Web Development Services',
   other: {
-    'geo.region': 'US-UK-QA-SA',
-    'geo.placename': 'United States, United Kingdom, Qatar, Saudi Arabia',
+    'geo.region': 'US',
+    'geo.placename': 'United States',
   },
 }
 

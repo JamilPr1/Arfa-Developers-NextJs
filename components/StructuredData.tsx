@@ -1,20 +1,19 @@
 export default function StructuredData() {
+  const siteUrl = 'https://www.arfadevelopers.com'
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Arfa Developers',
-    url: 'https://arfadevelopers.com',
-    logo: 'https://arfadevelopers.com/logo.png',
-    description: 'Expert web development agency serving USA, UK, Qatar, and Saudi Arabia. We rescue failed projects from freelancers and build custom web applications, mobile apps, and enterprise software solutions.',
+    url: siteUrl,
+    logo: `${siteUrl}/logo.png`,
+    description:
+      'US-focused web development agency building custom web applications and rescuing failed projects. We take over broken builds, fix performance and security issues, and ship production-ready software.',
     address: {
       '@type': 'PostalAddress',
-      addressCountry: ['US', 'GB', 'QA', 'SA'],
+      addressCountry: ['US'],
     },
     areaServed: [
       { '@type': 'Country', name: 'United States' },
-      { '@type': 'Country', name: 'United Kingdom' },
-      { '@type': 'Country', name: 'Qatar' },
-      { '@type': 'Country', name: 'Saudi Arabia' },
     ],
     serviceType: [
       'Web Development',
@@ -23,24 +22,34 @@ export default function StructuredData() {
       'Enterprise Solutions',
       'E-commerce Development',
       'SaaS Development',
+      'Project Rescue',
     ],
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: '5',
-      reviewCount: '50+',
+      ratingValue: 5,
+      reviewCount: 50,
     },
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'sales',
+        email: 'sales@arfadevelopers.com',
+        areaServed: 'US',
+      },
+    ],
   }
 
   const serviceSchema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    serviceType: 'Web Development Services',
+    serviceType: 'Web Development & Project Rescue Services',
     provider: {
       '@type': 'Organization',
       name: 'Arfa Developers',
     },
-    areaServed: ['United States', 'United Kingdom', 'Qatar', 'Saudi Arabia'],
-    description: 'Custom web development, mobile app development, and enterprise software solutions. We specialize in rescuing failed projects from freelancers and inexperienced developers.',
+    areaServed: ['United States'],
+    description:
+      'Custom web development, SaaS and eCommerce builds, and project rescue (takeover + recovery). We specialize in fixing broken websites, completing abandoned builds, and improving performance and security.',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -53,10 +62,10 @@ export default function StructuredData() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Arfa Developers',
-    url: 'https://arfadevelopers.com',
+    url: siteUrl,
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://arfadevelopers.com/search?q={search_term_string}',
+      target: `${siteUrl}/search?q={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   }
