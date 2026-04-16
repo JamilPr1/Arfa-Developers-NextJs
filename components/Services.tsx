@@ -146,6 +146,30 @@ export default function Services() {
                 }}
               />
             </Link>
+            <Link href="/hire-nextjs-developers-usa" style={{ textDecoration: 'none' }}>
+              <Chip
+                clickable
+                label="Hire Next.js Developers USA"
+                sx={{
+                  backgroundColor: '#EFF6FF',
+                  color: '#1E3A8A',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#DBEAFE' },
+                }}
+              />
+            </Link>
+            <Link href="/website-maintenance-support-usa" style={{ textDecoration: 'none' }}>
+              <Chip
+                clickable
+                label="Website Maintenance USA"
+                sx={{
+                  backgroundColor: '#EFF6FF',
+                  color: '#1E3A8A',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#DBEAFE' },
+                }}
+              />
+            </Link>
             <Link href="/custom-software-development-usa" style={{ textDecoration: 'none' }}>
               <Chip
                 clickable

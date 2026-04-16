@@ -193,6 +193,32 @@ export default function Hero() {
                   Web Development Agency USA
                 </MuiLink>
               </Link>
+              <Link href="/hire-nextjs-developers-usa" style={{ textDecoration: 'none' }}>
+                <MuiLink
+                  component="span"
+                  sx={{
+                    color: '#FDE68A',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  }}
+                >
+                  Hire Next.js Developers USA
+                </MuiLink>
+              </Link>
+              <Link href="/website-maintenance-support-usa" style={{ textDecoration: 'none' }}>
+                <MuiLink
+                  component="span"
+                  sx={{
+                    color: '#FDE68A',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  }}
+                >
+                  Website Maintenance USA
+                </MuiLink>
+              </Link>
               <Link href="/custom-software-development-usa" style={{ textDecoration: 'none' }}>
                 <MuiLink
                   component="span"

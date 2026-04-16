@@ -20,6 +20,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/project-rescue',
     '/web-development-agency-usa',
     '/custom-software-development-usa',
+    '/hire-nextjs-developers-usa',
+    '/website-maintenance-support-usa',
   ]
 
   return routes.map((path) => ({

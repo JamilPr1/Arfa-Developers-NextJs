@@ -57,6 +57,8 @@ const seoLinks = [
   { label: 'Project Rescue', href: '/project-rescue' },
   { label: 'Web Development Agency USA', href: '/web-development-agency-usa' },
   { label: 'Custom Software Development USA', href: '/custom-software-development-usa' },
+  { label: 'Hire Next.js Developers USA', href: '/hire-nextjs-developers-usa' },
+  { label: 'Website Maintenance & Support USA', href: '/website-maintenance-support-usa' },
 ]
 
 export default function Footer() {
