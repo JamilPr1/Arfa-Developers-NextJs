@@ -4,6 +4,7 @@ import { CheckCircle as CheckIcon, ArrowBack as BackIcon } from '@mui/icons-mate
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import { ResultsSummary, TestimonialBlock } from '@/components/CaseStudyBlocks'
 import Link from 'next/link'
 import Script from 'next/script'
 
@@ -155,6 +156,19 @@ export default function CaseStudyRescueUsaSaasPage() {
             </Grid>
 
             <Grid item xs={12} md={4}>
+              <ResultsSummary
+                metrics={metrics}
+                note="These are representative outcomes from the engagement. Exact figures vary by product maturity and traffic mix."
+              />
+
+              <TestimonialBlock
+                quote="We were stuck for months with unstable releases. Arfa Developers took over, fixed the foundations, and shipped improvements every week. The product finally felt reliable."
+                author="Product Lead"
+                role="B2B SaaS"
+                company="US Startup"
+                tags={['Project Rescue', 'Stabilization', 'Weekly Shipping']}
+              />
+
               <Card sx={{ p: 3, borderRadius: 3, mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#1E3A8A' }}>
                   Engagement Snapshot

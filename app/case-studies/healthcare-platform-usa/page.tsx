@@ -4,6 +4,7 @@ import { CheckCircle as CheckIcon, ArrowBack as BackIcon } from '@mui/icons-mate
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import { ResultsSummary, TestimonialBlock } from '@/components/CaseStudyBlocks'
 import Link from 'next/link'
 import Script from 'next/script'
 
@@ -154,6 +155,19 @@ export default function HealthcarePlatformUsaCaseStudyPage() {
             </Grid>
 
             <Grid item xs={12} md={4}>
+              <ResultsSummary
+                metrics={metrics}
+                note="Healthcare engagements often include compliance constraints and change management; outcomes vary based on baseline maturity and release discipline."
+              />
+
+              <TestimonialBlock
+                quote="We needed reliable releases and compliance-safe delivery. The team stabilized the platform and gave us a clear, predictable engineering rhythm."
+                author="Operations Director"
+                role="Healthcare"
+                company="US Organization"
+                tags={['Stabilization', 'Compliance', 'Reliability']}
+              />
+
               <Card sx={{ p: 3, borderRadius: 3, mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#1E3A8A' }}>
                   Engagement Snapshot
