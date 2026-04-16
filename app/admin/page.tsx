@@ -370,8 +370,10 @@ export default function AdminPage() {
           ...item,
           tech: Array.isArray(item.tech) ? item.tech.join(', ') : item.tech || '',
         })
+          setProjectImagePreview(item.image || '')
       } else if (type === 'blog') {
         setBlogForm(item)
+          setBlogImagePreview(item.image || '')
       } else if (type === 'promotion') {
         setPromotionForm(item)
       } else if (type === 'talent') {
@@ -1344,7 +1346,9 @@ export default function AdminPage() {
                             width={200}
                             height={120}
                             style={{ objectFit: 'contain', borderRadius: 8 }}
+                            unoptimized
                             onError={() => setImageError(true)}
+                            onLoad={() => setImageError(false)}
                           />
                         </Box>
                       )}
@@ -1456,12 +1460,89 @@ export default function AdminPage() {
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: '#374151' }}>
+                      Blog Image *
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <input
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id="blog-image-upload"
+                        type="file"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+
+                          setUploadingImage(true)
+                          try {
+                            const formData = new FormData()
+                            formData.append('file', file)
+
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData,
+                            })
+
+                            const result = await response.json()
+
+                            if (response.ok && result.url) {
+                              setBlogForm({ ...blogForm, image: result.url })
+                              setBlogImagePreview(result.url)
+                              setSuccess('Image uploaded successfully!')
+                            } else {
+                              setError(result.error || 'Failed to upload image. Please use URL instead.')
+                            }
+                          } catch (err: any) {
+                            console.error('Upload error:', err)
+                            setError('Failed to upload image. Please use URL instead.')
+                          } finally {
+                            setUploadingImage(false)
+                          }
+                        }}
+                      />
+                      <label htmlFor="blog-image-upload">
+                        <Button
+                          variant="outlined"
+                          component="span"
+                          disabled={uploadingImage}
+                          sx={{ mb: 1, mr: 1 }}
+                        >
+                          {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                        </Button>
+                      </label>
+
+                      {blogImagePreview && (
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                          <Image
+                            src={blogImagePreview}
+                            alt="Blog preview"
+                            width={200}
+                            height={120}
+                            style={{ objectFit: 'contain', borderRadius: 8 }}
+                            unoptimized
+                            onError={() => setImageError(true)}
+                            onLoad={() => setImageError(false)}
+                          />
+                        </Box>
+                      )}
+                      {imageError && blogImagePreview && (
+                        <Alert severity="warning" sx={{ mt: 1 }}>
+                          Image preview failed. The URL will still be saved. Try using a direct image link.
+                        </Alert>
+                      )}
+                    </Box>
                     <TextField
                       fullWidth
                       label="Image URL *"
                       value={blogForm.image}
-                      onChange={(e) => setBlogForm({ ...blogForm, image: e.target.value })}
+                      onChange={(e) => {
+                        const url = e.target.value
+                        setBlogForm({ ...blogForm, image: url })
+                        setBlogImagePreview(url)
+                        setImageError(false)
+                      }}
                       required
+                      helperText="Enter image URL or upload an image above"
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
