@@ -191,7 +191,7 @@ export default function Header() {
           }}
         >
         <Container maxWidth="lg">
-          <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
+          <Toolbar sx={{ justifyContent: 'space-between', py: 0.75, gap: 1 }}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -213,7 +213,7 @@ export default function Header() {
                     '&:hover': {
                       color: '#2563EB',
                     },
-                    fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+                    fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.35rem' },
                   }}
                 >
                   Arfa Developers
@@ -221,233 +221,239 @@ export default function Header() {
               </Link>
             </motion.div>
 
-            <Box 
-              component="nav"
-              aria-label="Main navigation"
-              sx={{ 
-                display: { xs: 'none', md: 'flex' }, 
-                gap: { md: 1, lg: 1.5 }, 
-                alignItems: 'center',
-                flexWrap: 'nowrap',
-                overflow: 'hidden',
-                minWidth: 0,
-              }}
-            >
-              {navLinks.map((link) => {
-                const textColor = scrolled || !hasColoredBackground 
-                  ? '#111827' // Dark gray for good contrast on white (WCAG AA: 4.5:1)
-                  : '#FFFFFF' // White for good contrast on blue (WCAG AA: 4.5:1)
-                
-                // Services dropdown menu
-                if (link.hasDropdown) {
-                  return (
-                    <Box key={link.label}>
-                      <Button
-                        onClick={handleServicesMenuOpen}
-                        aria-label={`${link.label} menu`}
-                        aria-controls={servicesMenuAnchor ? 'services-menu' : undefined}
-                        aria-haspopup="true"
-                        aria-expanded={servicesMenuAnchor ? 'true' : undefined}
-                        endIcon={<ArrowDropDownIcon />}
-                        sx={{
-                          color: textColor,
-                          fontWeight: 500,
-                          fontSize: { md: '0.9rem', lg: '1rem' },
-                          px: { md: 1.5, lg: 2 },
-                          whiteSpace: 'nowrap',
-                          '&:hover': {
-                            color: '#2563EB',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                          },
-                          '&:focus-visible': {
-                            outline: '2px solid #2563EB',
-                            outlineOffset: '2px',
-                          },
-                          transition: 'all 0.3s ease',
-                        }}
-                      >
-                        {link.label}
-                      </Button>
-                      <Menu
-                        id="services-menu"
-                        anchorEl={servicesMenuAnchor}
-                        open={Boolean(servicesMenuAnchor)}
-                        onClose={handleServicesMenuClose}
-                        MenuListProps={{
-                          'aria-labelledby': 'services-button',
-                        }}
-                        PaperProps={{
-                          sx: {
-                            mt: 1.5,
-                            borderRadius: 2,
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-                            border: '1px solid rgba(37, 99, 235, 0.1)',
-                            maxHeight: '280px',
-                            overflowY: 'auto',
-                            overflowX: 'hidden',
-                            minWidth: '220px',
-                            '&::-webkit-scrollbar': {
-                              width: '6px',
-                            },
-                            '&::-webkit-scrollbar-track': {
-                              background: '#F3F4F6',
-                              borderRadius: '3px',
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                              background: '#9CA3AF',
-                              borderRadius: '3px',
-                              '&:hover': {
-                                background: '#6B7280',
-                              },
-                            },
-                          },
-                        }}
-                      >
-                        <MenuItem
-                          component={Link}
-                          href="/services"
-                          onClick={handleServicesMenuClose}
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', flex: 1, minWidth: 0 }}>
+              <Box
+                component="nav"
+                aria-label="Main navigation"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: { md: 0.25, lg: 0.75 },
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                }}
+              >
+                {navLinks.map((link) => {
+                  const textColor = scrolled || !hasColoredBackground ? '#111827' : '#FFFFFF'
+
+                  // Services dropdown menu
+                  if (link.hasDropdown) {
+                    return (
+                      <Box key={link.label} sx={{ flexShrink: 0 }}>
+                        <Button
+                          onClick={handleServicesMenuOpen}
+                          aria-label={`${link.label} menu`}
+                          aria-controls={servicesMenuAnchor ? 'services-menu' : undefined}
+                          aria-haspopup="true"
+                          aria-expanded={servicesMenuAnchor ? 'true' : undefined}
+                          endIcon={<ArrowDropDownIcon />}
                           sx={{
-                            fontWeight: 600,
-                            color: '#1E3A8A',
-                            backgroundColor: '#EFF6FF',
-                            borderBottom: '1px solid #DBEAFE',
+                            color: textColor,
+                            fontWeight: 500,
+                            fontSize: { md: '0.82rem', lg: '0.92rem' },
+                            px: { md: 0.9, lg: 1.25 },
+                            minWidth: 'auto',
                             whiteSpace: 'nowrap',
                             '&:hover': {
-                              backgroundColor: '#DBEAFE',
                               color: '#2563EB',
+                              backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             },
                             '&:focus-visible': {
                               outline: '2px solid #2563EB',
-                              outlineOffset: '-2px',
+                              outlineOffset: '2px',
                             },
-                            transition: 'all 0.2s ease',
+                            transition: 'all 0.3s ease',
                           }}
                         >
-                          All Services
-                        </MenuItem>
-                        {serviceLinks.map((service) => (
+                          {link.label}
+                        </Button>
+                        <Menu
+                          id="services-menu"
+                          anchorEl={servicesMenuAnchor}
+                          open={Boolean(servicesMenuAnchor)}
+                          onClose={handleServicesMenuClose}
+                          MenuListProps={{
+                            'aria-labelledby': 'services-button',
+                          }}
+                          PaperProps={{
+                            sx: {
+                              mt: 1.5,
+                              borderRadius: 2,
+                              boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                              border: '1px solid rgba(37, 99, 235, 0.1)',
+                              maxHeight: '280px',
+                              overflowY: 'auto',
+                              overflowX: 'hidden',
+                              minWidth: '220px',
+                              '&::-webkit-scrollbar': {
+                                width: '6px',
+                              },
+                              '&::-webkit-scrollbar-track': {
+                                background: '#F3F4F6',
+                                borderRadius: '3px',
+                              },
+                              '&::-webkit-scrollbar-thumb': {
+                                background: '#9CA3AF',
+                                borderRadius: '3px',
+                                '&:hover': {
+                                  background: '#6B7280',
+                                },
+                              },
+                            },
+                          }}
+                        >
                           <MenuItem
-                            key={service.href}
                             component={Link}
-                            href={service.href}
+                            href="/services"
                             onClick={handleServicesMenuClose}
                             sx={{
-                              px: 2,
-                              py: 1.5,
-                              color: '#374151',
+                              fontWeight: 600,
+                              color: '#1E3A8A',
+                              backgroundColor: '#EFF6FF',
+                              borderBottom: '1px solid #DBEAFE',
                               whiteSpace: 'nowrap',
-                              transition: 'all 0.2s ease',
-                              borderLeft: '3px solid transparent',
                               '&:hover': {
-                                backgroundColor: '#EFF6FF',
-                                color: '#1E3A8A',
-                                fontWeight: 500,
-                                transform: 'translateX(4px)',
-                                borderLeftColor: '#2563EB',
+                                backgroundColor: '#DBEAFE',
+                                color: '#2563EB',
                               },
                               '&:focus-visible': {
                                 outline: '2px solid #2563EB',
                                 outlineOffset: '-2px',
-                                backgroundColor: '#EFF6FF',
                               },
+                              transition: 'all 0.2s ease',
                             }}
                           >
-                            {service.label}
+                            All Services
                           </MenuItem>
-                        ))}
-                      </Menu>
-                    </Box>
-                  )
-                }
-                
-                if (link.href.startsWith('/')) {
-                  return (
-                    <Link 
-                      key={link.label} 
-                      href={link.href} 
-                      style={{ textDecoration: 'none' }}
-                      aria-label={`Navigate to ${link.label}`}
-                    >
-                      <Button
-                        sx={{
-                          color: textColor,
-                          fontWeight: 500,
-                          fontSize: { md: '0.9rem', lg: '1rem' },
-                          px: { md: 1, lg: 1.25 },
-                          minWidth: 'auto',
-                          whiteSpace: 'nowrap',
-                          '&:hover': {
-                            color: '#2563EB',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                          },
-                          '&:focus-visible': {
-                            outline: '2px solid #2563EB',
-                            outlineOffset: '2px',
-                          },
-                          transition: 'all 0.3s ease',
-                        }}
+                          {serviceLinks.map((service) => (
+                            <MenuItem
+                              key={service.href}
+                              component={Link}
+                              href={service.href}
+                              onClick={handleServicesMenuClose}
+                              sx={{
+                                px: 2,
+                                py: 1.5,
+                                color: '#374151',
+                                whiteSpace: 'nowrap',
+                                transition: 'all 0.2s ease',
+                                borderLeft: '3px solid transparent',
+                                '&:hover': {
+                                  backgroundColor: '#EFF6FF',
+                                  color: '#1E3A8A',
+                                  fontWeight: 500,
+                                  transform: 'translateX(4px)',
+                                  borderLeftColor: '#2563EB',
+                                },
+                                '&:focus-visible': {
+                                  outline: '2px solid #2563EB',
+                                  outlineOffset: '-2px',
+                                  backgroundColor: '#EFF6FF',
+                                },
+                              }}
+                            >
+                              {service.label}
+                            </MenuItem>
+                          ))}
+                        </Menu>
+                      </Box>
+                    )
+                  }
+
+                  if (link.href.startsWith('/')) {
+                    return (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        style={{ textDecoration: 'none', flexShrink: 0 }}
+                        aria-label={`Navigate to ${link.label}`}
                       >
-                        {link.label}
-                      </Button>
-                    </Link>
+                        <Button
+                          sx={{
+                            color: textColor,
+                            fontWeight: 500,
+                            fontSize: { md: '0.82rem', lg: '0.92rem' },
+                            px: { md: 0.9, lg: 1.1 },
+                            minWidth: 'auto',
+                            whiteSpace: 'nowrap',
+                            '&:hover': {
+                              color: '#2563EB',
+                              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            },
+                            '&:focus-visible': {
+                              outline: '2px solid #2563EB',
+                              outlineOffset: '2px',
+                            },
+                            transition: 'all 0.3s ease',
+                          }}
+                        >
+                          {link.label}
+                        </Button>
+                      </Link>
+                    )
+                  }
+
+                  return (
+                    <Button
+                      key={link.label}
+                      onClick={() => handleNavClick(link.href)}
+                      aria-label={`Navigate to ${link.label} section`}
+                      sx={{
+                        color: textColor,
+                        fontWeight: 500,
+                        fontSize: { md: '0.82rem', lg: '0.92rem' },
+                        px: { md: 0.9, lg: 1.1 },
+                        minWidth: 'auto',
+                        whiteSpace: 'nowrap',
+                        '&:hover': {
+                          color: '#2563EB',
+                          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        },
+                        '&:focus-visible': {
+                          outline: '2px solid #2563EB',
+                          outlineOffset: '2px',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      {link.label}
+                    </Button>
                   )
-                }
-                return (
-                  <Button
-                    key={link.label}
-                    onClick={() => handleNavClick(link.href)}
-                    aria-label={`Navigate to ${link.label} section`}
-                    sx={{
-                      color: textColor,
-                      fontWeight: 500,
-                      fontSize: { md: '0.9rem', lg: '1rem' },
-                      px: { md: 1, lg: 1.25 },
-                      minWidth: 'auto',
-                      whiteSpace: 'nowrap',
-                      '&:hover': {
-                        color: '#2563EB',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                      },
-                      '&:focus-visible': {
-                        outline: '2px solid #2563EB',
-                        outlineOffset: '2px',
-                      },
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    {link.label}
-                  </Button>
-                )
-              })}
-              <Button
-                variant="contained"
-                onClick={() => handleNavClick('#contact')}
-                aria-label="Get free consultation"
-                sx={{
-                  ml: { md: 1, lg: 2 },
-                  backgroundColor: '#1E3A8A',
-                  color: '#FFFFFF',
-                  fontWeight: 600,
-                  fontSize: { md: '0.9rem', lg: '1rem' },
-                  px: { md: 2, lg: 3 },
-                  py: 1,
-                  whiteSpace: 'nowrap',
-                  minWidth: 'auto',
-                  '&:hover': {
-                    backgroundColor: '#2563EB',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 12px rgba(30, 58, 138, 0.4)',
-                  },
-                  '&:focus-visible': {
-                    outline: '2px solid #2563EB',
-                    outlineOffset: '2px',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                Free Consultation
-              </Button>
+                })}
+              </Box>
+
+              <Box sx={{ flexShrink: 0, ml: { md: 0.75, lg: 1.25 } }}>
+                <Button
+                  variant="contained"
+                  onClick={() => handleNavClick('#contact')}
+                  aria-label="Get free consultation"
+                  sx={{
+                    backgroundColor: '#1E3A8A',
+                    color: '#FFFFFF',
+                    fontWeight: 700,
+                    fontSize: { md: '0.82rem', lg: '0.92rem' },
+                    px: { md: 1.6, lg: 2.2 },
+                    py: 0.85,
+                    borderRadius: 999,
+                    whiteSpace: 'nowrap',
+                    minWidth: 'auto',
+                    '&:hover': {
+                      backgroundColor: '#2563EB',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(30, 58, 138, 0.4)',
+                    },
+                    '&:focus-visible': {
+                      outline: '2px solid #2563EB',
+                      outlineOffset: '2px',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Free Consultation
+                </Button>
+              </Box>
             </Box>
 
             <IconButton
