@@ -30,9 +30,10 @@ type NavLink = {
 const navLinks: NavLink[] = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services', hasDropdown: true },
+  { label: 'US Web Dev', href: '/web-development-agency-usa' },
   { label: 'Portfolio', href: '/portfolio' },
+  { label: 'Project Rescue', href: '/project-rescue' },
   { label: 'About', href: '/about' },
-  { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
   { label: 'Hire Our Talent', href: '/hire-talent' },
 ]
@@ -43,6 +44,8 @@ type ServiceLink = {
 }
 
 const serviceLinks: ServiceLink[] = [
+  { label: 'Project Rescue (USA)', href: '/project-rescue' },
+  { label: 'Custom Software Development USA', href: '/custom-software-development-usa' },
   { label: 'Web Development', href: '/services/web-development' },
   { label: 'Website Redesign', href: '/services/website-redesign' },
   { label: 'Landing Pages', href: '/services/landing-pages' },
@@ -157,6 +160,10 @@ export default function Header() {
   const hasColoredBackground = pathname === '/' || 
     pathname === '/services' || 
     pathname.startsWith('/services/') ||
+    pathname === '/web-development-agency-usa' ||
+    pathname === '/project-rescue' ||
+    pathname === '/custom-software-development-usa' ||
+    pathname.startsWith('/case-studies/') ||
     pathname === '/portfolio' || 
     pathname === '/about' || 
     pathname === '/blog' || 

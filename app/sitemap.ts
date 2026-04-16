@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/services',
     '/portfolio',
     '/case-studies',
+    '/case-studies/project-rescue-usa-saas',
     '/blog',
     '/contact',
     '/free-audit',

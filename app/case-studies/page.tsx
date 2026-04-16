@@ -199,6 +199,38 @@ export default function CaseStudiesPage() {
 
         {/* Case Studies */}
         <Container maxWidth="lg" sx={{ py: 8 }}>
+          <Card
+            elevation={3}
+            sx={{
+              borderRadius: 3,
+              mb: 4,
+              p: 4,
+              background: 'linear-gradient(135deg, #0B2A6F 0%, #2563EB 100%)',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5, color: 'white' }}>
+              Featured: US SaaS Project Rescue
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.92)', mb: 2, lineHeight: 1.8 }}>
+              See how we rescued a failed US SaaS build in 5 weeks, fixed production instability, and improved
+              activation by 38%.
+            </Typography>
+            <Button
+              component={Link}
+              href="/case-studies/project-rescue-usa-saas"
+              variant="contained"
+              sx={{
+                backgroundColor: '#F59E0B',
+                color: 'white',
+                fontWeight: 700,
+                '&:hover': { backgroundColor: '#FBBF24' },
+              }}
+            >
+              Read Full Case Study
+            </Button>
+          </Card>
+
           <Grid container spacing={4}>
             {caseStudies.map((study, index) => (
               <Grid item xs={12} key={index}>
