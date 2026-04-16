@@ -11,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/portfolio',
     '/case-studies',
     '/case-studies/project-rescue-usa-saas',
+    '/case-studies/ecommerce-rescue-usa',
+    '/case-studies/healthcare-platform-usa',
     '/blog',
     '/contact',
     '/free-audit',
