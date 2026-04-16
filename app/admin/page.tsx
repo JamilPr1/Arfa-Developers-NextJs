@@ -154,6 +154,7 @@ export default function AdminPage() {
     published: true,
   })
   const [blogHtmlInput, setBlogHtmlInput] = useState('')
+  const [blogEditorMode, setBlogEditorMode] = useState<'manual' | 'html'>('manual')
 
   const [promotionForm, setPromotionForm] = useState({
     text: '',
@@ -485,6 +486,7 @@ export default function AdminPage() {
         setBlogForm(item)
           setBlogImagePreview(item.image || '')
           setBlogHtmlInput('')
+          setBlogEditorMode('manual')
       } else if (type === 'promotion') {
         setPromotionForm(item)
       } else if (type === 'talent') {
@@ -526,6 +528,7 @@ export default function AdminPage() {
         setBlogImagePreview('')
         setImageError(false)
         setBlogHtmlInput('')
+        setBlogEditorMode('manual')
       } else if (type === 'promotion') {
         setPromotionForm({
           text: '',
@@ -565,24 +568,27 @@ export default function AdminPage() {
       // Remove scripts/styles for safety and cleaner output
       doc.querySelectorAll('script, style, noscript').forEach((el) => el.remove())
 
-      const h1 = doc.querySelector('h1')?.textContent?.trim()
+      const article = doc.querySelector('article')
+      const root = article || doc.body
+
+      const h1 = root?.querySelector('h1')?.textContent?.trim()
       const titleTag = doc.querySelector('title')?.textContent?.trim()
       const metaDesc = doc.querySelector('meta[name=\"description\"], meta[property=\"og:description\"]')?.getAttribute('content')?.trim()
 
-      const firstP = Array.from(doc.querySelectorAll('p'))
+      const firstP = Array.from(root?.querySelectorAll('p') || [])
         .map((p) => (p.textContent || '').trim())
         .find((t) => t.length >= 60) || ''
 
       const imgSrc =
         doc.querySelector('meta[property=\"og:image\"]')?.getAttribute('content')?.trim() ||
-        doc.querySelector('img')?.getAttribute('src')?.trim() ||
+        root?.querySelector('img')?.getAttribute('src')?.trim() ||
         ''
 
-      // Use body HTML if present; fallback to original html
-      const contentHtml = (doc.body?.innerHTML || html).trim()
+      // Prefer <article> markup if present; otherwise use body HTML
+      const contentHtml = (article?.outerHTML || doc.body?.innerHTML || html).trim()
 
       // Rough read time estimate: 200 wpm
-      const textForCount = (doc.body?.textContent || '').replace(/\s+/g, ' ').trim()
+      const textForCount = ((root?.textContent || doc.body?.textContent || '') as string).replace(/\s+/g, ' ').trim()
       const wordCount = textForCount ? textForCount.split(' ').length : 0
       const minutes = Math.max(1, Math.round(wordCount / 200))
       const readTime = `${minutes} min read`
@@ -1816,77 +1822,134 @@ export default function AdminPage() {
               {dialogType === 'blog' && (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Paper
-                      variant="outlined"
-                      sx={{
-                        p: 2,
-                        borderRadius: 2,
-                        bgcolor: '#F9FAFB',
-                        borderColor: 'rgba(30, 58, 138, 0.18)',
-                      }}
-                    >
-                      <Typography sx={{ fontWeight: 800, color: '#1E3A8A', mb: 1 }}>
-                        Generate from HTML (optional)
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                        Paste full HTML (or the article body). We’ll auto-fill title/excerpt/image and use the HTML as blog content.
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        multiline
-                        minRows={4}
-                        label="Paste HTML here"
-                        value={blogHtmlInput}
-                        onChange={(e) => setBlogHtmlInput(e.target.value)}
-                      />
-                      <Box sx={{ mt: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        <Button variant="outlined" onClick={generateBlogFromHtml}>
-                          Generate fields
-                        </Button>
-                        <Button
-                          variant="text"
-                          onClick={() => {
-                            setBlogHtmlInput('')
-                            setSuccess('HTML cleared.')
-                          }}
-                        >
-                          Clear
-                        </Button>
-                      </Box>
+                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'rgba(30, 58, 138, 0.18)' }}>
+                      <Tabs
+                        value={blogEditorMode}
+                        onChange={(_e, v) => setBlogEditorMode(v)}
+                        sx={{ bgcolor: '#F9FAFB', borderBottom: 1, borderColor: 'rgba(30, 58, 138, 0.12)' }}
+                      >
+                        <Tab value="manual" label="Manual" />
+                        <Tab value="html" label="Paste HTML" />
+                      </Tabs>
+
+                      {blogEditorMode === 'html' && (
+                        <Box sx={{ p: 2, bgcolor: '#F9FAFB' }}>
+                          <Typography sx={{ fontWeight: 800, color: '#1E3A8A', mb: 1 }}>
+                            Paste HTML to auto-generate
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            Paste your HTML (including an optional <code>{'<article>'}</code>). We will ignore script tags and auto-fill title, excerpt, and content.
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            multiline
+                            minRows={6}
+                            label="Paste HTML here"
+                            value={blogHtmlInput}
+                            onChange={(e) => setBlogHtmlInput(e.target.value)}
+                          />
+                          <Box sx={{ mt: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            <Button variant="contained" onClick={generateBlogFromHtml} sx={{ bgcolor: '#1E3A8A', '&:hover': { bgcolor: '#2563EB' } }}>
+                              Generate
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              onClick={() => {
+                                setBlogHtmlInput('')
+                                setSuccess('HTML cleared.')
+                              }}
+                              sx={{ borderColor: 'rgba(30, 58, 138, 0.35)', color: '#1E3A8A' }}
+                            >
+                              Clear
+                            </Button>
+                          </Box>
+                        </Box>
+                      )}
+
+                      {blogEditorMode === 'manual' && (
+                        <Box sx={{ px: 2, py: 1.5 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Use the form below to create a blog manually, or switch to “Paste HTML” to auto-generate.
+                          </Typography>
+                        </Box>
+                      )}
                     </Paper>
                   </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Title *"
-                      value={blogForm.title}
-                      onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2}
-                      label="Excerpt *"
-                      value={blogForm.excerpt}
-                      onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={8}
-                      label="Content (HTML or text) *"
-                      value={blogForm.content}
-                      onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
-                      required
-                      helperText="Tip: you can paste HTML above to auto-generate, then edit here."
-                    />
-                  </Grid>
+
+                  {blogEditorMode === 'manual' && (
+                    <>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Title *"
+                          value={blogForm.title}
+                          onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={2}
+                          label="Excerpt *"
+                          value={blogForm.excerpt}
+                          onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={8}
+                          label="Content (HTML or text) *"
+                          value={blogForm.content}
+                          onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
+                          required
+                        />
+                      </Grid>
+                    </>
+                  )}
+
+                  {blogEditorMode === 'html' && (
+                    <>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Title (auto-filled)"
+                          value={blogForm.title}
+                          onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
+                          helperText="Auto-filled from HTML. You can edit if needed."
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={2}
+                          label="Excerpt (auto-filled)"
+                          value={blogForm.excerpt}
+                          onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                          helperText="Auto-filled from meta description or first paragraph."
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={10}
+                          label="Content (HTML)"
+                          value={blogForm.content}
+                          onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
+                          helperText="This is the saved HTML content. You can still edit it here."
+                          required
+                        />
+                      </Grid>
+                    </>
+                  )}
                   <Grid item xs={12} sm={6}>
                     <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: '#374151' }}>
                       Blog Image *
