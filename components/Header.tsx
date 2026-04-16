@@ -192,34 +192,37 @@ export default function Header() {
         >
         <Container maxWidth="lg">
           <Toolbar sx={{ justifyContent: 'space-between', py: 0.75, gap: 1 }}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Link href="/" style={{ textDecoration: 'none' }} aria-label="Arfa Developers Home">
-                <Typography
-                  variant="h5"
-                  component="div"
-                  noWrap
-                  sx={{
-                    fontWeight: 700,
-                    color: scrolled || !hasColoredBackground 
-                      ? '#1E3A8A' // Dark blue for good contrast on white (WCAG AA compliant)
-                      : '#FFFFFF', // White for good contrast on blue background
-                    cursor: 'pointer',
-                    transition: 'color 0.3s ease',
-                    whiteSpace: 'nowrap',
-                    '&:hover': {
-                      color: '#2563EB',
-                    },
-                    fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.35rem' },
-                  }}
-                >
-                  Arfa Developers
-                </Typography>
-              </Link>
-            </motion.div>
+            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, mr: { md: 1, lg: 2 }, minWidth: 0 }}>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Link href="/" style={{ textDecoration: 'none' }} aria-label="Arfa Developers Home">
+                  <Typography
+                    variant="h5"
+                    component="div"
+                    noWrap
+                    sx={{
+                      fontWeight: 800,
+                      color: scrolled || !hasColoredBackground
+                        ? '#1E3A8A' // Dark blue for good contrast on white (WCAG AA compliant)
+                        : '#FFFFFF', // White for good contrast on blue background
+                      cursor: 'pointer',
+                      transition: 'color 0.3s ease',
+                      whiteSpace: 'nowrap',
+                      '&:hover': {
+                        color: '#2563EB',
+                      },
+                      fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.35rem' },
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    Arfa Developers
+                  </Typography>
+                </Link>
+              </motion.div>
+            </Box>
 
             <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', flex: 1, minWidth: 0 }}>
               <Box
@@ -228,7 +231,7 @@ export default function Header() {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  justifyContent: 'flex-start',
                   gap: { md: 0.25, lg: 0.75 },
                   flex: 1,
                   minWidth: 0,
