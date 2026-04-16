@@ -117,6 +117,10 @@ export default function AdminPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [talents, setTalents] = useState<Talent[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
+  const [gscDays, setGscDays] = useState<7 | 28 | 90>(28)
+  const [gscLoading, setGscLoading] = useState(false)
+  const [gscError, setGscError] = useState('')
+  const [gscData, setGscData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
@@ -310,6 +314,89 @@ export default function AdminPage() {
     } finally {
       setDataLoading(false)
     }
+  }
+
+  const loadGsc = async (days: number) => {
+    setGscLoading(true)
+    setGscError('')
+    try {
+      const timestamp = Date.now()
+      const res = await fetch(`/api/admin/gsc?days=${days}&t=${timestamp}`, { cache: 'no-store' })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || 'Failed to load Search Console data')
+      setGscData(json)
+    } catch (e: any) {
+      setGscError(e?.message || 'Failed to load Search Console data')
+    } finally {
+      setGscLoading(false)
+    }
+  }
+
+  // Lazy-load GSC only when tab is opened
+  useEffect(() => {
+    if (!isAuthenticated) return
+    if (tabValue !== 5) return
+    loadGsc(gscDays)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, tabValue, gscDays])
+
+  const TrendChart = ({
+    series,
+  }: {
+    series: { date: string; clicks: number; impressions: number }[]
+  }) => {
+    const width = 900
+    const height = 260
+    const pad = 28
+
+    const safe = Array.isArray(series) ? series : []
+    if (safe.length === 0) {
+      return (
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography color="text.secondary">No data available for the selected range.</Typography>
+        </Box>
+      )
+    }
+
+    const maxClicks = Math.max(...safe.map((d) => d.clicks || 0), 1)
+    const maxImpr = Math.max(...safe.map((d) => d.impressions || 0), 1)
+    const maxY = Math.max(maxClicks, maxImpr)
+
+    const xFor = (i: number) => {
+      if (safe.length === 1) return pad
+      return pad + (i * (width - pad * 2)) / (safe.length - 1)
+    }
+    const yFor = (value: number) => {
+      const v = value || 0
+      const t = v / maxY
+      return height - pad - t * (height - pad * 2)
+    }
+
+    const clicksPath = safe.map((d, i) => `${xFor(i)},${yFor(d.clicks)}`).join(' ')
+    const imprPath = safe.map((d, i) => `${xFor(i)},${yFor(d.impressions)}`).join(' ')
+
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
+          <Chip label="Clicks" size="small" sx={{ bgcolor: 'rgba(37, 99, 235, 0.12)', color: '#1E3A8A', fontWeight: 700 }} />
+          <Chip label="Impressions" size="small" sx={{ bgcolor: 'rgba(16, 185, 129, 0.12)', color: '#065F46', fontWeight: 700 }} />
+          <Typography variant="body2" color="text.secondary">
+            {gscData?.dateRange?.startDate} → {gscData?.dateRange?.endDate}
+          </Typography>
+        </Box>
+
+        <Box sx={{ width: '100%', overflowX: 'auto' }}>
+          <svg width={width} height={height} role="img" aria-label="Search Console trend chart">
+            <rect x="0" y="0" width={width} height={height} fill="#FFFFFF" />
+            <line x1={pad} y1={height - pad} x2={width - pad} y2={height - pad} stroke="#E5E7EB" />
+            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#E5E7EB" />
+
+            <polyline fill="none" stroke="#2563EB" strokeWidth="3" points={clicksPath} />
+            <polyline fill="none" stroke="#10B981" strokeWidth="3" points={imprPath} />
+          </svg>
+        </Box>
+      </Box>
+    )
   }
 
   const handleLeadReadToggle = async (lead: Lead) => {
@@ -816,6 +903,7 @@ export default function AdminPage() {
               <Tab label="Promotions" />
               <Tab label="Talent" />
               <Tab label={`Leads (${leads.filter((l) => !l.read).length})`} />
+              <Tab label="Search Console" />
             </Tabs>
           </Paper>
 
@@ -1251,6 +1339,195 @@ export default function AdminPage() {
                     </TableBody>
                   </Table>
                 </TableContainer>
+              )}
+            </Paper>
+          )}
+
+          {/* Google Search Console Tab */}
+          {tabValue === 5 && (
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box
+                sx={{
+                  p: 3,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                }}
+              >
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                    Google Search Console
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {gscData?.siteUrl || '—'}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <Chip
+                    clickable
+                    label="7d"
+                    color={gscDays === 7 ? 'primary' : 'default'}
+                    variant={gscDays === 7 ? 'filled' : 'outlined'}
+                    onClick={() => setGscDays(7)}
+                  />
+                  <Chip
+                    clickable
+                    label="28d"
+                    color={gscDays === 28 ? 'primary' : 'default'}
+                    variant={gscDays === 28 ? 'filled' : 'outlined'}
+                    onClick={() => setGscDays(28)}
+                  />
+                  <Chip
+                    clickable
+                    label="90d"
+                    color={gscDays === 90 ? 'primary' : 'default'}
+                    variant={gscDays === 90 ? 'filled' : 'outlined'}
+                    onClick={() => setGscDays(90)}
+                  />
+                  <Button variant="outlined" onClick={() => loadGsc(gscDays)} disabled={gscLoading}>
+                    Refresh
+                  </Button>
+                </Box>
+              </Box>
+
+              {gscError && (
+                <Box sx={{ p: 3 }}>
+                  <Alert severity="error">{gscError}</Alert>
+                </Box>
+              )}
+
+              {gscLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                  <Typography sx={{ mt: 2 }}>Loading Search Console data...</Typography>
+                </Box>
+              ) : (
+                <>
+                  {/* Totals */}
+                  <Box sx={{ p: 3, pt: 2 }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <Paper sx={{ p: 2, borderRadius: 2, bgcolor: '#F9FAFB' }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Total Clicks ({gscDays} days)
+                          </Typography>
+                          <Typography variant="h4" sx={{ fontWeight: 800, color: '#1E3A8A' }}>
+                            {gscData?.totals?.clicks ?? '—'}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Paper sx={{ p: 2, borderRadius: 2, bgcolor: '#F9FAFB' }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Total Impressions ({gscDays} days)
+                          </Typography>
+                          <Typography variant="h4" sx={{ fontWeight: 800, color: '#065F46' }}>
+                            {gscData?.totals?.impressions ?? '—'}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  {/* Chart */}
+                  <TrendChart series={gscData?.timeSeries || []} />
+
+                  <Divider />
+
+                  {/* Top Queries / Pages */}
+                  <Box sx={{ p: 3 }}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} lg={6}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                          Top Queries
+                        </Typography>
+                        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                                <TableCell sx={{ fontWeight: 700 }}>Query</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="right">
+                                  Clicks
+                                </TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="right">
+                                  Impr.
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {(gscData?.topQueries || []).length === 0 ? (
+                                <TableRow>
+                                  <TableCell colSpan={3} align="center" sx={{ py: 3 }}>
+                                    <Typography color="text.secondary">No query data.</Typography>
+                                  </TableCell>
+                                </TableRow>
+                              ) : (
+                                (gscData?.topQueries || []).map((q: any) => (
+                                  <TableRow key={q.query}>
+                                    <TableCell sx={{ maxWidth: 420 }}>
+                                      <Typography sx={{ fontWeight: 600, color: '#111827' }} noWrap>
+                                        {q.query}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell align="right">{q.clicks}</TableCell>
+                                    <TableCell align="right">{q.impressions}</TableCell>
+                                  </TableRow>
+                                ))
+                              )}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Grid>
+
+                      <Grid item xs={12} lg={6}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                          Top Pages
+                        </Typography>
+                        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                                <TableCell sx={{ fontWeight: 700 }}>Page</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="right">
+                                  Clicks
+                                </TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="right">
+                                  Impr.
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {(gscData?.topPages || []).length === 0 ? (
+                                <TableRow>
+                                  <TableCell colSpan={3} align="center" sx={{ py: 3 }}>
+                                    <Typography color="text.secondary">No page data.</Typography>
+                                  </TableCell>
+                                </TableRow>
+                              ) : (
+                                (gscData?.topPages || []).map((p: any) => (
+                                  <TableRow key={p.page}>
+                                    <TableCell sx={{ maxWidth: 420 }}>
+                                      <Typography sx={{ fontWeight: 600, color: '#111827' }} noWrap>
+                                        {p.page}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell align="right">{p.clicks}</TableCell>
+                                    <TableCell align="right">{p.impressions}</TableCell>
+                                  </TableRow>
+                                ))
+                              )}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </>
               )}
             </Paper>
           )}
