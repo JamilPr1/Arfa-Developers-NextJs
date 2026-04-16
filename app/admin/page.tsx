@@ -153,6 +153,7 @@ export default function AdminPage() {
     readTime: '5 min read',
     published: true,
   })
+  const [blogHtmlInput, setBlogHtmlInput] = useState('')
 
   const [promotionForm, setPromotionForm] = useState({
     text: '',
@@ -483,6 +484,7 @@ export default function AdminPage() {
       } else if (type === 'blog') {
         setBlogForm(item)
           setBlogImagePreview(item.image || '')
+          setBlogHtmlInput('')
       } else if (type === 'promotion') {
         setPromotionForm(item)
       } else if (type === 'talent') {
@@ -523,6 +525,7 @@ export default function AdminPage() {
         })
         setBlogImagePreview('')
         setImageError(false)
+        setBlogHtmlInput('')
       } else if (type === 'promotion') {
         setPromotionForm({
           text: '',
@@ -546,6 +549,65 @@ export default function AdminPage() {
       }
     }
     setOpenDialog(true)
+  }
+
+  const generateBlogFromHtml = () => {
+    try {
+      const html = (blogHtmlInput || '').trim()
+      if (!html) {
+        setError('Please paste HTML first.')
+        return
+      }
+
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, 'text/html')
+
+      // Remove scripts/styles for safety and cleaner output
+      doc.querySelectorAll('script, style, noscript').forEach((el) => el.remove())
+
+      const h1 = doc.querySelector('h1')?.textContent?.trim()
+      const titleTag = doc.querySelector('title')?.textContent?.trim()
+      const metaDesc = doc.querySelector('meta[name=\"description\"], meta[property=\"og:description\"]')?.getAttribute('content')?.trim()
+
+      const firstP = Array.from(doc.querySelectorAll('p'))
+        .map((p) => (p.textContent || '').trim())
+        .find((t) => t.length >= 60) || ''
+
+      const imgSrc =
+        doc.querySelector('meta[property=\"og:image\"]')?.getAttribute('content')?.trim() ||
+        doc.querySelector('img')?.getAttribute('src')?.trim() ||
+        ''
+
+      // Use body HTML if present; fallback to original html
+      const contentHtml = (doc.body?.innerHTML || html).trim()
+
+      // Rough read time estimate: 200 wpm
+      const textForCount = (doc.body?.textContent || '').replace(/\s+/g, ' ').trim()
+      const wordCount = textForCount ? textForCount.split(' ').length : 0
+      const minutes = Math.max(1, Math.round(wordCount / 200))
+      const readTime = `${minutes} min read`
+
+      const nextTitle = h1 || titleTag || 'Untitled Blog'
+      const nextExcerpt = metaDesc || firstP || 'Summary coming soon.'
+
+      setBlogForm((prev) => ({
+        ...prev,
+        title: prev.title?.trim() ? prev.title : nextTitle,
+        excerpt: prev.excerpt?.trim() ? prev.excerpt : nextExcerpt,
+        content: contentHtml,
+        image: prev.image?.trim() ? prev.image : imgSrc,
+        readTime,
+      }))
+
+      if (imgSrc) {
+        setBlogImagePreview(imgSrc)
+        setImageError(false)
+      }
+
+      setSuccess('Generated blog fields from HTML. Review and edit before saving.')
+    } catch (e: any) {
+      setError(e?.message || 'Failed to parse HTML. Please try again.')
+    }
   }
 
   const handleSave = async () => {
@@ -1754,6 +1816,46 @@ export default function AdminPage() {
               {dialogType === 'blog' && (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: '#F9FAFB',
+                        borderColor: 'rgba(30, 58, 138, 0.18)',
+                      }}
+                    >
+                      <Typography sx={{ fontWeight: 800, color: '#1E3A8A', mb: 1 }}>
+                        Generate from HTML (optional)
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                        Paste full HTML (or the article body). We’ll auto-fill title/excerpt/image and use the HTML as blog content.
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        multiline
+                        minRows={4}
+                        label="Paste HTML here"
+                        value={blogHtmlInput}
+                        onChange={(e) => setBlogHtmlInput(e.target.value)}
+                      />
+                      <Box sx={{ mt: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        <Button variant="outlined" onClick={generateBlogFromHtml}>
+                          Generate fields
+                        </Button>
+                        <Button
+                          variant="text"
+                          onClick={() => {
+                            setBlogHtmlInput('')
+                            setSuccess('HTML cleared.')
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12}>
                     <TextField
                       fullWidth
                       label="Title *"
@@ -1778,10 +1880,11 @@ export default function AdminPage() {
                       fullWidth
                       multiline
                       rows={8}
-                      label="Content *"
+                      label="Content (HTML or text) *"
                       value={blogForm.content}
                       onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
                       required
+                      helperText="Tip: you can paste HTML above to auto-generate, then edit here."
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>

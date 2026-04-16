@@ -480,6 +480,44 @@ export default function Footer() {
             mt: 4,
             pt: 3,
             borderTop: '1px solid',
+            borderColor: 'rgba(255,255,255,0.08)',
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 2,
+            alignItems: { xs: 'flex-start', md: 'center' },
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography variant="body2" sx={{ color: '#D1D5DB', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            Popular searches:
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', alignItems: 'center' }}>
+            {seoLinks.map((link) => (
+              <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
+                <MuiLink
+                  component="span"
+                  sx={{
+                    color: '#9CA3AF',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.9375rem',
+                    fontWeight: 600,
+                    '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                    transition: 'color 0.25s ease',
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              </Link>
+            ))}
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            mt: 4,
+            pt: 3,
+            borderTop: '1px solid',
             borderColor: 'divider',
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
