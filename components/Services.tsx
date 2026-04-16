@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Container, Typography, Grid, Card, CardContent, CardMedia } from '@mui/material'
+import { Box, Container, Typography, Grid, Card, CardContent, Chip } from '@mui/material'
 import {
   Web as WebIcon,
   PhoneAndroid as MobileIcon,
@@ -10,6 +10,7 @@ import {
   Speed as SpeedIcon,
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 
 const services = [
   {
@@ -115,6 +116,50 @@ export default function Services() {
             </Grid>
           ))}
         </Grid>
+
+        <Box sx={{ mt: 6, textAlign: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#1E3A8A' }}>
+            Explore high-intent service pages
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <Link href="/project-rescue" style={{ textDecoration: 'none' }}>
+              <Chip
+                clickable
+                label="Project Rescue"
+                sx={{
+                  backgroundColor: '#EFF6FF',
+                  color: '#1E3A8A',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#DBEAFE' },
+                }}
+              />
+            </Link>
+            <Link href="/web-development-agency-usa" style={{ textDecoration: 'none' }}>
+              <Chip
+                clickable
+                label="Web Development Agency USA"
+                sx={{
+                  backgroundColor: '#EFF6FF',
+                  color: '#1E3A8A',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#DBEAFE' },
+                }}
+              />
+            </Link>
+            <Link href="/custom-software-development-usa" style={{ textDecoration: 'none' }}>
+              <Chip
+                clickable
+                label="Custom Software Development USA"
+                sx={{
+                  backgroundColor: '#EFF6FF',
+                  color: '#1E3A8A',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#DBEAFE' },
+                }}
+              />
+            </Link>
+          </Box>
+        </Box>
       </Container>
     </Box>
   )

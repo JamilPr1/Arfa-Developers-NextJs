@@ -53,6 +53,12 @@ const legalLinks = [
   { label: 'Refund Policy', href: '/refund-policy' },
 ]
 
+const seoLinks = [
+  { label: 'Project Rescue', href: '/project-rescue' },
+  { label: 'Web Development Agency USA', href: '/web-development-agency-usa' },
+  { label: 'Custom Software Development USA', href: '/custom-software-development-usa' },
+]
+
 export default function Footer() {
   const router = useRouter()
   const pathname = usePathname()
@@ -125,6 +131,53 @@ export default function Footer() {
                 >
                   +1 (516) 603-7838
                 </MuiLink>
+              </Box>
+            </motion.div>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  mb: 2,
+                  color: '#F9FAFB',
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                }}
+              >
+                US-Focused Pages
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {seoLinks.map((link) => (
+                  <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
+                    <MuiLink
+                      component="span"
+                      sx={{
+                        color: '#9CA3AF',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.9375rem',
+                        py: 0.5,
+                        minHeight: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        '&:hover': {
+                          color: '#2563EB',
+                          textDecoration: 'underline',
+                        },
+                        transition: 'color 0.3s ease',
+                      }}
+                    >
+                      {link.label}
+                    </MuiLink>
+                  </Link>
+                ))}
               </Box>
             </motion.div>
           </Grid>

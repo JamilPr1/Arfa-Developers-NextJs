@@ -1,8 +1,9 @@
 'use client'
 
-import { Box, Container, Typography, Button, Grid } from '@mui/material'
+import { Box, Container, Typography, Button, Grid, Link as MuiLink } from '@mui/material'
 import { motion } from 'framer-motion'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import Link from 'next/link'
 
 export default function Hero() {
   const handleNavClick = (href: string) => {
@@ -153,6 +154,59 @@ export default function Hero() {
                 View Portfolio
               </Button>
             </motion.div>
+
+            <Box
+              sx={{
+                mt: 3,
+                display: 'flex',
+                gap: 2,
+                flexWrap: 'wrap',
+                alignItems: 'center',
+              }}
+            >
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+                Popular searches:
+              </Typography>
+              <Link href="/project-rescue" style={{ textDecoration: 'none' }}>
+                <MuiLink
+                  component="span"
+                  sx={{
+                    color: '#FDE68A',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  }}
+                >
+                  Project Rescue
+                </MuiLink>
+              </Link>
+              <Link href="/web-development-agency-usa" style={{ textDecoration: 'none' }}>
+                <MuiLink
+                  component="span"
+                  sx={{
+                    color: '#FDE68A',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  }}
+                >
+                  Web Development Agency USA
+                </MuiLink>
+              </Link>
+              <Link href="/custom-software-development-usa" style={{ textDecoration: 'none' }}>
+                <MuiLink
+                  component="span"
+                  sx={{
+                    color: '#FDE68A',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  }}
+                >
+                  Custom Software Development USA
+                </MuiLink>
+              </Link>
+            </Box>
           </Grid>
 
           <Grid item xs={12} md={4}>

@@ -11,11 +11,13 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
+  Link as MuiLink,
 } from '@mui/material'
 import SendIcon from '@mui/icons-material/Send'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import { motion } from 'framer-motion'
 import { submitLead, detectRegion, type LeadData } from '@/lib/formHandler'
+import Link from 'next/link'
 
 const projectTypes = [
   'Web Application',
@@ -211,6 +213,47 @@ export default function CTA() {
           <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)', maxWidth: 600, mx: 'auto' }}>
             Schedule a free consultation with our experts today
           </Typography>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Link href="/project-rescue" style={{ textDecoration: 'none' }}>
+              <MuiLink
+                component="span"
+                sx={{
+                  color: '#FDE68A',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                }}
+              >
+                Need a project rescue?
+              </MuiLink>
+            </Link>
+            <Link href="/web-development-agency-usa" style={{ textDecoration: 'none' }}>
+              <MuiLink
+                component="span"
+                sx={{
+                  color: '#FDE68A',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                }}
+              >
+                Web development agency USA
+              </MuiLink>
+            </Link>
+            <Link href="/custom-software-development-usa" style={{ textDecoration: 'none' }}>
+              <MuiLink
+                component="span"
+                sx={{
+                  color: '#FDE68A',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                }}
+              >
+                Custom software development USA
+              </MuiLink>
+            </Link>
+          </Box>
         </Box>
 
         <motion.div
