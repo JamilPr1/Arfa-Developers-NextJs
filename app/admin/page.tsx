@@ -111,6 +111,8 @@ interface Lead {
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
   const [tabValue, setTabValue] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
   const [blogs, setBlogs] = useState<Blog[]>([])
@@ -254,6 +256,26 @@ export default function AdminPage() {
       setError('Login failed. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    setResetLoading(true)
+    setError('')
+    setSuccess('')
+    try {
+      const res = await fetch('/api/admin/password-reset/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || 'Failed to request password reset')
+      setSuccess('Reset email sent. Please check your inbox.')
+    } catch (e: any) {
+      setError(e?.message || 'Failed to request password reset')
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -819,6 +841,7 @@ export default function AdminPage() {
               sx={{ mb: 2 }}
             />
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
             <Button
               fullWidth
               variant="contained"
@@ -827,6 +850,31 @@ export default function AdminPage() {
               sx={{ py: 1.5, backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+            </Button>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#111827', mb: 1 }}>
+              Forgot password?
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              Enter your email and we’ll send a reset link.
+            </Typography>
+            <TextField
+              fullWidth
+              label="Email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              sx={{ mb: 1.5 }}
+            />
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={handleForgotPassword}
+              disabled={resetLoading}
+              sx={{ py: 1.2, borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB' } }}
+            >
+              {resetLoading ? <CircularProgress size={22} color="inherit" /> : 'Send reset email'}
             </Button>
           </Paper>
         </Container>

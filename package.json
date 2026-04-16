@@ -25,6 +25,7 @@
     "aos": "^2.3.4",
     "framer-motion": "^10.16.4",
     "googleapis": "^159.0.0",
+    "bcryptjs": "^2.4.3",
     "leaflet": "^1.9.4",
     "lottie-react": "^2.4.0",
     "next": "^14.0.0",
