@@ -94,6 +94,20 @@ interface Talent {
   published: boolean
 }
 
+interface Lead {
+  id: number
+  name: string
+  email: string
+  company: string
+  projectType: string
+  message: string
+  source?: string
+  region?: string
+  createdAt: string
+  slackSent: boolean
+  read: boolean
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -102,6 +116,7 @@ export default function AdminPage() {
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [talents, setTalents] = useState<Talent[]>([])
+  const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
@@ -244,14 +259,15 @@ export default function AdminPage() {
     try {
       // Use cache busting to ensure fresh data
       const timestamp = Date.now()
-      const [projectsRes, blogsRes, promotionsRes, talentsRes] = await Promise.all([
+      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes] = await Promise.all([
         fetch(`/api/admin/projects?t=${timestamp}`, { cache: 'no-store' }),
         fetch(`/api/admin/blogs?t=${timestamp}`, { cache: 'no-store' }),
         fetch(`/api/admin/promotions?t=${timestamp}`, { cache: 'no-store' }),
         fetch(`/api/admin/talent?t=${timestamp}`, { cache: 'no-store' }),
+        fetch(`/api/admin/leads?t=${timestamp}`, { cache: 'no-store' }),
       ])
       
-      if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok || !talentsRes.ok) {
+      if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok || !talentsRes.ok || !leadsRes.ok) {
         throw new Error('Failed to load data')
       }
       
@@ -259,6 +275,7 @@ export default function AdminPage() {
       const blogsData = await blogsRes.json()
       const promotionsData = await promotionsRes.json()
       const talentsData = await talentsRes.json()
+      const leadsData = await leadsRes.json()
       
       // Ensure we have arrays and sort by ID (newest first)
       const sortedProjects = Array.isArray(projectsData) 
@@ -273,16 +290,74 @@ export default function AdminPage() {
       const sortedTalents = Array.isArray(talentsData)
         ? [...talentsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
         : []
+
+      const sortedLeads = Array.isArray(leadsData)
+        ? [...leadsData].sort((a: any, b: any) => {
+            const aTime = a?.createdAt ? new Date(a.createdAt).getTime() : 0
+            const bTime = b?.createdAt ? new Date(b.createdAt).getTime() : 0
+            return bTime - aTime
+          })
+        : []
       
       setProjects(sortedProjects)
       setBlogs(sortedBlogs)
       setPromotions(sortedPromotions)
       setTalents(sortedTalents)
+      setLeads(sortedLeads)
     } catch (err) {
       console.error('Error loading data:', err)
       setError('Failed to load data. Please refresh the page.')
     } finally {
       setDataLoading(false)
+    }
+  }
+
+  const handleLeadReadToggle = async (lead: Lead) => {
+    setLoading(true)
+    setError('')
+    setSuccess('')
+    try {
+      const response = await fetch('/api/admin/leads', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: lead.id, updates: { read: !lead.read } }),
+      })
+      const result = await response.json()
+      if (response.ok) {
+        setSuccess(`Lead marked as ${result.read ? 'read' : 'unread'}.`)
+        await loadData()
+      } else {
+        setError(result.error || 'Failed to update lead')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to update lead')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteLead = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this lead? This action cannot be undone.')) return
+    setLoading(true)
+    setError('')
+    setSuccess('')
+    try {
+      const response = await fetch('/api/admin/leads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      const result = await response.json()
+      if (response.ok) {
+        setSuccess('Lead deleted successfully!')
+        await loadData()
+      } else {
+        setError(result.error || 'Failed to delete lead')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete lead')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -738,6 +813,7 @@ export default function AdminPage() {
               <Tab label="Blogs" />
               <Tab label="Promotions" />
               <Tab label="Talent" />
+              <Tab label={`Leads (${leads.filter((l) => !l.read).length})`} />
             </Tabs>
           </Paper>
 
@@ -1046,6 +1122,125 @@ export default function AdminPage() {
                                 sx={{ color: '#DC2626' }}
                               >
                                 <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Paper>
+          )}
+
+          {/* Leads Tab */}
+          {tabValue === 4 && (
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box
+                sx={{
+                  p: 3,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                  Leads ({leads.length})
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip label={`Unread: ${leads.filter((l) => !l.read).length}`} color="primary" variant="outlined" />
+                  <Chip label={`Slack sent: ${leads.filter((l) => l.slackSent).length}`} color="success" variant="outlined" />
+                </Box>
+              </Box>
+
+              {dataLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                  <Typography sx={{ mt: 2 }}>Loading leads...</Typography>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Project Type</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {leads.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                            <Typography color="text.secondary">
+                              No leads yet. New form submissions will appear here automatically.
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        leads.map((lead) => (
+                          <TableRow key={lead.id} hover>
+                            <TableCell>
+                              <Typography sx={{ fontWeight: 600, color: '#111827' }}>{lead.name}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {lead.company || '—'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ color: '#1E3A8A', fontWeight: 600 }}>{lead.email}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {lead.region || '—'} • {lead.source || 'website-form'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip label={lead.projectType || 'General'} size="small" color="primary" variant="outlined" />
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : '—'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <Chip
+                                  label={lead.read ? 'Read' : 'Unread'}
+                                  size="small"
+                                  color={lead.read ? 'default' : 'success'}
+                                />
+                                <Chip
+                                  label={lead.slackSent ? 'Slack ✓' : 'Slack ✕'}
+                                  size="small"
+                                  color={lead.slackSent ? 'success' : 'warning'}
+                                  variant="outlined"
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <IconButton
+                                onClick={() => handleLeadReadToggle(lead)}
+                                size="small"
+                                sx={{ color: '#1E3A8A' }}
+                                disabled={loading}
+                                title={lead.read ? 'Mark unread' : 'Mark read'}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                onClick={() => handleDeleteLead(lead.id)}
+                                size="small"
+                                sx={{ color: '#EF4444' }}
+                                disabled={loading}
+                                title="Delete lead"
+                              >
+                                <DeleteIcon fontSize="small" />
                               </IconButton>
                             </TableCell>
                           </TableRow>

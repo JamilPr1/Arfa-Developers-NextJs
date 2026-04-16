@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { LeadData } from '@/lib/formHandler'
+import { readDataFile, writeDataFile } from '@/lib/dataUtils'
+import { insertDataToSupabase } from '@/lib/supabaseDataUtils'
 
 // Lead assignment by region
 function assignLeadByRegion(region?: string): string {
@@ -132,6 +134,13 @@ async function sendSlackNotification(data: LeadData): Promise<void> {
 
 // Email submission removed - only sending to Slack
 
+type StoredLead = LeadData & {
+  id?: number
+  createdAt: string
+  slackSent: boolean
+  read: boolean
+}
+
 export async function POST(request: NextRequest) {
   try {
     const data: LeadData = await request.json()
@@ -194,6 +203,34 @@ export async function POST(request: NextRequest) {
       hasSlackBotToken: !!slackBotToken,
       slackChannelId: slackChannelId,
     })
+
+    // Persist lead for Admin dashboard (do not block user experience)
+    try {
+      const storedLead: StoredLead = {
+        ...leadDataWithMessage,
+        createdAt: new Date().toISOString(),
+        slackSent,
+        read: false,
+      }
+
+      // Prefer Supabase insert if configured (optional)
+      if (
+        process.env.NEXT_PUBLIC_SUPABASE_URL &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PHASE !== 'phase-production-build' &&
+        process.env.NEXT_PHASE !== 'phase-development-build'
+      ) {
+        await insertDataToSupabase('leads', storedLead)
+      } else {
+        const leads = await readDataFile<StoredLead>('leads.json')
+        const maxId = leads.length > 0 ? Math.max(...leads.map((l: any) => l.id || 0)) : 0
+        const leadWithId = { ...storedLead, id: maxId + 1 }
+        leads.unshift(leadWithId)
+        await writeDataFile('leads.json', leads)
+      }
+    } catch (persistError) {
+      console.error('[Leads API] ⚠️ Failed to persist lead (Slack still sent):', persistError)
+    }
 
     return NextResponse.json({
       success: true,
