@@ -39,6 +39,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
+  Visibility as VisibilityIcon,
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
   Save as SaveIcon,
@@ -130,6 +131,8 @@ export default function AdminPage() {
   const [openDialog, setOpenDialog] = useState(false)
   const [dialogType, setDialogType] = useState<'project' | 'blog' | 'promotion' | 'talent' | null>(null)
   const [editingItem, setEditingItem] = useState<any>(null)
+  const [leadDetailsOpen, setLeadDetailsOpen] = useState(false)
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   // Form states
@@ -481,6 +484,28 @@ export default function AdminPage() {
       setError(err.message || 'Failed to update lead')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const openLeadDetails = async (lead: Lead) => {
+    setSelectedLead(lead)
+    setLeadDetailsOpen(true)
+
+    // Mark as read on open (only if currently unread)
+    if (!lead.read) {
+      try {
+        const response = await fetch('/api/admin/leads', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: lead.id, updates: { read: true } }),
+        })
+        if (response.ok) {
+          setSelectedLead((prev) => (prev ? { ...prev, read: true } : prev))
+          await loadData()
+        }
+      } catch {
+        // Non-blocking: still allow viewing lead
+      }
     }
   }
 
@@ -1430,7 +1455,12 @@ export default function AdminPage() {
                         </TableRow>
                       ) : (
                         leads.map((lead) => (
-                          <TableRow key={lead.id} hover>
+                          <TableRow
+                            key={lead.id}
+                            hover
+                            sx={{ cursor: 'pointer' }}
+                            onClick={() => openLeadDetails(lead)}
+                          >
                             <TableCell>
                               <Typography sx={{ fontWeight: 600, color: '#111827' }}>{lead.name}</Typography>
                               <Typography variant="body2" color="text.secondary">
@@ -1471,16 +1501,22 @@ export default function AdminPage() {
                             </TableCell>
                             <TableCell>
                               <IconButton
-                                onClick={() => handleLeadReadToggle(lead)}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openLeadDetails(lead)
+                                }}
                                 size="small"
                                 sx={{ color: '#1E3A8A' }}
                                 disabled={loading}
-                                title={lead.read ? 'Mark unread' : 'Mark read'}
+                                title="View lead"
                               >
-                                <EditIcon fontSize="small" />
+                                <VisibilityIcon fontSize="small" />
                               </IconButton>
                               <IconButton
-                                onClick={() => handleDeleteLead(lead.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteLead(lead.id)
+                                }}
                                 size="small"
                                 sx={{ color: '#EF4444' }}
                                 disabled={loading}
@@ -2363,6 +2399,110 @@ export default function AdminPage() {
                 sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
               >
                 Save
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Lead Details Dialog */}
+          <Dialog
+            open={leadDetailsOpen}
+            onClose={() => {
+              setLeadDetailsOpen(false)
+              setSelectedLead(null)
+            }}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>
+              Lead Details
+            </DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
+              {!selectedLead ? (
+                <Typography color="text.secondary">No lead selected.</Typography>
+              ) : (
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+                    <Box>
+                      <Typography sx={{ fontWeight: 800, color: '#111827' }}>{selectedLead.name}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {selectedLead.company || '—'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Chip
+                        label={selectedLead.read ? 'Read' : 'Unread'}
+                        size="small"
+                        color={selectedLead.read ? 'default' : 'success'}
+                      />
+                      <Chip
+                        label={selectedLead.slackSent ? 'Slack ✓' : 'Slack ✕'}
+                        size="small"
+                        color={selectedLead.slackSent ? 'success' : 'warning'}
+                        variant="outlined"
+                      />
+                      <Chip
+                        label={selectedLead.projectType || 'General'}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Email</Typography>
+                      <Typography sx={{ fontWeight: 700, color: '#1E3A8A' }}>{selectedLead.email}</Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Submitted</Typography>
+                      <Typography sx={{ fontWeight: 700 }}>
+                        {(() => {
+                          const t = (selectedLead as any)?.createdAt || (selectedLead as any)?.created_at
+                          return t ? new Date(t).toLocaleString() : '—'
+                        })()}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Region</Typography>
+                      <Typography sx={{ fontWeight: 700 }}>{selectedLead.region || '—'}</Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Source</Typography>
+                      <Typography sx={{ fontWeight: 700 }}>{selectedLead.source || 'website-form'}</Typography>
+                    </Grid>
+                  </Grid>
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Message
+                    </Typography>
+                    <Paper variant="outlined" sx={{ p: 2, bgcolor: '#F9FAFB' }}>
+                      <Typography sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {selectedLead.message || '—'}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+              {selectedLead && (
+                <Button
+                  onClick={() => handleLeadReadToggle(selectedLead)}
+                  disabled={loading}
+                  variant="outlined"
+                >
+                  Mark {selectedLead.read ? 'Unread' : 'Read'}
+                </Button>
+              )}
+              <Button
+                onClick={() => {
+                  setLeadDetailsOpen(false)
+                  setSelectedLead(null)
+                }}
+              >
+                Close
               </Button>
             </DialogActions>
           </Dialog>
