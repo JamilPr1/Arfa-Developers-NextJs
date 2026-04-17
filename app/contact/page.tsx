@@ -10,6 +10,7 @@ import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
 import dynamic from 'next/dynamic'
 import Script from 'next/script'
+import { siteConfig } from '@/lib/siteConfig'
 
 // Dynamically import LocationMap to avoid SSR issues
 const LocationMap = dynamic(() => import('@/components/LocationMap'), {
@@ -172,7 +173,7 @@ export default function ContactPage() {
                       color="text.secondary"
                       sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, wordBreak: 'break-word' }}
                     >
-                      info@arfadevelopers.com
+                      {siteConfig.contactEmail}
                     </Typography>
                   </Box>
                 </Box>
@@ -195,7 +196,7 @@ export default function ContactPage() {
                       color="text.secondary"
                       sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                     >
-                      +1 (555) 123-4567
+                      {siteConfig.phoneDisplay}
                     </Typography>
                   </Box>
                 </Box>
@@ -221,7 +222,7 @@ export default function ContactPage() {
                         fontSize: { xs: '0.875rem', sm: '1rem' },
                       }}
                     >
-                      Serving USA, UK, Qatar, Saudi Arabia, and Pakistan
+                      {siteConfig.locationsDisplay} ({siteConfig.servingDisplay})
                     </Typography>
                     <LocationMap />
                   </Box>

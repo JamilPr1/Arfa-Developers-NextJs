@@ -37,35 +37,14 @@ const locations = [
     name: 'United States',
     lat: 39.8283,
     lng: -98.5795,
-    address: 'Serving clients across USA',
+    address: 'USA (serving globally)',
   },
   {
     id: 2,
-    name: 'United Kingdom',
-    lat: 54.7024,
-    lng: -3.2766,
-    address: 'Serving clients across UK',
-  },
-  {
-    id: 3,
-    name: 'Qatar',
-    lat: 25.3548,
-    lng: 51.1839,
-    address: 'Serving clients in Qatar',
-  },
-  {
-    id: 4,
-    name: 'Saudi Arabia',
-    lat: 23.8859,
-    lng: 45.0792,
-    address: 'Serving clients in Saudi Arabia',
-  },
-  {
-    id: 5,
     name: 'Pakistan',
     lat: 30.3753,
     lng: 69.3451,
-    address: 'Serving clients in Pakistan',
+    address: 'Pakistan (serving globally)',
   },
 ]
 

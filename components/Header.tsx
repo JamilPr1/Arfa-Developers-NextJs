@@ -20,6 +20,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import PromotionsBanner from './PromotionsBanner'
+import { siteConfig } from '@/lib/siteConfig'
 
 type NavLink = {
   label: string
@@ -690,6 +691,34 @@ export default function Header() {
                   Free Consultation
                 </Button>
               </MenuItem>
+
+              {/* Brand snippet for AI + users */}
+              <Box sx={{ px: 2, pb: 1.5, pt: 1, borderTop: '1px solid #E5E7EB' }}>
+                <Typography sx={{ fontWeight: 800, color: '#111827', mb: 0.5 }}>
+                  {siteConfig.brandName}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#4B5563', mb: 1, lineHeight: 1.6 }}>
+                  Web development agency with teams in {siteConfig.locationsDisplay}. {siteConfig.servingDisplay}.
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Box
+                    component="a"
+                    href={`mailto:${siteConfig.contactEmail}`}
+                    sx={{ color: '#2563EB', textDecoration: 'none', fontWeight: 700, fontSize: '0.875rem' }}
+                  >
+                    {siteConfig.contactEmail}
+                  </Box>
+                  <Box
+                    component="a"
+                    href={siteConfig.whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ color: '#16A34A', textDecoration: 'none', fontWeight: 800, fontSize: '0.875rem' }}
+                  >
+                    WhatsApp: {siteConfig.phoneDisplay}
+                  </Box>
+                </Box>
+              </Box>
             </Menu>
           </Toolbar>
         </Container>

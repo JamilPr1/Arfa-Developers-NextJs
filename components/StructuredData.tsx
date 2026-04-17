@@ -1,19 +1,25 @@
+import { siteConfig } from '@/lib/siteConfig'
+
 export default function StructuredData() {
-  const siteUrl = 'https://www.arfadevelopers.com'
+  const siteUrl = siteConfig.siteUrl
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Arfa Developers',
+    name: siteConfig.brandName,
     url: siteUrl,
     logo: `${siteUrl}/logo.png`,
+    email: siteConfig.contactEmail,
+    telephone: siteConfig.phoneE164,
     description:
       'US-focused web development agency building custom web applications and rescuing failed projects. We take over broken builds, fix performance and security issues, and ship production-ready software.',
     address: {
       '@type': 'PostalAddress',
-      addressCountry: ['US'],
+      addressCountry: ['US', 'PK'],
     },
-    areaServed: [
+    areaServed: ['Worldwide'],
+    location: [
       { '@type': 'Country', name: 'United States' },
+      { '@type': 'Country', name: 'Pakistan' },
     ],
     serviceType: [
       'Web Development',
@@ -33,8 +39,10 @@ export default function StructuredData() {
       {
         '@type': 'ContactPoint',
         contactType: 'sales',
-        email: 'sales@arfadevelopers.com',
-        areaServed: 'US',
+        email: siteConfig.contactEmail,
+        telephone: siteConfig.phoneE164,
+        areaServed: ['US', 'PK', 'Global'],
+        availableLanguage: ['en'],
       },
     ],
   }
@@ -45,7 +53,7 @@ export default function StructuredData() {
     serviceType: 'Web Development & Project Rescue Services',
     provider: {
       '@type': 'Organization',
-      name: 'Arfa Developers',
+      name: siteConfig.brandName,
     },
     areaServed: ['United States'],
     description:

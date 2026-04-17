@@ -9,6 +9,7 @@ import {
   LocationOn as LocationIcon,
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
+import { siteConfig } from '@/lib/siteConfig'
 
 const quickLinks = [
   { label: 'Home', href: '/', isRoute: true },
@@ -111,12 +112,17 @@ export default function Footer() {
                 Arfa Developers
               </Typography>
               <Typography variant="body2" sx={{ mb: 2, color: '#9CA3AF' }}>
-                Building web solutions that scale globally. From startups to enterprises, we deliver excellence.
+                Web development agency with teams in {siteConfig.locationsDisplay}. {siteConfig.servingDisplay}.
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2, color: '#9CA3AF', lineHeight: 1.7 }}>
+                Email: {siteConfig.contactEmail}
+                <br />
+                WhatsApp: {siteConfig.phoneDisplay}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
                 <PhoneIcon sx={{ color: '#25D366', fontSize: 24 }} />
                 <MuiLink
-                  href="https://wa.me/15166037838"
+                  href={siteConfig.whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
@@ -131,7 +137,7 @@ export default function Footer() {
                     transition: 'color 0.3s ease',
                   }}
                 >
-                  +1 (516) 603-7838
+                  {siteConfig.phoneDisplay}
                 </MuiLink>
               </Box>
             </motion.div>
@@ -394,13 +400,13 @@ export default function Footer() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <EmailIcon sx={{ color: '#2563EB', fontSize: 20 }} />
                   <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
-                    contact@arfadevelopers.com
+                    {siteConfig.contactEmail}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <PhoneIcon sx={{ color: '#2563EB', fontSize: 20 }} />
                   <MuiLink
-                    href="https://wa.me/15166037838"
+                    href={siteConfig.whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
@@ -413,13 +419,13 @@ export default function Footer() {
                       transition: 'color 0.3s ease',
                     }}
                   >
-                    +1 (516) 603-7838
+                    {siteConfig.phoneDisplay}
                   </MuiLink>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                   <LocationIcon sx={{ color: '#2563EB', fontSize: 20, mt: 0.5 }} />
                   <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
-                    United States & Pakistan
+                    {siteConfig.locationsDisplay} ({siteConfig.servingDisplay})
                   </Typography>
                 </Box>
               </Box>

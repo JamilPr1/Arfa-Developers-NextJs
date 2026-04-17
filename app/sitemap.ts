@@ -16,12 +16,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/blog',
     '/contact',
     '/free-audit',
+    '/pricing',
+    '/testimonials',
+    '/faqs',
+    '/our-process',
+    '/hire-talent',
+    '/hire-talent-form',
+    '/join-our-team',
     '/website-rescue',
     '/project-rescue',
     '/web-development-agency-usa',
     '/custom-software-development-usa',
     '/hire-nextjs-developers-usa',
     '/website-maintenance-support-usa',
+    '/privacy-policy',
+    '/terms-of-service',
+    '/refund-policy',
   ]
 
   return routes.map((path) => ({

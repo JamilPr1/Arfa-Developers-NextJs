@@ -127,7 +127,7 @@ export default function TermsOfServicePage() {
               For questions about these Terms of Service, please contact us at:
             </Typography>
             <Typography variant="body2" sx={{ color: '#6B7280', mt: 1, lineHeight: 1.8 }}>
-              Email: info@arfadevelopers.com<br />
+              Email: aarf.adevelopers@gmail.com<br />
               Phone: +1 (516) 603-7838
             </Typography>
           </Box>

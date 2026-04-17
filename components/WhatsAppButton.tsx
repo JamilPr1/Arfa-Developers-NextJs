@@ -3,10 +3,10 @@
 import { Fab } from '@mui/material'
 import WhatsAppIcon from '@mui/icons-material/WhatsApp'
 import { motion } from 'framer-motion'
+import { siteConfig } from '@/lib/siteConfig'
 
 export default function WhatsAppButton() {
-  const phoneNumber = '5166037838' // US format without + or spaces
-  const whatsappUrl = `https://wa.me/1${phoneNumber}`
+  const whatsappUrl = siteConfig.whatsappLink
 
   return (
     <motion.div
