@@ -92,6 +92,7 @@ interface Talent {
   description: string
   experience?: string
   location?: string
+  country?: string
   published: boolean
 }
 
@@ -176,6 +177,7 @@ export default function AdminPage() {
     description: '',
     experience: '',
     location: '',
+    country: '',
     published: true,
   })
   const [uploadingImage, setUploadingImage] = useState(false)
@@ -183,6 +185,16 @@ export default function AdminPage() {
   const [imageError, setImageError] = useState(false)
   const [projectImagePreview, setProjectImagePreview] = useState<string>('')
   const [blogImagePreview, setBlogImagePreview] = useState<string>('')
+
+  // Bulk talent generator (admin utility)
+  const [bulkTalentOpen, setBulkTalentOpen] = useState(false)
+  const [bulkTalentCount, setBulkTalentCount] = useState('100')
+  const [bulkTalentCountries, setBulkTalentCountries] = useState('United States, Pakistan, United Kingdom, Canada, Germany')
+  const [bulkTalentMinRate, setBulkTalentMinRate] = useState('20')
+  const [bulkTalentMaxRate, setBulkTalentMaxRate] = useState('80')
+  const [bulkTalentPublished, setBulkTalentPublished] = useState(true)
+  const [bulkTalentRunning, setBulkTalentRunning] = useState(false)
+  const [bulkTalentProgress, setBulkTalentProgress] = useState({ done: 0, total: 0 })
 
   // Helper function to convert ImgBB page URLs to direct image URLs
   const convertToDirectImageUrl = (url: string): string => {
@@ -534,6 +546,101 @@ export default function AdminPage() {
     }
   }
 
+  const bulkPick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
+  const clampInt = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+
+  const runBulkTalentCreate = async () => {
+    const total = clampInt(parseInt(bulkTalentCount || '0', 10) || 0, 1, 500)
+    const minRate = parseInt(bulkTalentMinRate || '0', 10) || 20
+    const maxRate = parseInt(bulkTalentMaxRate || '0', 10) || 80
+    const countries = bulkTalentCountries
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean)
+
+    if (countries.length === 0) {
+      setError('Please enter at least one country (comma-separated).')
+      return
+    }
+    if (minRate <= 0 || maxRate <= 0 || minRate > maxRate) {
+      setError('Hourly rate range is invalid.')
+      return
+    }
+
+    const firstNames = ['Ali', 'Ahmed', 'Ayesha', 'Fatima', 'Hassan', 'John', 'Sarah', 'Michael', 'David', 'Emma', 'Noah', 'Sophia', 'Liam', 'Olivia', 'James', 'Mia']
+    const lastNames = ['Khan', 'Parvez', 'Smith', 'Johnson', 'Brown', 'Garcia', 'Miller', 'Davis', 'Wilson', 'Anderson', 'Taylor', 'Thomas']
+    const titles = [
+      'Senior Full Stack Developer',
+      'Frontend Developer (React/Next.js)',
+      'Backend Developer (Node.js)',
+      'Mobile App Developer (React Native)',
+      'DevOps Engineer (AWS)',
+      'UI/UX Engineer',
+      'Software Engineer',
+    ]
+    const skillSets = [
+      ['React', 'Next.js', 'TypeScript', 'Tailwind'],
+      ['Node.js', 'Express', 'PostgreSQL', 'REST APIs'],
+      ['React Native', 'TypeScript', 'Firebase', 'CI/CD'],
+      ['AWS', 'Docker', 'Kubernetes', 'Terraform'],
+      ['Python', 'FastAPI', 'PostgreSQL', 'Redis'],
+    ]
+
+    setError('')
+    setSuccess('')
+    setBulkTalentRunning(true)
+    setBulkTalentProgress({ done: 0, total })
+
+    try {
+      for (let i = 0; i < total; i++) {
+        const country = countries[i % countries.length]
+        const name = `${bulkPick(firstNames)} ${bulkPick(lastNames)}`
+        const title = bulkPick(titles)
+        const skills = bulkPick(skillSets)
+        const hourlyRate = Math.floor(minRate + Math.random() * (maxRate - minRate + 1))
+        const rating = parseFloat((4.2 + Math.random() * 0.8).toFixed(1))
+        const projectsCompleted = Math.floor(10 + Math.random() * 80)
+        const description =
+          'Experienced developer available for full-time or part-time engagements. Strong communication, clean code, and proven delivery in agile teams.'
+
+        const payload = {
+          name,
+          title,
+          image: '',
+          skills,
+          hourlyRate,
+          rating,
+          projectsCompleted,
+          description,
+          experience: '5+ years (varies)',
+          country,
+          location: 'Remote',
+          published: bulkTalentPublished,
+        }
+
+        const resp = await fetch('/api/talent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!resp.ok) {
+          const j = await resp.json().catch(() => null)
+          throw new Error(j?.error || `Bulk create failed at item ${i + 1} (HTTP ${resp.status})`)
+        }
+
+        setBulkTalentProgress({ done: i + 1, total })
+      }
+
+      setSuccess(`✅ Created ${total} talent profiles successfully.`)
+      setBulkTalentOpen(false)
+      await loadData()
+    } catch (e: any) {
+      setError(e?.message || 'Bulk create failed.')
+    } finally {
+      setBulkTalentRunning(false)
+    }
+  }
+
   const handleOpenDialog = (type: 'project' | 'blog' | 'promotion' | 'talent', item?: any) => {
     setDialogType(type)
     setEditingItem(item || null)
@@ -609,6 +716,7 @@ export default function AdminPage() {
           description: '',
           experience: '',
           location: '',
+          country: '',
           published: true,
         })
       }
@@ -800,6 +908,7 @@ export default function AdminPage() {
           description: talentForm.description?.trim() || '',
           experience: talentForm.experience?.trim() || '',
           location: talentForm.location?.trim() || '',
+          country: talentForm.country?.trim() || '',
           published: talentForm.published !== undefined ? talentForm.published : true,
         }
         
@@ -835,6 +944,7 @@ export default function AdminPage() {
             description: '',
             experience: '',
             location: '',
+            country: '',
             published: true,
           })
           // Reload data immediately
@@ -1327,14 +1437,23 @@ export default function AdminPage() {
             <Paper sx={{ borderRadius: 2 }}>
               <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>Talent Profiles ({talents.length})</Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenDialog('talent')}
-                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
-                >
-                  Add Talent
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setBulkTalentOpen(true)}
+                    sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
+                  >
+                    Bulk Add
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => handleOpenDialog('talent')}
+                    sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                  >
+                    Add Talent
+                  </Button>
+                </Box>
               </Box>
               {dataLoading ? (
                 <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -2369,7 +2488,16 @@ export default function AdminPage() {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Location"
+                      label="Country"
+                      value={talentForm.country}
+                      onChange={(e) => setTalentForm({ ...talentForm, country: e.target.value })}
+                      placeholder="e.g., United States"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="City/State (optional)"
                       value={talentForm.location}
                       onChange={(e) => setTalentForm({ ...talentForm, location: e.target.value })}
                       placeholder="e.g., New York, USA"
@@ -2399,6 +2527,102 @@ export default function AdminPage() {
                 sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
               >
                 Save
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Bulk Add Talent Dialog */}
+          <Dialog open={bulkTalentOpen} onClose={() => setBulkTalentOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
+              Bulk Add Talent Profiles
+            </DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                This will generate placeholder profiles for building a large talent pool. You can edit any profile later.
+              </Alert>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Count"
+                    value={bulkTalentCount}
+                    onChange={(e) => setBulkTalentCount(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1, max: 500 }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Min $/hr"
+                    value={bulkTalentMinRate}
+                    onChange={(e) => setBulkTalentMinRate(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1 }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Max $/hr"
+                    value={bulkTalentMaxRate}
+                    onChange={(e) => setBulkTalentMaxRate(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1 }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Countries (comma-separated)"
+                    value={bulkTalentCountries}
+                    onChange={(e) => setBulkTalentCountries(e.target.value)}
+                    helperText="Example: United States, Pakistan, United Kingdom, Canada"
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={bulkTalentPublished}
+                        onChange={(e) => setBulkTalentPublished(e.target.checked)}
+                      />
+                    }
+                    label="Published (visible on website)"
+                  />
+                </Grid>
+
+                {bulkTalentRunning && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
+                      Progress: {bulkTalentProgress.done}/{bulkTalentProgress.total}
+                    </Typography>
+                    <Box sx={{ width: '100%', bgcolor: '#E5E7EB', borderRadius: 999, overflow: 'hidden', height: 10 }}>
+                      <Box
+                        sx={{
+                          width: `${bulkTalentProgress.total ? (bulkTalentProgress.done / bulkTalentProgress.total) * 100 : 0}%`,
+                          height: '100%',
+                          bgcolor: '#2563EB',
+                        }}
+                      />
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button onClick={() => setBulkTalentOpen(false)} disabled={bulkTalentRunning}>Cancel</Button>
+              <Button
+                variant="contained"
+                onClick={runBulkTalentCreate}
+                disabled={bulkTalentRunning}
+                startIcon={bulkTalentRunning ? <CircularProgress size={20} /> : <AddIcon />}
+                sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+              >
+                {bulkTalentRunning ? 'Creating...' : 'Create'}
               </Button>
             </DialogActions>
           </Dialog>

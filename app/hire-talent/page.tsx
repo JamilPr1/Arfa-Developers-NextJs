@@ -43,6 +43,7 @@ interface Talent {
   description: string
   experience: string
   location?: string
+  country?: string
   published: boolean
 }
 
@@ -355,6 +356,16 @@ export default function HireTalentPage() {
                             >
                               {talent.title}
                             </Typography>
+                            {(talent.country || talent.location) && (
+                              <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                {talent.country && (
+                                  <Chip label={talent.country} size="small" variant="outlined" />
+                                )}
+                                {talent.location && (
+                                  <Chip label={talent.location} size="small" variant="outlined" />
+                                )}
+                              </Box>
+                            )}
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                               <Box>
                                 <Typography variant="body2" sx={{ color: '#6B7280', mb: 0.5 }}>
