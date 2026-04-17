@@ -220,7 +220,9 @@ export async function POST(request: NextRequest) {
         process.env.NEXT_PHASE !== 'phase-production-build' &&
         process.env.NEXT_PHASE !== 'phase-development-build'
       ) {
-        await insertDataToSupabase('leads', storedLead)
+        // Avoid sending an explicit `id` to Supabase (SERIAL/identity should generate it)
+        const { id: _id, ...leadWithoutId } = storedLead as any
+        await insertDataToSupabase('leads', leadWithoutId)
       } else {
         const leads = await readDataFile<StoredLead>('leads.json')
         const maxId = leads.length > 0 ? Math.max(...leads.map((l: any) => l.id || 0)) : 0

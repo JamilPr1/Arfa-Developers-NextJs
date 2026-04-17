@@ -36,7 +36,18 @@ export async function GET() {
             .select('*')
             .order('createdAt', { ascending: false })
 
-          if (!error && leads) {
+          if (error) {
+            console.error('❌ Supabase error fetching leads for admin:', error)
+            return NextResponse.json(
+              {
+                error: 'Failed to fetch leads from Supabase. Ensure the `leads` table exists and RLS/policies allow server access.',
+                details: error.message,
+              },
+              { status: 500 }
+            )
+          }
+
+          if (leads) {
             const response = NextResponse.json(leads)
             response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
             return response
