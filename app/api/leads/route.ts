@@ -247,7 +247,18 @@ export async function POST(request: NextRequest) {
           } catch (e2: any) {
             const msg2 = e2?.message || String(e2)
             console.error('[Leads API] Supabase insert (camelCase) failed:', msg2)
-            throw e2
+            // As a safety net, persist to the same storage used by the Admin dashboard fallback (Redis / file in dev).
+            // This keeps the system working even if Supabase column naming/policies are misconfigured.
+            try {
+              const leads = await readDataFile<StoredLead>('leads.json')
+              const maxId = leads.length > 0 ? Math.max(...leads.map((l: any) => l.id || 0)) : 0
+              const leadWithId = { ...storedLead, id: maxId + 1 }
+              leads.unshift(leadWithId)
+              await writeDataFile('leads.json', leads)
+              console.log('[Leads API] ✅ Persisted lead to fallback storage (leads.json)')
+            } catch (fallbackErr: any) {
+              console.error('[Leads API] ❌ Fallback persistence failed:', fallbackErr?.message || fallbackErr)
+            }
           }
         }
       } else {

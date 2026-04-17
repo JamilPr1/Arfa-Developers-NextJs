@@ -31,6 +31,20 @@ export async function GET() {
       try {
         const supabase = await getSupabaseClient()
         if (supabase) {
+          const normalizeLead = (l: any): StoredLead => ({
+            id: l?.id,
+            name: l?.name,
+            email: l?.email,
+            company: l?.company,
+            projectType: l?.projectType ?? l?.project_type,
+            message: l?.message,
+            source: l?.source,
+            region: l?.region,
+            createdAt: l?.createdAt ?? l?.created_at ?? l?.createdAt?.toString?.() ?? l?.created_at?.toString?.(),
+            slackSent: l?.slackSent ?? l?.slack_sent ?? false,
+            read: l?.read ?? false,
+          })
+
           // Prefer standard Supabase naming (created_at). Fall back to id if column doesn't exist.
           let leads: any = null
           let error: any = null
@@ -58,8 +72,20 @@ export async function GET() {
             )
           }
 
-          if (leads) {
-            const response = NextResponse.json(leads)
+          if (Array.isArray(leads)) {
+            // If Supabase returns an empty array, also try the JSON/Redis fallback so Admin never shows 0
+            // when submissions are being captured but DB write is misconfigured.
+            const normalized = leads.map(normalizeLead)
+            if (normalized.length === 0) {
+              const fallbackLeads = await readDataFile<StoredLead>('leads.json')
+              if (Array.isArray(fallbackLeads) && fallbackLeads.length > 0) {
+                const response = NextResponse.json(fallbackLeads)
+                response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+                return response
+              }
+            }
+
+            const response = NextResponse.json(normalized)
             response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
             return response
           }
