@@ -343,8 +343,10 @@ export default function AdminPage() {
 
       const sortedLeads = Array.isArray(leadsData)
         ? [...leadsData].sort((a: any, b: any) => {
-            const aTime = a?.createdAt ? new Date(a.createdAt).getTime() : 0
-            const bTime = b?.createdAt ? new Date(b.createdAt).getTime() : 0
+            const aCreated = a?.createdAt || a?.created_at
+            const bCreated = b?.createdAt || b?.created_at
+            const aTime = aCreated ? new Date(aCreated).getTime() : 0
+            const bTime = bCreated ? new Date(bCreated).getTime() : 0
             return bTime - aTime
           })
         : []
@@ -1446,7 +1448,10 @@ export default function AdminPage() {
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2">
-                                {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : '—'}
+                                {(() => {
+                                  const t = (lead as any)?.createdAt || (lead as any)?.created_at
+                                  return t ? new Date(t).toLocaleString() : '—'
+                                })()}
                               </Typography>
                             </TableCell>
                             <TableCell>

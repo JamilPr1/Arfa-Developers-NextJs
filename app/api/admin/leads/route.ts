@@ -31,10 +31,21 @@ export async function GET() {
       try {
         const supabase = await getSupabaseClient()
         if (supabase) {
-          const { data: leads, error } = await supabase
+          // Prefer standard Supabase naming (created_at). Fall back to id if column doesn't exist.
+          let leads: any = null
+          let error: any = null
+
+          ;({ data: leads, error } = await supabase
             .from('leads')
             .select('*')
-            .order('createdAt', { ascending: false })
+            .order('created_at', { ascending: false }))
+
+          if (error?.message?.includes('created_at') && error?.message?.includes('does not exist')) {
+            ;({ data: leads, error } = await supabase
+              .from('leads')
+              .select('*')
+              .order('id', { ascending: false }))
+          }
 
           if (error) {
             console.error('❌ Supabase error fetching leads for admin:', error)
