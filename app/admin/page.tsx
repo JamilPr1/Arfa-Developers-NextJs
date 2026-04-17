@@ -287,23 +287,45 @@ export default function AdminPage() {
     try {
       // Use cache busting to ensure fresh data
       const timestamp = Date.now()
+      const endpoints = {
+        projects: `/api/admin/projects?t=${timestamp}`,
+        blogs: `/api/admin/blogs?t=${timestamp}`,
+        promotions: `/api/admin/promotions?t=${timestamp}`,
+        talent: `/api/admin/talent?t=${timestamp}`,
+        leads: `/api/admin/leads?t=${timestamp}`,
+      } as const
+
       const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes] = await Promise.all([
-        fetch(`/api/admin/projects?t=${timestamp}`, { cache: 'no-store' }),
-        fetch(`/api/admin/blogs?t=${timestamp}`, { cache: 'no-store' }),
-        fetch(`/api/admin/promotions?t=${timestamp}`, { cache: 'no-store' }),
-        fetch(`/api/admin/talent?t=${timestamp}`, { cache: 'no-store' }),
-        fetch(`/api/admin/leads?t=${timestamp}`, { cache: 'no-store' }),
+        fetch(endpoints.projects, { cache: 'no-store' }),
+        fetch(endpoints.blogs, { cache: 'no-store' }),
+        fetch(endpoints.promotions, { cache: 'no-store' }),
+        fetch(endpoints.talent, { cache: 'no-store' }),
+        fetch(endpoints.leads, { cache: 'no-store' }),
       ])
-      
-      if (!projectsRes.ok || !blogsRes.ok || !promotionsRes.ok || !talentsRes.ok || !leadsRes.ok) {
-        throw new Error('Failed to load data')
+
+      const failures: string[] = []
+
+      const safeJson = async (res: Response) => {
+        try {
+          return await res.json()
+        } catch {
+          return null
+        }
       }
-      
-      const projectsData = await projectsRes.json()
-      const blogsData = await blogsRes.json()
-      const promotionsData = await promotionsRes.json()
-      const talentsData = await talentsRes.json()
-      const leadsData = await leadsRes.json()
+
+      const [projectsData, blogsData, promotionsData, talentsData, leadsData] = await Promise.all([
+        safeJson(projectsRes),
+        safeJson(blogsRes),
+        safeJson(promotionsRes),
+        safeJson(talentsRes),
+        safeJson(leadsRes),
+      ])
+
+      if (!projectsRes.ok) failures.push(`Projects (${projectsRes.status})`)
+      if (!blogsRes.ok) failures.push(`Blogs (${blogsRes.status})`)
+      if (!promotionsRes.ok) failures.push(`Promotions (${promotionsRes.status})`)
+      if (!talentsRes.ok) failures.push(`Talent (${talentsRes.status})`)
+      if (!leadsRes.ok) failures.push(`Leads (${leadsRes.status})`)
       
       // Ensure we have arrays and sort by ID (newest first)
       const sortedProjects = Array.isArray(projectsData) 
@@ -332,6 +354,19 @@ export default function AdminPage() {
       setPromotions(sortedPromotions)
       setTalents(sortedTalents)
       setLeads(sortedLeads)
+
+      if (failures.length > 0) {
+        console.error('Admin data load failures:', {
+          failures,
+          endpoints,
+          projectsError: projectsRes.ok ? null : projectsData,
+          blogsError: blogsRes.ok ? null : blogsData,
+          promotionsError: promotionsRes.ok ? null : promotionsData,
+          talentError: talentsRes.ok ? null : talentsData,
+          leadsError: leadsRes.ok ? null : leadsData,
+        })
+        setError(`Some data failed to load: ${failures.join(', ')}.`)
+      }
     } catch (err) {
       console.error('Error loading data:', err)
       setError('Failed to load data. Please refresh the page.')
