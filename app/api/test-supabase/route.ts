@@ -67,6 +67,22 @@ export async function GET() {
           results.tables.talent = '✅ Table exists'
         }
 
+        // Test leads table (critical for Admin CRM)
+        const { error: leadsError } = await supabase
+          .from('leads')
+          .select('*')
+          .limit(1)
+
+        if (leadsError) {
+          if (leadsError.code === 'PGRST116') {
+            results.tables.leads = '⚠️ Table does not exist (create it in Supabase)'
+          } else {
+            results.tables.leads = `❌ Error: ${leadsError.message}`
+          }
+        } else {
+          results.tables.leads = '✅ Table exists'
+        }
+
         // Test storage buckets
         try {
           const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
