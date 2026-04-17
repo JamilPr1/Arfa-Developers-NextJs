@@ -18,6 +18,10 @@ import {
   IconButton,
   Rating,
   CircularProgress,
+  TextField,
+  MenuItem,
+  Slider,
+  InputAdornment,
 } from '@mui/material'
 import {
   Star as StarIcon,
@@ -54,6 +58,10 @@ export default function HireTalentPage() {
   const [openDialog, setOpenDialog] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+  const [search, setSearch] = useState('')
+  const [countryFilter, setCountryFilter] = useState<string>('All')
+  const [rateRange, setRateRange] = useState<number[]>([0, 200])
+  const [minRating, setMinRating] = useState<number>(0)
 
   useEffect(() => {
     fetchTalents()
@@ -106,7 +114,27 @@ export default function HireTalentPage() {
     setSelectedTalent(null)
   }
 
-  const displayedTalents = showAll ? talents : talents.slice(0, 10)
+  const countries = Array.from(
+    new Set((talents || []).map((t) => (t.country || '').trim()).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b))
+
+  const filteredTalents = (talents || []).filter((t) => {
+    const q = search.trim().toLowerCase()
+    const matchesQuery =
+      !q ||
+      t.name?.toLowerCase().includes(q) ||
+      t.title?.toLowerCase().includes(q) ||
+      (t.skills || []).some((s) => String(s).toLowerCase().includes(q)) ||
+      (t.country || '').toLowerCase().includes(q)
+
+    const matchesCountry = countryFilter === 'All' || (t.country || '').trim() === countryFilter
+    const matchesRate = (t.hourlyRate || 0) >= rateRange[0] && (t.hourlyRate || 0) <= rateRange[1]
+    const matchesRating = (t.rating || 0) >= minRating
+
+    return matchesQuery && matchesCountry && matchesRate && matchesRating
+  })
+
+  const displayedTalents = showAll ? filteredTalents : filteredTalents.slice(0, 10)
 
   return (
     <>
@@ -214,6 +242,90 @@ export default function HireTalentPage() {
             </Box>
           ) : (
             <>
+              {/* Filters */}
+              <Box
+                sx={{
+                  mb: 4,
+                  p: 2,
+                  bgcolor: 'white',
+                  borderRadius: 2,
+                  border: '1px solid #E5E7EB',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              >
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      fullWidth
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      label="Search (name, skills, title)"
+                      placeholder="e.g., Next.js, DevOps, React"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Country"
+                      value={countryFilter}
+                      onChange={(e) => setCountryFilter(e.target.value)}
+                    >
+                      <MenuItem value="All">All</MenuItem>
+                      {countries.map((c) => (
+                        <MenuItem key={c} value={c}>
+                          {c}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Min rating"
+                      value={minRating}
+                      onChange={(e) => setMinRating(Math.min(5, Math.max(0, Number(e.target.value || 0))))}
+                      InputProps={{
+                        inputProps: { min: 0, max: 5, step: 0.1 },
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={3}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 0.5 }}>
+                      Hourly rate (${rateRange[0]}–${rateRange[1]})
+                    </Typography>
+                    <Slider
+                      value={rateRange}
+                      onChange={(_, v) => setRateRange(v as number[])}
+                      valueLabelDisplay="auto"
+                      min={0}
+                      max={200}
+                      step={5}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Showing <b>{filteredTalents.length}</b> profiles
+                      </Typography>
+                      <Button
+                        variant="text"
+                        onClick={() => {
+                          setSearch('')
+                          setCountryFilter('All')
+                          setRateRange([0, 200])
+                          setMinRating(0)
+                          setShowAll(false)
+                        }}
+                      >
+                        Reset filters
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+
               <Grid container spacing={4} sx={{ mb: 4 }}>
                 {displayedTalents.length > 0 ? (
                   displayedTalents.map((talent) => (
