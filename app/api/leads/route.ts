@@ -220,15 +220,36 @@ export async function POST(request: NextRequest) {
         process.env.NEXT_PHASE !== 'phase-production-build' &&
         process.env.NEXT_PHASE !== 'phase-development-build'
       ) {
-        // Supabase conventions: prefer snake_case columns; let DB generate id.
+        // Insert into Supabase. Support both snake_case and camelCase schemas.
         const { id: _id, createdAt, slackSent, projectType, ...rest } = storedLead as any
-        const leadForSupabase = {
+
+        const snakeCaseLead = {
           ...rest,
           projectType,
           created_at: createdAt,
           slack_sent: slackSent,
         }
-        await insertDataToSupabase('leads', leadForSupabase)
+
+        const camelCaseLead = {
+          ...rest,
+          projectType,
+          createdAt,
+          slackSent,
+        }
+
+        try {
+          await insertDataToSupabase('leads', snakeCaseLead)
+        } catch (e1: any) {
+          const msg1 = e1?.message || String(e1)
+          console.error('[Leads API] Supabase insert (snake_case) failed:', msg1)
+          try {
+            await insertDataToSupabase('leads', camelCaseLead)
+          } catch (e2: any) {
+            const msg2 = e2?.message || String(e2)
+            console.error('[Leads API] Supabase insert (camelCase) failed:', msg2)
+            throw e2
+          }
+        }
       } else {
         const leads = await readDataFile<StoredLead>('leads.json')
         const maxId = leads.length > 0 ? Math.max(...leads.map((l: any) => l.id || 0)) : 0
