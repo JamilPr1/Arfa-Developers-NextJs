@@ -457,6 +457,22 @@ export default function Header() {
                 >
                   Free Consultation
                 </Button>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    mt: 0.75,
+                    textAlign: 'right',
+                    color: scrolled || !hasColoredBackground ? '#4B5563' : 'rgba(255,255,255,0.85)',
+                    fontWeight: 600,
+                    lineHeight: 1.3,
+                    maxWidth: 260,
+                  }}
+                >
+                  {siteConfig.locationsDisplay} • {siteConfig.servingDisplay}
+                  <br />
+                  {siteConfig.contactEmail}
+                </Typography>
               </Box>
             </Box>
 
