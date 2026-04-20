@@ -31,7 +31,11 @@ type StoredBusinessLead = {
 const FILE = 'business-leads.json'
 
 function dedupeKey(l: any) {
-  return `${(l.businessName || '').toLowerCase()}|${(l.phone || '').toLowerCase()}|${(l.website || '').toLowerCase()}|${(l.address || '').toLowerCase()}`
+  const name = (l.businessName || l.business_name || l.name || '').toLowerCase().trim()
+  const phone = (l.phone || l.phoneNumber || l.contact_phone || l['contact:phone'] || '').toLowerCase().trim()
+  const website = (l.website || l.url || l.contact_website || l['contact:website'] || '').toLowerCase().trim()
+  const address = (l.address || '').toLowerCase().trim()
+  return `${name}|${phone}|${website}|${address}`
 }
 
 async function geocodeCity(city: string, country?: string) {
@@ -67,14 +71,40 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
 
   const tokenRegex = tokens.length > 0 ? tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') : ''
 
+  // Keyword → OSM tag mapping for better results (e.g., plumbers)
+  const keywordToTagFilters: Array<{ test: RegExp; filters: string[] }> = [
+    { test: /\bplumb(er|ing)?\b/i, filters: ['nwr["craft"="plumber"]', 'nwr["shop"="plumber"]', 'nwr["office"="plumber"]'] },
+    { test: /\belectric(ian|al)?\b/i, filters: ['nwr["craft"="electrician"]', 'nwr["shop"="electrical"]', 'nwr["office"="electrician"]'] },
+    { test: /\bhvac\b|\bheating\b|\bair\s*conditioning\b/i, filters: ['nwr["craft"="hvac"]', 'nwr["shop"="hvac"]', 'nwr["office"="hvac"]'] },
+    { test: /\broof(ing|er)?\b/i, filters: ['nwr["craft"="roofer"]', 'nwr["shop"="roofer"]', 'nwr["office"="roofer"]'] },
+    { test: /\bdentist\b|\bdental\b/i, filters: ['nwr["amenity"="dentist"]'] },
+    { test: /\blaw(y|yer)?\b|\battorney\b/i, filters: ['nwr["office"="lawyer"]'] },
+    { test: /\breal\s*estate\b/i, filters: ['nwr["office"="estate_agent"]'] },
+    { test: /\brestaurant\b/i, filters: ['nwr["amenity"="restaurant"]'] },
+  ]
+
+  const mapped = keywordToTagFilters.find((m) => m.test.test(query))
+  const mappedFilters = mapped?.filters || []
+
   // Pass 1: try matching tokens in name (best relevance)
   const overpassQL = `
     [out:json][timeout:25];
     (
-      nwr["name"~"${tokenRegex}",i](around:${radius},${lat},${lon});
+      ${tokenRegex ? `nwr["name"~"${tokenRegex}",i](around:${radius},${lat},${lon});` : ''}
     );
     out tags center ${Math.min(500, Math.max(50, limit * 8))};
   `
+
+  // Pass 1b: mapped tags for service keywords (plumber, electrician, etc.)
+  const overpassMappedQL = mappedFilters.length
+    ? `
+    [out:json][timeout:25];
+    (
+      ${mappedFilters.map((f) => `${f}(around:${radius},${lat},${lon});`).join('\n      ')}
+    );
+    out tags center ${Math.min(500, Math.max(50, limit * 8))};
+  `
+    : ''
 
   // Pass 2 fallback: pull common business POIs if name match returns none
   const overpassFallbackQL = `
@@ -110,7 +140,8 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
           cache: 'no-store',
         })
 
-      let resp = await doFetch(overpassQL)
+      // Prefer mapped query when available, then token name query
+      let resp = overpassMappedQL ? await doFetch(overpassMappedQL) : await doFetch(overpassQL)
 
       if (!resp.ok) {
         // 429/503 are common when overloaded; try next mirror
@@ -127,6 +158,15 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
       let json = (await resp.json()) as any
       let elements = Array.isArray(json?.elements) ? json.elements : []
 
+      // If mapped query returned nothing, try token query before fallback
+      if (elements.length === 0 && overpassMappedQL) {
+        resp = await doFetch(overpassQL)
+        if (resp.ok) {
+          json = (await resp.json()) as any
+          elements = Array.isArray(json?.elements) ? json.elements : []
+        }
+      }
+
       // If token-match query returned nothing, try fallback query on same mirror
       if (elements.length === 0) {
         resp = await doFetch(overpassFallbackQL)
@@ -141,7 +181,7 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
         .map((el: any) => {
           const tags = el.tags || {}
           const name = String(tags.name || '').trim()
-          const hay = `${name} ${tags.shop || ''} ${tags.office || ''} ${tags.amenity || ''}`.toLowerCase()
+          const hay = `${name} ${tags.shop || ''} ${tags.office || ''} ${tags.amenity || ''} ${tags.craft || ''}`.toLowerCase()
           const score =
             tokens.length === 0
               ? (name ? 1 : 0)
@@ -239,6 +279,53 @@ export async function POST(req: NextRequest) {
     }
 
     const merged = [...inserted, ...existing]
+
+    // Website enrichment: try to extract missing phone/email from website pages
+    const enrichFromWebsite = async (lead: StoredBusinessLead) => {
+      if (!lead.website) return lead
+      if (lead.email && lead.phone) return lead
+
+      const url = lead.website.startsWith('http') ? lead.website : `https://${lead.website}`
+      const resp = await fetch(url, {
+        headers: { 'User-Agent': 'ArfaDevelopersCRM/1.0 (business-leads)' },
+        cache: 'no-store',
+      }).catch(() => null as any)
+      if (!resp || !resp.ok) return lead
+
+      const html = await resp.text().catch(() => '')
+      if (!html) return lead
+
+      // email
+      if (!lead.email) {
+        const mailto = html.match(/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i)
+        const email = mailto?.[1] || html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0]
+        if (email) lead.email = email
+      }
+
+      // phone (best-effort; US-like + generic)
+      if (!lead.phone) {
+        const tel = html.match(/tel:([^"'>\s]+)/i)?.[1]
+        if (tel) {
+          lead.phone = tel.replace(/[^\d+]/g, '')
+        } else {
+          const phoneMatch = html.match(/(\+?\d[\d\s().-]{7,}\d)/)
+          if (phoneMatch?.[1]) lead.phone = phoneMatch[1].trim()
+        }
+      }
+
+      return lead
+    }
+
+    // limit enrichment work
+    const maxEnrich = 15
+    const toEnrich = inserted.filter((l) => l.website).slice(0, maxEnrich)
+    for (const l of toEnrich) {
+      try {
+        await enrichFromWebsite(l)
+      } catch {
+        // ignore
+      }
+    }
 
     // Optional AI notes generation (best-effort; does not block saving leads)
     if (generateNotes) {
