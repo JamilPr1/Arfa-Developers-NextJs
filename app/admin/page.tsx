@@ -230,6 +230,7 @@ export default function AdminPage() {
   const [bizEnrichLimit, setBizEnrichLimit] = useState('50')
   const [bizEnrichOnlyMissingEmail, setBizEnrichOnlyMissingEmail] = useState(true)
   const [bizEnrichRunning, setBizEnrichRunning] = useState(false)
+  const [apolloRunning, setApolloRunning] = useState(false)
 
   // Business lead details
   const [businessLeadOpen, setBusinessLeadOpen] = useState(false)
@@ -3299,6 +3300,46 @@ export default function AdminPage() {
             <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
               {selectedBusinessLead && (
                 <>
+                  <Button
+                    variant="contained"
+                    disabled={loading || apolloRunning}
+                    sx={{ backgroundColor: '#7C3AED', '&:hover': { backgroundColor: '#6D28D9' } }}
+                    onClick={async () => {
+                      setApolloRunning(true)
+                      setError('')
+                      setSuccess('')
+                      try {
+                        const secret = (bizEnrichSecret || osmSecret || '').trim()
+                        if (!secret) throw new Error('Enter Admin secret first (use Enrich Emails dialog or OSM dialog).')
+                        const response = await fetch('/api/admin/business-leads/apollo-enrich', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'x-import-secret': secret,
+                          },
+                          body: JSON.stringify({
+                            id: selectedBusinessLead.id,
+                            revealPersonalEmails: true,
+                          }),
+                        })
+                        const json = await response.json().catch(() => ({}))
+                        if (!response.ok) throw new Error(json?.error || 'Apollo enrich failed')
+                        setSuccess(`✅ Apollo enriched. Decision makers found: ${json.decisionMakersFound || 0}.`)
+                        await loadData()
+                        // refresh currently open record
+                        if (json?.lead) {
+                          setSelectedBusinessLead((prev) => (prev && prev.id === json.lead.id ? { ...prev, ...json.lead } : prev))
+                          if (typeof json?.lead?.notes === 'string') setBusinessLeadNotesDraft(json.lead.notes)
+                        }
+                      } catch (e: any) {
+                        setError(e?.message || 'Apollo enrich failed')
+                      } finally {
+                        setApolloRunning(false)
+                      }
+                    }}
+                  >
+                    {apolloRunning ? 'Apollo Enriching...' : 'Enrich via Apollo'}
+                  </Button>
                   <Button
                     variant="outlined"
                     disabled={loading}
