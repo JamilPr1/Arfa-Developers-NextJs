@@ -232,6 +232,14 @@ export default function AdminPage() {
   const [bizEnrichRunning, setBizEnrichRunning] = useState(false)
   const [apolloRunning, setApolloRunning] = useState(false)
 
+  // Apollo bulk enrichment
+  const [apolloBulkOpen, setApolloBulkOpen] = useState(false)
+  const [apolloBulkSecret, setApolloBulkSecret] = useState('')
+  const [apolloBulkLimit, setApolloBulkLimit] = useState('10')
+  const [apolloBulkOnlyMissingEmail, setApolloBulkOnlyMissingEmail] = useState(true)
+  const [apolloBulkRevealPersonalEmails, setApolloBulkRevealPersonalEmails] = useState(true)
+  const [apolloBulkRunning, setApolloBulkRunning] = useState(false)
+
   // Business lead details
   const [businessLeadOpen, setBusinessLeadOpen] = useState(false)
   const [selectedBusinessLead, setSelectedBusinessLead] = useState<BusinessLead | null>(null)
@@ -1741,6 +1749,14 @@ export default function AdminPage() {
                   </Button>
                   <Button
                     variant="outlined"
+                    onClick={() => setApolloBulkOpen(true)}
+                    sx={{ borderColor: '#7C3AED', color: '#7C3AED', '&:hover': { borderColor: '#6D28D9', color: '#6D28D9' } }}
+                    disabled={loading || dataLoading}
+                  >
+                    Apollo Bulk
+                  </Button>
+                  <Button
+                    variant="outlined"
                     onClick={() => setOsmOpen(true)}
                     sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
                   >
@@ -3087,6 +3103,104 @@ export default function AdminPage() {
                 }}
               >
                 {bizEnrichRunning ? 'Enriching...' : 'Run Enrichment'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Apollo Bulk Enrichment */}
+          <Dialog open={apolloBulkOpen} onClose={() => setApolloBulkOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ bgcolor: '#7C3AED', color: 'white' }}>Apollo Bulk Enrichment</DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Apollo enrichment may consume credits and is rate-limited. Start with small batches (10).
+              </Alert>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Admin secret"
+                    value={apolloBulkSecret}
+                    onChange={(e) => setApolloBulkSecret(e.target.value)}
+                    type="password"
+                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Limit"
+                    value={apolloBulkLimit}
+                    onChange={(e) => setApolloBulkLimit(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1, max: 50 }}
+                    helperText="Latest leads to enrich"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={8}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={apolloBulkOnlyMissingEmail}
+                        onChange={(e) => setApolloBulkOnlyMissingEmail(e.target.checked)}
+                      />
+                    }
+                    label="Only enrich leads missing email"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={apolloBulkRevealPersonalEmails}
+                        onChange={(e) => setApolloBulkRevealPersonalEmails(e.target.checked)}
+                      />
+                    }
+                    label="Reveal personal emails (uses Apollo credits if enabled on your plan)"
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button onClick={() => setApolloBulkOpen(false)} disabled={apolloBulkRunning}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                disabled={apolloBulkRunning}
+                startIcon={apolloBulkRunning ? <CircularProgress size={20} /> : <AddIcon />}
+                sx={{ backgroundColor: '#7C3AED', '&:hover': { backgroundColor: '#6D28D9' } }}
+                onClick={async () => {
+                  setApolloBulkRunning(true)
+                  setError('')
+                  setSuccess('')
+                  try {
+                    const response = await fetch('/api/admin/business-leads/apollo-enrich-bulk', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'x-import-secret': apolloBulkSecret,
+                      },
+                      body: JSON.stringify({
+                        limit: parseInt(apolloBulkLimit || '10', 10) || 10,
+                        onlyMissingEmail: apolloBulkOnlyMissingEmail,
+                        revealPersonalEmails: apolloBulkRevealPersonalEmails,
+                      }),
+                    })
+                    const json = await response.json().catch(() => ({}))
+                    if (!response.ok) throw new Error(json?.error || 'Apollo bulk enrichment failed')
+                    setSuccess(
+                      `✅ Apollo bulk done. Scanned ${json.scanned || 0}, updated ${json.updated || 0}, skipped ${json.skipped || 0} (${json.storage || 'storage'}).`
+                    )
+                    setApolloBulkOpen(false)
+                    await loadData()
+                  } catch (e: any) {
+                    setError(e?.message || 'Apollo bulk enrichment failed')
+                  } finally {
+                    setApolloBulkRunning(false)
+                  }
+                }}
+              >
+                {apolloBulkRunning ? 'Running...' : 'Run Apollo Bulk'}
               </Button>
             </DialogActions>
           </Dialog>
