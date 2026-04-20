@@ -68,53 +68,85 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
     out tags center ${Math.min(500, Math.max(50, limit * 8))};
   `
 
-  const resp = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-    body: `data=${encodeURIComponent(overpassQL)}`,
-    cache: 'no-store',
-  })
-  if (!resp.ok) throw new Error(`Overpass failed (HTTP ${resp.status})`)
-  const json = (await resp.json()) as any
-  const elements = Array.isArray(json?.elements) ? json.elements : []
+  const endpoints = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.nchc.org.tw/api/interpreter',
+  ]
 
-  // Filter by query (match in name or tags)
-  const scored = elements
-    .map((el: any) => {
-      const tags = el.tags || {}
-      const name = String(tags.name || '').trim()
-      const hay = `${name} ${tags.shop || ''} ${tags.office || ''} ${tags.amenity || ''}`.toLowerCase()
-      const score = name.toLowerCase().includes(q) ? 2 : hay.includes(q) ? 1 : 0
-      return { el, tags, name, score }
-    })
-    .filter((x: any) => x.name && x.score > 0)
-    .sort((a: any, b: any) => b.score - a.score)
-    .slice(0, limit)
+  let lastErr: any = null
+  for (const endpoint of endpoints) {
+    try {
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          Accept: 'application/json',
+          // Some instances reject without a UA
+          'User-Agent': 'ArfaDevelopersCRM/1.0 (business-leads)',
+        },
+        body: `data=${encodeURIComponent(overpassQL)}`,
+        cache: 'no-store',
+      })
 
-  return scored.map((x: any) => {
-    const t = x.tags
-    const address = [
-      t['addr:housenumber'],
-      t['addr:street'],
-      t['addr:city'],
-      t['addr:state'],
-      t['addr:postcode'],
-      t['addr:country'],
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .trim()
+      if (!resp.ok) {
+        // 429/503 are common when overloaded; try next mirror
+        const text = await resp.text().catch(() => '')
+        const retryable = [406, 429, 500, 502, 503, 504].includes(resp.status)
+        const msg = `Overpass failed (HTTP ${resp.status}) at ${endpoint}${text ? `: ${text.slice(0, 200)}` : ''}`
+        if (retryable) {
+          lastErr = new Error(msg)
+          continue
+        }
+        throw new Error(msg)
+      }
 
-    return {
-      businessName: x.name,
-      address: address || undefined,
-      phone: t.phone || t['contact:phone'] || undefined,
-      website: t.website || t['contact:website'] || undefined,
-      email: t.email || t['contact:email'] || undefined,
-      city: t['addr:city'] || undefined,
-      state: t['addr:state'] || undefined,
+      const json = (await resp.json()) as any
+      const elements = Array.isArray(json?.elements) ? json.elements : []
+      // proceed with parsing below
+      const scored = elements
+        .map((el: any) => {
+          const tags = el.tags || {}
+          const name = String(tags.name || '').trim()
+          const hay = `${name} ${tags.shop || ''} ${tags.office || ''} ${tags.amenity || ''}`.toLowerCase()
+          const score = name.toLowerCase().includes(q) ? 2 : hay.includes(q) ? 1 : 0
+          return { el, tags, name, score }
+        })
+        .filter((x: any) => x.name && x.score > 0)
+        .sort((a: any, b: any) => b.score - a.score)
+        .slice(0, limit)
+
+      return scored.map((x: any) => {
+        const t = x.tags
+        const address = [
+          t['addr:housenumber'],
+          t['addr:street'],
+          t['addr:city'],
+          t['addr:state'],
+          t['addr:postcode'],
+          t['addr:country'],
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .trim()
+
+        return {
+          businessName: x.name,
+          address: address || undefined,
+          phone: t.phone || t['contact:phone'] || undefined,
+          website: t.website || t['contact:website'] || undefined,
+          email: t.email || t['contact:email'] || undefined,
+          city: t['addr:city'] || undefined,
+          state: t['addr:state'] || undefined,
+        }
+      })
+    } catch (err: any) {
+      lastErr = err
+      continue
     }
-  })
+  }
+
+  throw lastErr || new Error('Overpass failed (all endpoints)')
 }
 
 export async function POST(req: NextRequest) {
