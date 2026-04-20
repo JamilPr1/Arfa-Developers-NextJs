@@ -238,6 +238,7 @@ export default function AdminPage() {
   const [apolloBulkLimit, setApolloBulkLimit] = useState('10')
   const [apolloBulkOnlyMissingEmail, setApolloBulkOnlyMissingEmail] = useState(true)
   const [apolloBulkRevealPersonalEmails, setApolloBulkRevealPersonalEmails] = useState(true)
+  const [apolloBulkSkipIfAlreadyEnriched, setApolloBulkSkipIfAlreadyEnriched] = useState(true)
   const [apolloBulkRunning, setApolloBulkRunning] = useState(false)
 
   // Business lead details
@@ -1776,6 +1777,7 @@ export default function AdminPage() {
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#F9FAFB' }}>
                         <TableCell sx={{ fontWeight: 600 }}>Business</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
@@ -1786,14 +1788,25 @@ export default function AdminPage() {
                     <TableBody>
                       {businessLeads.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                          <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                             <Typography color="text.secondary">
                               No business leads yet. Connect n8n to import Google Maps results here.
                             </Typography>
                           </TableCell>
                         </TableRow>
                       ) : (
-                        businessLeads.map((lead) => (
+                        [...businessLeads]
+                          .sort((a, b) => {
+                            const score = (l: any) =>
+                              (l?.email ? 100 : 0) + (l?.phone ? 30 : 0) + (l?.website ? 10 : 0) + (!l?.contacted ? 5 : 0)
+                            const sa = score(a)
+                            const sb = score(b)
+                            if (sb !== sa) return sb - sa
+                            const ta = new Date((a as any)?.createdAt || (a as any)?.created_at || 0).getTime() || 0
+                            const tb = new Date((b as any)?.createdAt || (b as any)?.created_at || 0).getTime() || 0
+                            return tb - ta
+                          })
+                          .map((lead) => (
                           <TableRow
                             key={lead.id}
                             hover
@@ -1811,6 +1824,18 @@ export default function AdminPage() {
                               <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
                                 {lead.address || '—'}
                               </Typography>
+                            </TableCell>
+                            <TableCell>
+                              {lead.email ? (
+                                <MuiLink
+                                  href={`mailto:${lead.email}`}
+                                  sx={{ color: '#111827', fontWeight: 800, textDecoration: 'none' }}
+                                >
+                                  {lead.email}
+                                </MuiLink>
+                              ) : (
+                                '—'
+                              )}
                             </TableCell>
                             <TableCell>
                               {lead.phone ? (
@@ -3158,6 +3183,17 @@ export default function AdminPage() {
                     label="Reveal personal emails (uses Apollo credits if enabled on your plan)"
                   />
                 </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={apolloBulkSkipIfAlreadyEnriched}
+                        onChange={(e) => setApolloBulkSkipIfAlreadyEnriched(e.target.checked)}
+                      />
+                    }
+                    label="Skip leads already enriched by Apollo"
+                  />
+                </Grid>
               </Grid>
             </DialogContent>
             <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
@@ -3184,6 +3220,7 @@ export default function AdminPage() {
                         limit: parseInt(apolloBulkLimit || '10', 10) || 10,
                         onlyMissingEmail: apolloBulkOnlyMissingEmail,
                         revealPersonalEmails: apolloBulkRevealPersonalEmails,
+                        skipIfApolloEnriched: apolloBulkSkipIfAlreadyEnriched,
                       }),
                     })
                     const json = await response.json().catch(() => ({}))

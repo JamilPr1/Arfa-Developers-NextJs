@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
     const limit = Math.min(50, Math.max(1, Number(body?.limit || 10))) // keep safe by default (credits + rate limits)
     const onlyMissingEmail = body?.onlyMissingEmail !== false
     const revealPersonalEmails = body?.revealPersonalEmails !== false
+    const skipIfApolloEnriched = body?.skipIfApolloEnriched !== false
 
     const useSupabase =
       !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -185,6 +186,10 @@ export async function POST(req: NextRequest) {
     for (const lead of leads) {
       scanned++
       if (!lead?.website && !lead?.url) {
+        skipped++
+        continue
+      }
+      if (skipIfApolloEnriched && typeof lead?.notes === 'string' && lead.notes.includes('Apollo Enrichment')) {
         skipped++
         continue
       }
