@@ -34,6 +34,7 @@ import {
   MenuItem,
   Divider,
   Input,
+  Link as MuiLink,
 } from '@mui/material'
 import {
   Edit as EditIcon,
@@ -110,6 +111,22 @@ interface Lead {
   read: boolean
 }
 
+interface BusinessLead {
+  id: number
+  businessName: string
+  address?: string
+  phone?: string
+  website?: string
+  email?: string
+  city?: string
+  state?: string
+  countryCode?: string
+  source?: string
+  createdAt?: string
+  notes?: string
+  contacted?: boolean
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -121,6 +138,7 @@ export default function AdminPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [talents, setTalents] = useState<Talent[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
+  const [businessLeads, setBusinessLeads] = useState<BusinessLead[]>([])
   const [gscDays, setGscDays] = useState<7 | 28 | 90>(28)
   const [gscLoading, setGscLoading] = useState(false)
   const [gscError, setGscError] = useState('')
@@ -308,14 +326,16 @@ export default function AdminPage() {
         promotions: `/api/admin/promotions?t=${timestamp}`,
         talent: `/api/admin/talent?t=${timestamp}`,
         leads: `/api/admin/leads?t=${timestamp}`,
+        businessLeads: `/api/admin/business-leads?t=${timestamp}`,
       } as const
 
-      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes] = await Promise.all([
+      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes, businessLeadsRes] = await Promise.all([
         fetch(endpoints.projects, { cache: 'no-store' }),
         fetch(endpoints.blogs, { cache: 'no-store' }),
         fetch(endpoints.promotions, { cache: 'no-store' }),
         fetch(endpoints.talent, { cache: 'no-store' }),
         fetch(endpoints.leads, { cache: 'no-store' }),
+        fetch(endpoints.businessLeads, { cache: 'no-store' }),
       ])
 
       const failures: string[] = []
@@ -328,12 +348,13 @@ export default function AdminPage() {
         }
       }
 
-      const [projectsData, blogsData, promotionsData, talentsData, leadsData] = await Promise.all([
+      const [projectsData, blogsData, promotionsData, talentsData, leadsData, businessLeadsData] = await Promise.all([
         safeJson(projectsRes),
         safeJson(blogsRes),
         safeJson(promotionsRes),
         safeJson(talentsRes),
         safeJson(leadsRes),
+        safeJson(businessLeadsRes),
       ])
 
       if (!projectsRes.ok) failures.push(`Projects (${projectsRes.status})`)
@@ -341,6 +362,7 @@ export default function AdminPage() {
       if (!promotionsRes.ok) failures.push(`Promotions (${promotionsRes.status})`)
       if (!talentsRes.ok) failures.push(`Talent (${talentsRes.status})`)
       if (!leadsRes.ok) failures.push(`Leads (${leadsRes.status})`)
+      if (!businessLeadsRes.ok) failures.push(`Business Leads (${businessLeadsRes.status})`)
       
       // Ensure we have arrays and sort by ID (newest first)
       const sortedProjects = Array.isArray(projectsData) 
@@ -371,6 +393,7 @@ export default function AdminPage() {
       setPromotions(sortedPromotions)
       setTalents(sortedTalents)
       setLeads(sortedLeads)
+      setBusinessLeads(Array.isArray(businessLeadsData) ? businessLeadsData : [])
 
       if (failures.length > 0) {
         console.error('Admin data load failures:', {
@@ -381,6 +404,7 @@ export default function AdminPage() {
           promotionsError: promotionsRes.ok ? null : promotionsData,
           talentError: talentsRes.ok ? null : talentsData,
           leadsError: leadsRes.ok ? null : leadsData,
+          businessLeadsError: businessLeadsRes.ok ? null : businessLeadsData,
         })
         setError(`Some data failed to load: ${failures.join(', ')}.`)
       }
@@ -411,7 +435,7 @@ export default function AdminPage() {
   // Lazy-load GSC only when tab is opened
   useEffect(() => {
     if (!isAuthenticated) return
-    if (tabValue !== 5) return
+    if (tabValue !== 6) return
     loadGsc(gscDays)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, tabValue, gscDays])
@@ -1191,6 +1215,7 @@ export default function AdminPage() {
               <Tab label="Promotions" />
               <Tab label="Talent" />
               <Tab label={`Leads (${leads.filter((l) => !l.read).length})`} />
+              <Tab label={`Business Leads (${businessLeads.length})`} />
               <Tab label="Search Console" />
             </Tabs>
           </Paper>
@@ -1654,8 +1679,192 @@ export default function AdminPage() {
             </Paper>
           )}
 
-          {/* Google Search Console Tab */}
+          {/* Business Leads Tab */}
           {tabValue === 5 && (
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box
+                sx={{
+                  p: 3,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                  Business Leads ({businessLeads.length})
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip
+                    label={`New: ${businessLeads.filter((l) => !l.contacted).length}`}
+                    color="primary"
+                    variant="outlined"
+                  />
+                  <Chip
+                    label={`Contacted: ${businessLeads.filter((l) => l.contacted).length}`}
+                    color="success"
+                    variant="outlined"
+                  />
+                </Box>
+              </Box>
+
+              {dataLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                  <Typography sx={{ mt: 2 }}>Loading business leads...</Typography>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Business</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {businessLeads.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                            <Typography color="text.secondary">
+                              No business leads yet. Connect n8n to import Google Maps results here.
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        businessLeads.map((lead) => (
+                          <TableRow key={lead.id} hover>
+                            <TableCell>
+                              <Typography sx={{ fontWeight: 700, color: '#111827' }}>
+                                {lead.businessName || '—'}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
+                                {lead.address || '—'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              {lead.phone ? (
+                                <MuiLink
+                                  href={`tel:${lead.phone}`}
+                                  sx={{ color: '#1E3A8A', fontWeight: 700, textDecoration: 'none' }}
+                                >
+                                  {lead.phone}
+                                </MuiLink>
+                              ) : (
+                                '—'
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {lead.website ? (
+                                <MuiLink
+                                  href={lead.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  sx={{ color: '#2563EB', fontWeight: 700, textDecoration: 'none' }}
+                                >
+                                  Visit
+                                </MuiLink>
+                              ) : (
+                                '—'
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {(lead.city || '—')}{lead.state ? `, ${lead.state}` : ''}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {(lead.countryCode || '—').toUpperCase()} • {lead.source || 'google-maps'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={lead.contacted ? 'Contacted' : 'New'}
+                                size="small"
+                                color={lead.contacted ? 'success' : 'warning'}
+                                variant={lead.contacted ? 'outlined' : 'filled'}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <IconButton
+                                onClick={async () => {
+                                  setLoading(true)
+                                  setError('')
+                                  setSuccess('')
+                                  try {
+                                    const response = await fetch('/api/admin/business-leads', {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        id: lead.id,
+                                        updates: { contacted: !lead.contacted },
+                                      }),
+                                    })
+                                    const result = await response.json()
+                                    if (!response.ok) throw new Error(result?.error || 'Failed to update')
+                                    setSuccess(`Lead marked as ${result.contacted ? 'contacted' : 'new'}.`)
+                                    await loadData()
+                                  } catch (e: any) {
+                                    setError(e?.message || 'Failed to update lead')
+                                  } finally {
+                                    setLoading(false)
+                                  }
+                                }}
+                                size="small"
+                                sx={{ color: '#1E3A8A' }}
+                                disabled={loading}
+                                title={lead.contacted ? 'Mark new' : 'Mark contacted'}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                onClick={async () => {
+                                  if (!confirm('Delete this business lead?')) return
+                                  setLoading(true)
+                                  setError('')
+                                  setSuccess('')
+                                  try {
+                                    const response = await fetch('/api/admin/business-leads', {
+                                      method: 'DELETE',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ id: lead.id }),
+                                    })
+                                    const result = await response.json()
+                                    if (!response.ok) throw new Error(result?.error || 'Failed to delete')
+                                    setSuccess('Business lead deleted.')
+                                    await loadData()
+                                  } catch (e: any) {
+                                    setError(e?.message || 'Failed to delete lead')
+                                  } finally {
+                                    setLoading(false)
+                                  }
+                                }}
+                                size="small"
+                                sx={{ color: '#EF4444' }}
+                                disabled={loading}
+                                title="Delete"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Paper>
+          )}
+
+          {/* Google Search Console Tab */}
+          {tabValue === 6 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box
                 sx={{
