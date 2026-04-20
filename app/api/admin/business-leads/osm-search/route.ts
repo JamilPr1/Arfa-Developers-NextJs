@@ -225,6 +225,112 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
   throw lastErr || new Error('Overpass failed (all endpoints)')
 }
 
+type ApolloOrgSearchResult = {
+  organizations: any[]
+  status: number
+  errorText?: string
+}
+
+async function apolloOrganizationSearch(
+  apiKey: string,
+  query: string,
+  city: string,
+  country: string,
+  limit: number
+): Promise<ApolloOrgSearchResult> {
+  const loc = [city, country].filter(Boolean).join(', ').trim()
+  const params = new URLSearchParams()
+  params.set('per_page', String(Math.min(100, limit)))
+  params.set('page', '1')
+  if (loc) params.append('organization_locations[]', loc)
+  // Industry / topic filter (Apollo keyword tags)
+  params.append('q_organization_keyword_tags[]', query)
+
+  const url = `https://api.apollo.io/api/v1/mixed_companies/search?${params.toString()}`
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'x-api-key': apiKey,
+    },
+    body: JSON.stringify({}),
+    cache: 'no-store',
+  })
+
+  const text = await resp.text().catch(() => '')
+  let json: any = {}
+  try {
+    json = text ? JSON.parse(text) : {}
+  } catch {
+    json = {}
+  }
+
+  const orgs = Array.isArray(json?.organizations) ? json.organizations : Array.isArray(json?.accounts) ? json.accounts : []
+
+  if (!resp.ok) {
+    return { organizations: [], status: resp.status, errorText: text?.slice(0, 500) || json?.message }
+  }
+  return { organizations: orgs, status: resp.status }
+}
+
+function mapApolloOrgToLead(
+  org: any,
+  city: string,
+  country: string
+): { businessName: string; address?: string; phone?: string; website?: string; email?: string; city?: string; state?: string } {
+  const domain = (org?.primary_domain || '').trim()
+  const rawSite = (org?.website_url || '').trim()
+  let website: string | undefined
+  if (rawSite) website = rawSite.startsWith('http') ? rawSite : `https://${rawSite}`
+  else if (domain) website = `https://${domain}`
+
+  const phone =
+    (typeof org?.sanitized_phone === 'string' && org.sanitized_phone) ||
+    (typeof org?.phone === 'string' && org.phone) ||
+    org?.primary_phone?.sanitized_number ||
+    org?.primary_phone?.number
+
+  const addressParts = [org?.street_address, org?.city, org?.state, org?.country].filter(Boolean)
+  const address = addressParts.length ? addressParts.join(', ') : undefined
+
+  return {
+    businessName: org?.name || 'Unknown',
+    address,
+    phone: phone ? String(phone) : undefined,
+    website,
+    email: undefined,
+    city: org?.city || city,
+    state: org?.state || undefined,
+  }
+}
+
+function shouldFallbackToOsm(apollo: ApolloOrgSearchResult): { fallback: boolean; reason?: string } {
+  if (apollo.organizations.length > 0) return { fallback: false }
+
+  const status = apollo.status
+  const msg = (apollo.errorText || '').toLowerCase()
+
+  if (status === 401) return { fallback: true, reason: 'apollo_unauthorized' }
+  if (status === 402 || status === 403) return { fallback: true, reason: 'apollo_plan_or_forbidden' }
+  if (status === 429) return { fallback: true, reason: 'apollo_rate_limited' }
+  if (status >= 500) return { fallback: true, reason: 'apollo_server_error' }
+
+  if (msg.includes('quota') || msg.includes('upgrade') || msg.includes('plan') || msg.includes('maximum number of api calls')) {
+    return { fallback: true, reason: 'apollo_quota_or_plan' }
+  }
+
+  // 200 but empty — still try OSM so user gets local POIs Apollo may not index
+  if (status === 200 && apollo.organizations.length === 0) {
+    return { fallback: true, reason: 'apollo_no_results' }
+  }
+
+  if (status !== 200) return { fallback: true, reason: `apollo_http_${status}` }
+
+  return { fallback: true, reason: 'apollo_no_results' }
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Protect this admin tool (same secret used by imports)
@@ -245,8 +351,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing query or city' }, { status: 400 })
     }
 
-    const { lat, lon } = await geocodeCity(city, country)
-    const results = await overpassSearch(lat, lon, query, limit)
+    const apolloKey = process.env.APOLLO_API_KEY || ''
+    let fetchSource: 'apollo' | 'osm' = 'osm'
+    let fallbackReason: string | undefined
+
+    let results: Array<{
+      businessName: string
+      address?: string
+      phone?: string
+      website?: string
+      email?: string
+      city?: string
+      state?: string
+    }> = []
+
+    if (apolloKey) {
+      try {
+        const apollo = await apolloOrganizationSearch(apolloKey, query, city, country, limit)
+        const { fallback, reason } = shouldFallbackToOsm(apollo)
+
+        if (!fallback) {
+          fetchSource = 'apollo'
+          results = apollo.organizations.slice(0, limit).map((o) => mapApolloOrgToLead(o, city, country))
+        } else {
+          fallbackReason = reason
+          const { lat, lon } = await geocodeCity(city, country)
+          results = await overpassSearch(lat, lon, query, limit)
+          fetchSource = 'osm'
+        }
+      } catch {
+        fallbackReason = 'apollo_request_failed'
+        const { lat, lon } = await geocodeCity(city, country)
+        results = await overpassSearch(lat, lon, query, limit)
+        fetchSource = 'osm'
+      }
+    } else {
+      const { lat, lon } = await geocodeCity(city, country)
+      results = await overpassSearch(lat, lon, query, limit)
+      fetchSource = 'osm'
+      fallbackReason = 'apollo_key_missing'
+    }
 
     const existing = await readDataFile<any>(FILE)
     const maxId = existing.length > 0 ? Math.max(...existing.map((l: any) => l.id || 0)) : 0
@@ -267,7 +411,7 @@ export async function POST(req: NextRequest) {
         city: r.city || city,
         state: r.state,
         countryCode: country ? country.toLowerCase().slice(0, 2) : undefined,
-        source: 'osm',
+        source: fetchSource,
         createdAt: now,
         contacted: false,
       }
@@ -412,7 +556,13 @@ export async function POST(req: NextRequest) {
 
     await writeDataFile(FILE, merged)
 
-    return NextResponse.json({ success: true, inserted: inserted.length, totalFetched: results.length })
+    return NextResponse.json({
+      success: true,
+      inserted: inserted.length,
+      totalFetched: results.length,
+      fetchSource,
+      fallbackReason: fetchSource === 'osm' ? fallbackReason : undefined,
+    })
   } catch (e: any) {
     console.error('OSM search error:', e)
     return NextResponse.json({ error: e?.message || 'OSM search failed' }, { status: 500 })

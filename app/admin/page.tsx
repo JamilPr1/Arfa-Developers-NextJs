@@ -1761,7 +1761,7 @@ export default function AdminPage() {
                     onClick={() => setOsmOpen(true)}
                     sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
                   >
-                    Fetch Free (OSM)
+                    Fetch Leads
                   </Button>
                 </Box>
               </Box>
@@ -2928,14 +2928,14 @@ export default function AdminPage() {
             </DialogActions>
           </Dialog>
 
-          {/* Fetch Free Business Leads (OSM) */}
+          {/* Fetch Business Leads (Apollo → OSM fallback) */}
           <Dialog open={osmOpen} onClose={() => setOsmOpen(false)} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
-              Fetch Free Business Leads (OpenStreetMap)
+              Fetch Business Leads
             </DialogTitle>
             <DialogContent sx={{ mt: 2 }}>
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                Free sources are best-effort. Phone/website/email may be missing for many businesses. Use small batches to stay within public API limits.
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Tries <strong>Apollo</strong> first (companies in Apollo by location + keyword). If Apollo has no results, hits quota/rate limits, or returns an error, it automatically falls back to <strong>OpenStreetMap</strong> (free). Use small batches; Apollo may consume API credits.
               </Alert>
 
               <Grid container spacing={2}>
@@ -3033,7 +3033,9 @@ export default function AdminPage() {
                     })
                     const json = await response.json().catch(() => ({}))
                     if (!response.ok) throw new Error(json?.error || 'Fetch failed')
-                    setSuccess(`✅ Fetched ${json.totalFetched || 0} and saved ${json.inserted || 0} business leads.`)
+                    const src = json.fetchSource === 'apollo' ? 'Apollo' : 'OSM'
+                    const why = json.fallbackReason ? ` (fallback: ${json.fallbackReason})` : ''
+                    setSuccess(`✅ Fetched ${json.totalFetched || 0} via ${src}${why} — saved ${json.inserted || 0} new business leads.`)
                     setOsmOpen(false)
                     await loadData()
                   } catch (e: any) {
@@ -3043,7 +3045,7 @@ export default function AdminPage() {
                   }
                 }}
               >
-                {osmRunning ? 'Fetching...' : 'Fetch & Save'}
+                {osmRunning ? 'Fetching...' : 'Fetch & save'}
               </Button>
             </DialogActions>
           </Dialog>
