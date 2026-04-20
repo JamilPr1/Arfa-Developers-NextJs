@@ -55,15 +55,33 @@ async function geocodeCity(city: string, country?: string) {
 async function overpassSearch(lat: number, lon: number, query: string, limit: number) {
   // Search within ~15km radius for common business POIs.
   // We fetch tagged nodes/ways/relations and then trim client-side.
-  const radius = 15000
+  const radius = 25000
   const q = query.toLowerCase()
+  const tokens = q
+    .split(/[^a-z0-9]+/g)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 3)
+    .slice(0, 6)
+
+  const tokenRegex = tokens.length > 0 ? tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') : ''
+
+  // Pass 1: try matching tokens in name (best relevance)
   const overpassQL = `
     [out:json][timeout:25];
     (
-      nwr["name"](around:${radius},${lat},${lon});
-      nwr["shop"](around:${radius},${lat},${lon});
+      nwr["name"~"${tokenRegex}",i](around:${radius},${lat},${lon});
+    );
+    out tags center ${Math.min(500, Math.max(50, limit * 8))};
+  `
+
+  // Pass 2 fallback: pull common business POIs if name match returns none
+  const overpassFallbackQL = `
+    [out:json][timeout:25];
+    (
       nwr["office"](around:${radius},${lat},${lon});
+      nwr["shop"](around:${radius},${lat},${lon});
       nwr["amenity"](around:${radius},${lat},${lon});
+      nwr["craft"](around:${radius},${lat},${lon});
     );
     out tags center ${Math.min(500, Math.max(50, limit * 8))};
   `
@@ -77,17 +95,20 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
   let lastErr: any = null
   for (const endpoint of endpoints) {
     try {
-      const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          Accept: 'application/json',
-          // Some instances reject without a UA
-          'User-Agent': 'ArfaDevelopersCRM/1.0 (business-leads)',
-        },
-        body: `data=${encodeURIComponent(overpassQL)}`,
-        cache: 'no-store',
-      })
+      const doFetch = async (ql: string) =>
+        fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            Accept: 'application/json',
+            // Some instances reject without a UA
+            'User-Agent': 'ArfaDevelopersCRM/1.0 (business-leads)',
+          },
+          body: `data=${encodeURIComponent(ql)}`,
+          cache: 'no-store',
+        })
+
+      let resp = await doFetch(overpassQL)
 
       if (!resp.ok) {
         // 429/503 are common when overloaded; try next mirror
@@ -101,19 +122,32 @@ async function overpassSearch(lat: number, lon: number, query: string, limit: nu
         throw new Error(msg)
       }
 
-      const json = (await resp.json()) as any
-      const elements = Array.isArray(json?.elements) ? json.elements : []
-      // proceed with parsing below
+      let json = (await resp.json()) as any
+      let elements = Array.isArray(json?.elements) ? json.elements : []
+
+      // If token-match query returned nothing, try fallback query on same mirror
+      if (elements.length === 0) {
+        resp = await doFetch(overpassFallbackQL)
+        if (resp.ok) {
+          json = (await resp.json()) as any
+          elements = Array.isArray(json?.elements) ? json.elements : []
+        }
+      }
+
+      // Filter/scoring by tokens (if provided); otherwise accept entries with a name
       const scored = elements
         .map((el: any) => {
           const tags = el.tags || {}
           const name = String(tags.name || '').trim()
           const hay = `${name} ${tags.shop || ''} ${tags.office || ''} ${tags.amenity || ''}`.toLowerCase()
-          const score = name.toLowerCase().includes(q) ? 2 : hay.includes(q) ? 1 : 0
+          const score =
+            tokens.length === 0
+              ? (name ? 1 : 0)
+              : tokens.reduce((s, t) => s + (hay.includes(t) ? 1 : 0), 0) + (name ? 1 : 0)
           return { el, tags, name, score }
         })
         .filter((x: any) => x.name && x.score > 0)
-        .sort((a: any, b: any) => b.score - a.score)
+        .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
         .slice(0, limit)
 
       return scored.map((x: any) => {
