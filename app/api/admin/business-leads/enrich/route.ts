@@ -82,6 +82,33 @@ export async function POST(req: NextRequest) {
       const { data, error } = await query
       if (error || !Array.isArray(data)) return NextResponse.json({ error: error?.message || 'Failed to load leads' }, { status: 500 })
 
+      // If Supabase is empty (common right after creating the table), enrich the actual stored leads
+      // from the fallback store (Redis/file) so the button still works.
+      if (data.length === 0) {
+        const leads = await readDataFile<any>(FILE)
+        const slice = leads.slice(0, limit)
+        let scanned = 0
+        let updated = 0
+        for (const l of slice) {
+          scanned++
+          if (!l?.website) continue
+          if (onlyMissingEmail && l?.email) continue
+          const patch = await enrichFromWebsite(l)
+          let changed = false
+          if (!l.email && patch.email) {
+            l.email = patch.email
+            changed = true
+          }
+          if (!l.phone && patch.phone) {
+            l.phone = patch.phone
+            changed = true
+          }
+          if (changed) updated++
+        }
+        await writeDataFile(FILE, leads)
+        return NextResponse.json({ success: true, storage: 'file', scanned, updated })
+      }
+
       let scanned = 0
       let updated = 0
       for (const row of data as any[]) {
