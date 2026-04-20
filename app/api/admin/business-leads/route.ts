@@ -57,7 +57,9 @@ export async function GET() {
             .select('*')
             .order('created_at', { ascending: false })
 
-          if (!error && Array.isArray(data)) {
+          // If Supabase returns empty (common when you just created the table),
+          // fall back to the persisted store (Redis/file) so admin still shows existing leads.
+          if (!error && Array.isArray(data) && data.length > 0) {
             const response = NextResponse.json(data.map(normalizeRow))
             response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
             return response
