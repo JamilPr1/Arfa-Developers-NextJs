@@ -9,6 +9,7 @@ type Params = {
   city: string
   country?: string
   limit?: number
+  generateNotes?: boolean
 }
 
 type StoredBusinessLead = {
@@ -24,6 +25,7 @@ type StoredBusinessLead = {
   source: string
   createdAt: string
   contacted: boolean
+  notes?: string
 }
 
 const FILE = 'business-leads.json'
@@ -197,6 +199,7 @@ export async function POST(req: NextRequest) {
     const city = (body?.city || '').trim()
     const country = (body?.country || '').trim()
     const limit = Math.min(50, Math.max(1, Number(body?.limit || 20)))
+    const generateNotes = !!body?.generateNotes
 
     if (!query || !city) {
       return NextResponse.json({ error: 'Missing query or city' }, { status: 400 })
@@ -236,6 +239,84 @@ export async function POST(req: NextRequest) {
     }
 
     const merged = [...inserted, ...existing]
+
+    // Optional AI notes generation (best-effort; does not block saving leads)
+    if (generateNotes) {
+      const apiKey = process.env.OPENAI_API_KEY || ''
+
+      const template = (lead: StoredBusinessLead) => {
+        const biz = lead.businessName
+        const loc = [lead.city, lead.state, lead.countryCode?.toUpperCase()].filter(Boolean).join(', ')
+        return [
+          `Business: ${biz}${loc ? ` (${loc})` : ''}`,
+          '',
+          `What they likely do: Based on the query "${query}", this business may offer related services.`,
+          '',
+          'Likely pain points:',
+          '- Weak/old website or not ranking on Google',
+          '- Slow site / poor mobile UX',
+          '- Low conversions (no clear offer, forms, tracking)',
+          '',
+          'What Arfa Developers can offer:',
+          '- Website redesign or new conversion-focused site (Next.js)',
+          '- Technical SEO + speed optimization + tracking',
+          '- Ongoing maintenance & support',
+          '',
+          'Outreach angle:',
+          `- Offer a free audit + quick wins tailored to "${query}".`,
+        ].join('\n')
+      }
+
+      const genOne = async (lead: StoredBusinessLead) => {
+        if (!apiKey) return template(lead)
+        const prompt = [
+          'You are a B2B sales assistant for a software development agency.',
+          'Write concise, actionable notes for outreach.',
+          'Return ONLY plain text with sections:',
+          '1) What they do',
+          '2) Likely pain points',
+          '3) What we can offer',
+          '4) A 2-sentence outreach opener',
+          '',
+          `Business: ${lead.businessName}`,
+          `Location: ${[lead.city, lead.state, lead.countryCode].filter(Boolean).join(', ')}`,
+          `Search query used to find them: ${query}`,
+          `Address: ${lead.address || ''}`,
+          `Website: ${lead.website || ''}`,
+        ].join('\n')
+
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You write short B2B lead research notes.' },
+              { role: 'user', content: prompt },
+            ],
+            temperature: 0.3,
+          }),
+        })
+        if (!resp.ok) return template(lead)
+        const json = await resp.json().catch(() => null)
+        const text = json?.choices?.[0]?.message?.content
+        return typeof text === 'string' && text.trim().length > 0 ? text.trim() : template(lead)
+      }
+
+      const maxToGenerate = 20
+      const toGen = inserted.slice(0, maxToGenerate)
+      for (const l of toGen) {
+        try {
+          l.notes = await genOne(l)
+        } catch {
+          l.notes = template(l)
+        }
+      }
+    }
+
     await writeDataFile(FILE, merged)
 
     return NextResponse.json({ success: true, inserted: inserted.length, totalFetched: results.length })

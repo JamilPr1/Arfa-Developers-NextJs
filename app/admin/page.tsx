@@ -222,6 +222,12 @@ export default function AdminPage() {
   const [osmLimit, setOsmLimit] = useState('20')
   const [osmSecret, setOsmSecret] = useState('')
   const [osmRunning, setOsmRunning] = useState(false)
+  const [osmGenerateNotes, setOsmGenerateNotes] = useState(true)
+
+  // Business lead details
+  const [businessLeadOpen, setBusinessLeadOpen] = useState(false)
+  const [selectedBusinessLead, setSelectedBusinessLead] = useState<BusinessLead | null>(null)
+  const [businessLeadNotesDraft, setBusinessLeadNotesDraft] = useState('')
 
   // Helper function to convert ImgBB page URLs to direct image URLs
   const convertToDirectImageUrl = (url: string): string => {
@@ -1756,7 +1762,16 @@ export default function AdminPage() {
                         </TableRow>
                       ) : (
                         businessLeads.map((lead) => (
-                          <TableRow key={lead.id} hover>
+                          <TableRow
+                            key={lead.id}
+                            hover
+                            sx={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              setSelectedBusinessLead(lead)
+                              setBusinessLeadNotesDraft(lead.notes || '')
+                              setBusinessLeadOpen(true)
+                            }}
+                          >
                             <TableCell>
                               <Typography sx={{ fontWeight: 700, color: '#111827' }}>
                                 {lead.businessName || '—'}
@@ -1809,7 +1824,9 @@ export default function AdminPage() {
                             </TableCell>
                             <TableCell>
                               <IconButton
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  // prevent row click opening the modal
                                   setLoading(true)
                                   setError('')
                                   setSuccess('')
@@ -1840,7 +1857,9 @@ export default function AdminPage() {
                                 <EditIcon fontSize="small" />
                               </IconButton>
                               <IconButton
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  // prevent row click opening the modal
                                   if (!confirm('Delete this business lead?')) return
                                   setLoading(true)
                                   setError('')
@@ -2912,6 +2931,18 @@ export default function AdminPage() {
                     helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
                   />
                 </Grid>
+
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={osmGenerateNotes}
+                        onChange={(e) => setOsmGenerateNotes(e.target.checked)}
+                      />
+                    }
+                    label="Generate AI notes (requires OPENAI_API_KEY in Vercel)"
+                  />
+                </Grid>
               </Grid>
             </DialogContent>
             <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
@@ -2939,6 +2970,7 @@ export default function AdminPage() {
                         city: osmCity,
                         country: osmCountry,
                         limit: parseInt(osmLimit || '20', 10) || 20,
+                        generateNotes: osmGenerateNotes,
                       }),
                     })
                     const json = await response.json().catch(() => ({}))
@@ -3059,6 +3091,176 @@ export default function AdminPage() {
               >
                 Close
               </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Business Lead Details Dialog */}
+          <Dialog
+            open={businessLeadOpen}
+            onClose={() => {
+              setBusinessLeadOpen(false)
+              setSelectedBusinessLead(null)
+            }}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>
+              Business Lead
+            </DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
+              {!selectedBusinessLead ? (
+                <Typography color="text.secondary">No business lead selected.</Typography>
+              ) : (
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+                    <Box>
+                      <Typography sx={{ fontWeight: 900, color: '#111827' }}>
+                        {selectedBusinessLead.businessName}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {selectedBusinessLead.address || '—'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Chip
+                        label={selectedBusinessLead.contacted ? 'Contacted' : 'New'}
+                        size="small"
+                        color={selectedBusinessLead.contacted ? 'success' : 'warning'}
+                        variant={selectedBusinessLead.contacted ? 'outlined' : 'filled'}
+                      />
+                      <Chip
+                        label={(selectedBusinessLead.countryCode || '—').toUpperCase()}
+                        size="small"
+                        variant="outlined"
+                      />
+                      <Chip
+                        label={selectedBusinessLead.source || 'osm'}
+                        size="small"
+                        variant="outlined"
+                      />
+                    </Box>
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Phone</Typography>
+                      {selectedBusinessLead.phone ? (
+                        <MuiLink href={`tel:${selectedBusinessLead.phone}`} sx={{ fontWeight: 800, textDecoration: 'none' }}>
+                          {selectedBusinessLead.phone}
+                        </MuiLink>
+                      ) : (
+                        <Typography sx={{ fontWeight: 700 }}>—</Typography>
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Website</Typography>
+                      {selectedBusinessLead.website ? (
+                        <MuiLink href={selectedBusinessLead.website} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 800, textDecoration: 'none' }}>
+                          {selectedBusinessLead.website}
+                        </MuiLink>
+                      ) : (
+                        <Typography sx={{ fontWeight: 700 }}>—</Typography>
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Email</Typography>
+                      {selectedBusinessLead.email ? (
+                        <MuiLink href={`mailto:${selectedBusinessLead.email}`} sx={{ fontWeight: 800, textDecoration: 'none' }}>
+                          {selectedBusinessLead.email}
+                        </MuiLink>
+                      ) : (
+                        <Typography sx={{ fontWeight: 700 }}>—</Typography>
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">City / State</Typography>
+                      <Typography sx={{ fontWeight: 800 }}>
+                        {(selectedBusinessLead.city || '—')}{selectedBusinessLead.state ? `, ${selectedBusinessLead.state}` : ''}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Notes (AI + your notes)
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={6}
+                      value={businessLeadNotesDraft}
+                      onChange={(e) => setBusinessLeadNotesDraft(e.target.value)}
+                      placeholder="Add notes, outreach plan, pain points, offer..."
+                    />
+                  </Box>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+              {selectedBusinessLead && (
+                <>
+                  <Button
+                    variant="outlined"
+                    disabled={loading}
+                    onClick={async () => {
+                      setLoading(true)
+                      setError('')
+                      setSuccess('')
+                      try {
+                        const response = await fetch('/api/admin/business-leads', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            id: selectedBusinessLead.id,
+                            updates: { notes: businessLeadNotesDraft },
+                          }),
+                        })
+                        const json = await response.json()
+                        if (!response.ok) throw new Error(json?.error || 'Failed to save notes')
+                        setSuccess('✅ Notes saved.')
+                        await loadData()
+                      } catch (e: any) {
+                        setError(e?.message || 'Failed to save notes')
+                      } finally {
+                        setLoading(false)
+                      }
+                    }}
+                  >
+                    Save Notes
+                  </Button>
+                  <Button
+                    variant="text"
+                    disabled={loading}
+                    onClick={async () => {
+                      setLoading(true)
+                      setError('')
+                      setSuccess('')
+                      try {
+                        const response = await fetch('/api/admin/business-leads', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            id: selectedBusinessLead.id,
+                            updates: { contacted: !selectedBusinessLead.contacted },
+                          }),
+                        })
+                        const json = await response.json()
+                        if (!response.ok) throw new Error(json?.error || 'Failed to update status')
+                        setSuccess(`Lead marked as ${json.contacted ? 'contacted' : 'new'}.`)
+                        setSelectedBusinessLead((prev) => (prev ? { ...prev, contacted: json.contacted } : prev))
+                        await loadData()
+                      } catch (e: any) {
+                        setError(e?.message || 'Failed to update lead')
+                      } finally {
+                        setLoading(false)
+                      }
+                    }}
+                  >
+                    Mark {selectedBusinessLead.contacted ? 'New' : 'Contacted'}
+                  </Button>
+                </>
+              )}
+              <Button onClick={() => setBusinessLeadOpen(false)}>Close</Button>
             </DialogActions>
           </Dialog>
         </Container>
