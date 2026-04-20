@@ -285,32 +285,38 @@ export async function POST(req: NextRequest) {
       if (!lead.website) return lead
       if (lead.email && lead.phone) return lead
 
-      const url = lead.website.startsWith('http') ? lead.website : `https://${lead.website}`
-      const resp = await fetch(url, {
-        headers: { 'User-Agent': 'ArfaDevelopersCRM/1.0 (business-leads)' },
-        cache: 'no-store',
-      }).catch(() => null as any)
-      if (!resp || !resp.ok) return lead
+      const raw = lead.website.trim()
+      const base = raw.startsWith('http') ? raw : `https://${raw}`
+      const baseNoTrail = base.replace(/\/+$/, '')
+      const candidates = [
+        baseNoTrail,
+        `${baseNoTrail}/contact`,
+        `${baseNoTrail}/contact-us`,
+        `${baseNoTrail}/about`,
+        `${baseNoTrail}/about-us`,
+        `${baseNoTrail}/privacy`,
+      ]
 
-      const html = await resp.text().catch(() => '')
-      if (!html) return lead
-
-      // email
-      if (!lead.email) {
-        const mailto = html.match(/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i)
-        const email = mailto?.[1] || html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0]
-        if (email) lead.email = email
+      const extract = (html: string) => {
+        const mailto = html.match(/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i)?.[1]
+        const email = mailto || html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0]
+        const tel = html.match(/tel:([^"'>\s]+)/i)?.[1]
+        const phone = tel ? tel.replace(/[^\d+]/g, '') : html.match(/(\+?\d[\d\s().-]{7,}\d)/)?.[1]?.trim()
+        return { email, phone }
       }
 
-      // phone (best-effort; US-like + generic)
-      if (!lead.phone) {
-        const tel = html.match(/tel:([^"'>\s]+)/i)?.[1]
-        if (tel) {
-          lead.phone = tel.replace(/[^\d+]/g, '')
-        } else {
-          const phoneMatch = html.match(/(\+?\d[\d\s().-]{7,}\d)/)
-          if (phoneMatch?.[1]) lead.phone = phoneMatch[1].trim()
-        }
+      for (const url of candidates) {
+        const resp = await fetch(url, {
+          headers: { 'User-Agent': 'ArfaDevelopersCRM/1.0 (business-leads)' },
+          cache: 'no-store',
+        }).catch(() => null as any)
+        if (!resp || !resp.ok) continue
+        const html = await resp.text().catch(() => '')
+        if (!html) continue
+        const { email, phone } = extract(html)
+        if (!lead.email && email) lead.email = email
+        if (!lead.phone && phone) lead.phone = phone
+        if (lead.email && lead.phone) break
       }
 
       return lead

@@ -224,6 +224,13 @@ export default function AdminPage() {
   const [osmRunning, setOsmRunning] = useState(false)
   const [osmGenerateNotes, setOsmGenerateNotes] = useState(true)
 
+  // Enrich existing business leads
+  const [bizEnrichOpen, setBizEnrichOpen] = useState(false)
+  const [bizEnrichSecret, setBizEnrichSecret] = useState('')
+  const [bizEnrichLimit, setBizEnrichLimit] = useState('50')
+  const [bizEnrichOnlyMissingEmail, setBizEnrichOnlyMissingEmail] = useState(true)
+  const [bizEnrichRunning, setBizEnrichRunning] = useState(false)
+
   // Business lead details
   const [businessLeadOpen, setBusinessLeadOpen] = useState(false)
   const [selectedBusinessLead, setSelectedBusinessLead] = useState<BusinessLead | null>(null)
@@ -1725,6 +1732,14 @@ export default function AdminPage() {
                   />
                   <Button
                     variant="outlined"
+                    onClick={() => setBizEnrichOpen(true)}
+                    sx={{ borderColor: '#111827', color: '#111827', '&:hover': { borderColor: '#111827', color: '#111827' } }}
+                    disabled={loading || dataLoading}
+                  >
+                    Enrich Emails
+                  </Button>
+                  <Button
+                    variant="outlined"
                     onClick={() => setOsmOpen(true)}
                     sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
                   >
@@ -2943,6 +2958,7 @@ export default function AdminPage() {
                     label="Generate AI notes (requires OPENAI_API_KEY in Vercel)"
                   />
                 </Grid>
+
               </Grid>
             </DialogContent>
             <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
@@ -2986,6 +3002,90 @@ export default function AdminPage() {
                 }}
               >
                 {osmRunning ? 'Fetching...' : 'Fetch & Save'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Enrich Existing Business Leads */}
+          <Dialog open={bizEnrichOpen} onClose={() => setBizEnrichOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>Enrich Emails (Existing Leads)</DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                This crawls each lead website (home/contact/about/privacy) and extracts emails. It will not magically find owner emails for businesses that have no website.
+              </Alert>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Admin secret"
+                    value={bizEnrichSecret}
+                    onChange={(e) => setBizEnrichSecret(e.target.value)}
+                    type="password"
+                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Limit"
+                    value={bizEnrichLimit}
+                    onChange={(e) => setBizEnrichLimit(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1, max: 200 }}
+                    helperText="How many latest leads to scan"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={8}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={bizEnrichOnlyMissingEmail}
+                        onChange={(e) => setBizEnrichOnlyMissingEmail(e.target.checked)}
+                      />
+                    }
+                    label="Only scan leads missing email"
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button onClick={() => setBizEnrichOpen(false)} disabled={bizEnrichRunning}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                disabled={bizEnrichRunning}
+                startIcon={bizEnrichRunning ? <CircularProgress size={20} /> : <AddIcon />}
+                sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
+                onClick={async () => {
+                  setBizEnrichRunning(true)
+                  setError('')
+                  setSuccess('')
+                  try {
+                    const response = await fetch('/api/admin/business-leads/enrich', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'x-import-secret': bizEnrichSecret,
+                      },
+                      body: JSON.stringify({
+                        limit: parseInt(bizEnrichLimit || '50', 10) || 50,
+                        onlyMissingEmail: bizEnrichOnlyMissingEmail,
+                      }),
+                    })
+                    const json = await response.json().catch(() => ({}))
+                    if (!response.ok) throw new Error(json?.error || 'Enrichment failed')
+                    setSuccess(`✅ Enrichment done. Scanned ${json.scanned || 0}, updated ${json.updated || 0} (${json.storage || 'storage'}).`)
+                    setBizEnrichOpen(false)
+                    await loadData()
+                  } catch (e: any) {
+                    setError(e?.message || 'Enrichment failed')
+                  } finally {
+                    setBizEnrichRunning(false)
+                  }
+                }}
+              >
+                {bizEnrichRunning ? 'Enriching...' : 'Run Enrichment'}
               </Button>
             </DialogActions>
           </Dialog>
