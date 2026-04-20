@@ -214,6 +214,15 @@ export default function AdminPage() {
   const [bulkTalentRunning, setBulkTalentRunning] = useState(false)
   const [bulkTalentProgress, setBulkTalentProgress] = useState({ done: 0, total: 0 })
 
+  // Free business lead fetcher (OSM)
+  const [osmOpen, setOsmOpen] = useState(false)
+  const [osmQuery, setOsmQuery] = useState('web design agency')
+  const [osmCity, setOsmCity] = useState('New York')
+  const [osmCountry, setOsmCountry] = useState('US')
+  const [osmLimit, setOsmLimit] = useState('20')
+  const [osmSecret, setOsmSecret] = useState('')
+  const [osmRunning, setOsmRunning] = useState(false)
+
   // Helper function to convert ImgBB page URLs to direct image URLs
   const convertToDirectImageUrl = (url: string): string => {
     if (!url) return url
@@ -1697,7 +1706,7 @@ export default function AdminPage() {
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>
                   Business Leads ({businessLeads.length})
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                   <Chip
                     label={`New: ${businessLeads.filter((l) => !l.contacted).length}`}
                     color="primary"
@@ -1708,6 +1717,13 @@ export default function AdminPage() {
                     color="success"
                     variant="outlined"
                   />
+                  <Button
+                    variant="outlined"
+                    onClick={() => setOsmOpen(true)}
+                    sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
+                  >
+                    Fetch Free (OSM)
+                  </Button>
                 </Box>
               </Box>
 
@@ -2832,6 +2848,112 @@ export default function AdminPage() {
                 sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
               >
                 {bulkTalentRunning ? 'Creating...' : 'Create'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Fetch Free Business Leads (OSM) */}
+          <Dialog open={osmOpen} onClose={() => setOsmOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
+              Fetch Free Business Leads (OpenStreetMap)
+            </DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Free sources are best-effort. Phone/website/email may be missing for many businesses. Use small batches to stay within public API limits.
+              </Alert>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Search keyword"
+                    value={osmQuery}
+                    onChange={(e) => setOsmQuery(e.target.value)}
+                    placeholder="e.g., web design agency"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    value={osmCity}
+                    onChange={(e) => setOsmCity(e.target.value)}
+                    placeholder="e.g., New York"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Country"
+                    value={osmCountry}
+                    onChange={(e) => setOsmCountry(e.target.value)}
+                    placeholder="US"
+                    helperText="2-letter code"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Limit"
+                    value={osmLimit}
+                    onChange={(e) => setOsmLimit(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1, max: 50 }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Admin secret"
+                    value={osmSecret}
+                    onChange={(e) => setOsmSecret(e.target.value)}
+                    type="password"
+                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button onClick={() => setOsmOpen(false)} disabled={osmRunning}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                disabled={osmRunning}
+                startIcon={osmRunning ? <CircularProgress size={20} /> : <AddIcon />}
+                sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                onClick={async () => {
+                  setOsmRunning(true)
+                  setError('')
+                  setSuccess('')
+                  try {
+                    const response = await fetch('/api/admin/business-leads/osm-search', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'x-import-secret': osmSecret,
+                      },
+                      body: JSON.stringify({
+                        query: osmQuery,
+                        city: osmCity,
+                        country: osmCountry,
+                        limit: parseInt(osmLimit || '20', 10) || 20,
+                      }),
+                    })
+                    const json = await response.json().catch(() => ({}))
+                    if (!response.ok) throw new Error(json?.error || 'Fetch failed')
+                    setSuccess(`✅ Fetched ${json.totalFetched || 0} and saved ${json.inserted || 0} business leads.`)
+                    setOsmOpen(false)
+                    await loadData()
+                  } catch (e: any) {
+                    setError(e?.message || 'Fetch failed')
+                  } finally {
+                    setOsmRunning(false)
+                  }
+                }}
+              >
+                {osmRunning ? 'Fetching...' : 'Fetch & Save'}
               </Button>
             </DialogActions>
           </Dialog>

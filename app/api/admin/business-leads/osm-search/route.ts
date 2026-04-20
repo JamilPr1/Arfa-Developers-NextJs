@@ -1,0 +1,181 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { readDataFile, writeDataFile } from '@/lib/dataUtils'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+type Params = {
+  query: string
+  city: string
+  country?: string
+  limit?: number
+}
+
+type StoredBusinessLead = {
+  id: number
+  businessName: string
+  address?: string
+  phone?: string
+  website?: string
+  email?: string
+  city?: string
+  state?: string
+  countryCode?: string
+  source: string
+  createdAt: string
+  contacted: boolean
+}
+
+const FILE = 'business-leads.json'
+
+function dedupeKey(l: any) {
+  return `${(l.businessName || '').toLowerCase()}|${(l.phone || '').toLowerCase()}|${(l.website || '').toLowerCase()}|${(l.address || '').toLowerCase()}`
+}
+
+async function geocodeCity(city: string, country?: string) {
+  const q = [city, country].filter(Boolean).join(', ')
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`
+  const resp = await fetch(url, {
+    headers: {
+      // Nominatim requires a valid UA string
+      'User-Agent': 'ArfaDevelopersCRM/1.0 (business-leads)',
+    },
+    cache: 'no-store',
+  })
+  if (!resp.ok) throw new Error(`Geocoding failed (HTTP ${resp.status})`)
+  const json = (await resp.json()) as any[]
+  if (!Array.isArray(json) || json.length === 0) throw new Error('City not found (geocoding returned no results)')
+  const first = json[0]
+  return {
+    lat: parseFloat(first.lat),
+    lon: parseFloat(first.lon),
+  }
+}
+
+async function overpassSearch(lat: number, lon: number, query: string, limit: number) {
+  // Search within ~15km radius for common business POIs.
+  // We fetch tagged nodes/ways/relations and then trim client-side.
+  const radius = 15000
+  const q = query.toLowerCase()
+  const overpassQL = `
+    [out:json][timeout:25];
+    (
+      nwr["name"](around:${radius},${lat},${lon});
+      nwr["shop"](around:${radius},${lat},${lon});
+      nwr["office"](around:${radius},${lat},${lon});
+      nwr["amenity"](around:${radius},${lat},${lon});
+    );
+    out tags center ${Math.min(500, Math.max(50, limit * 8))};
+  `
+
+  const resp = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    body: `data=${encodeURIComponent(overpassQL)}`,
+    cache: 'no-store',
+  })
+  if (!resp.ok) throw new Error(`Overpass failed (HTTP ${resp.status})`)
+  const json = (await resp.json()) as any
+  const elements = Array.isArray(json?.elements) ? json.elements : []
+
+  // Filter by query (match in name or tags)
+  const scored = elements
+    .map((el: any) => {
+      const tags = el.tags || {}
+      const name = String(tags.name || '').trim()
+      const hay = `${name} ${tags.shop || ''} ${tags.office || ''} ${tags.amenity || ''}`.toLowerCase()
+      const score = name.toLowerCase().includes(q) ? 2 : hay.includes(q) ? 1 : 0
+      return { el, tags, name, score }
+    })
+    .filter((x: any) => x.name && x.score > 0)
+    .sort((a: any, b: any) => b.score - a.score)
+    .slice(0, limit)
+
+  return scored.map((x: any) => {
+    const t = x.tags
+    const address = [
+      t['addr:housenumber'],
+      t['addr:street'],
+      t['addr:city'],
+      t['addr:state'],
+      t['addr:postcode'],
+      t['addr:country'],
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .trim()
+
+    return {
+      businessName: x.name,
+      address: address || undefined,
+      phone: t.phone || t['contact:phone'] || undefined,
+      website: t.website || t['contact:website'] || undefined,
+      email: t.email || t['contact:email'] || undefined,
+      city: t['addr:city'] || undefined,
+      state: t['addr:state'] || undefined,
+    }
+  })
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    // Protect this admin tool (same secret used by imports)
+    const secret = req.headers.get('x-import-secret') || ''
+    const expected = process.env.LEADS_IMPORT_SECRET || ''
+    if (!expected || secret !== expected) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = (await req.json()) as Params
+    const query = (body?.query || '').trim()
+    const city = (body?.city || '').trim()
+    const country = (body?.country || '').trim()
+    const limit = Math.min(50, Math.max(1, Number(body?.limit || 20)))
+
+    if (!query || !city) {
+      return NextResponse.json({ error: 'Missing query or city' }, { status: 400 })
+    }
+
+    const { lat, lon } = await geocodeCity(city, country)
+    const results = await overpassSearch(lat, lon, query, limit)
+
+    const existing = await readDataFile<any>(FILE)
+    const maxId = existing.length > 0 ? Math.max(...existing.map((l: any) => l.id || 0)) : 0
+    const existingKeys = new Set(existing.map(dedupeKey))
+
+    let nextId = maxId + 1
+    const now = new Date().toISOString()
+    const inserted: StoredBusinessLead[] = []
+
+    for (const r of results) {
+      const lead: StoredBusinessLead = {
+        id: nextId,
+        businessName: r.businessName,
+        address: r.address,
+        phone: r.phone,
+        website: r.website,
+        email: r.email,
+        city: r.city || city,
+        state: r.state,
+        countryCode: country ? country.toLowerCase().slice(0, 2) : undefined,
+        source: 'osm',
+        createdAt: now,
+        contacted: false,
+      }
+      const key = dedupeKey(lead)
+      if (existingKeys.has(key)) continue
+      existingKeys.add(key)
+      inserted.push(lead)
+      nextId++
+    }
+
+    const merged = [...inserted, ...existing]
+    await writeDataFile(FILE, merged)
+
+    return NextResponse.json({ success: true, inserted: inserted.length, totalFetched: results.length })
+  } catch (e: any) {
+    console.error('OSM search error:', e)
+    return NextResponse.json({ error: e?.message || 'OSM search failed' }, { status: 500 })
+  }
+}
+
