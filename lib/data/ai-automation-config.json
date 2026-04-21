@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "enabled": true,
+    "minLeadScore": 70,
+    "keywords": [
+      "need a website",
+      "need a developer",
+      "automation",
+      "lead generation",
+      "crm",
+      "next.js",
+      "shopify",
+      "wordpress"
+    ],
+    "sources": {
+      "reddit": true,
+      "x": true,
+      "indieHackers": true
+    },
+    "calendlyLink": "",
+    "updatedAt": "2026-04-21T00:00:00.000Z"
+  }
+]

@@ -111,31 +111,7 @@ interface Lead {
   read: boolean
 }
 
-interface BusinessLead {
-  id: number
-  businessName: string
-  address?: string
-  phone?: string
-  website?: string
-  email?: string
-  city?: string
-  state?: string
-  countryCode?: string
-  source?: string
-  createdAt?: string
-  notes?: string
-  contacted?: boolean
-}
-
-interface Proposal {
-  id: number
-  leadId?: number
-  businessName?: string
-  slug: string
-  title: string
-  createdAt: string
-  updatedAt: string
-}
+// Business Leads + Proposals removed (replaced by AI Automation)
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -148,8 +124,7 @@ export default function AdminPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [talents, setTalents] = useState<Talent[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
-  const [businessLeads, setBusinessLeads] = useState<BusinessLead[]>([])
-  const [proposals, setProposals] = useState<Proposal[]>([])
+  // Business Leads + Proposals removed
   const [gscDays, setGscDays] = useState<7 | 28 | 90>(28)
   const [gscLoading, setGscLoading] = useState(false)
   const [gscError, setGscError] = useState('')
@@ -225,37 +200,44 @@ export default function AdminPage() {
   const [bulkTalentRunning, setBulkTalentRunning] = useState(false)
   const [bulkTalentProgress, setBulkTalentProgress] = useState({ done: 0, total: 0 })
 
-  // Free business lead fetcher (OSM)
-  const [osmOpen, setOsmOpen] = useState(false)
-  const [osmQuery, setOsmQuery] = useState('web design agency')
-  const [osmCity, setOsmCity] = useState('New York')
-  const [osmCountry, setOsmCountry] = useState('US')
-  const [osmLimit, setOsmLimit] = useState('20')
-  const [osmSecret, setOsmSecret] = useState('')
-  const [osmRunning, setOsmRunning] = useState(false)
-  const [osmGenerateNotes, setOsmGenerateNotes] = useState(true)
+  // AI Automation
+  type AiLeadStatus = 'new' | 'dismissed' | 'contacted'
+  type AiLeadSource = 'reddit' | 'x' | 'indiehackers'
+  type AiLead = {
+    id: string
+    createdAt: string
+    source: AiLeadSource
+    sourceUrl: string
+    title: string
+    text: string
+    author?: string
+    score: number
+    matchedKeywords: string[]
+    status: AiLeadStatus
+    draftResponse?: string
+    notes?: string
+    respondedAt?: string
+  }
+  type AiAutomationConfig = {
+    enabled: boolean
+    minLeadScore: number
+    keywords: string[]
+    sources: { reddit: boolean; x: boolean; indieHackers: boolean }
+    calendlyLink?: string
+  }
 
-  // Enrich existing business leads
-  const [bizEnrichOpen, setBizEnrichOpen] = useState(false)
-  const [bizEnrichSecret, setBizEnrichSecret] = useState('')
-  const [bizEnrichLimit, setBizEnrichLimit] = useState('50')
-  const [bizEnrichOnlyMissingEmail, setBizEnrichOnlyMissingEmail] = useState(true)
-  const [bizEnrichRunning, setBizEnrichRunning] = useState(false)
-  // (Apollo actions removed from UI to keep admin clean)
-
-  // Proposals
-  const [proposalOpen, setProposalOpen] = useState(false)
-  const [proposalSecret, setProposalSecret] = useState('')
-  const [proposalLeadId, setProposalLeadId] = useState('')
-  const [proposalGoal, setProposalGoal] = useState(
-    'Create a modern one-page website demo proposal for this business, highlighting services, benefits, and a free audit offer.'
-  )
-  const [proposalRunning, setProposalRunning] = useState(false)
-
-  // Business lead details
-  const [businessLeadOpen, setBusinessLeadOpen] = useState(false)
-  const [selectedBusinessLead, setSelectedBusinessLead] = useState<BusinessLead | null>(null)
-  const [businessLeadNotesDraft, setBusinessLeadNotesDraft] = useState('')
+  const [aiAdminSecret, setAiAdminSecret] = useState('')
+  const [aiConfig, setAiConfig] = useState<AiAutomationConfig | null>(null)
+  const [aiLeads, setAiLeads] = useState<AiLead[]>([])
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiScanRunning, setAiScanRunning] = useState(false)
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false)
+  const [aiLimit, setAiLimit] = useState('25')
+  const [aiSelected, setAiSelected] = useState<AiLead | null>(null)
+  const [aiLeadOpen, setAiLeadOpen] = useState(false)
+  const [aiDraftRunning, setAiDraftRunning] = useState(false)
+  const [aiSaveRunning, setAiSaveRunning] = useState(false)
+  const [aiNotesDraft, setAiNotesDraft] = useState('')
 
   // Helper function to convert ImgBB page URLs to direct image URLs
   const convertToDirectImageUrl = (url: string): string => {
@@ -311,6 +293,8 @@ export default function AdminPage() {
       setIsAuthenticated(true)
       loadData()
     }
+    const savedSecret = localStorage.getItem('ai_admin_secret') || ''
+    if (savedSecret) setAiAdminSecret(savedSecret)
   }, [])
 
   const handleLogin = async () => {
@@ -369,18 +353,14 @@ export default function AdminPage() {
         promotions: `/api/admin/promotions?t=${timestamp}`,
         talent: `/api/admin/talent?t=${timestamp}`,
         leads: `/api/admin/leads?t=${timestamp}`,
-        businessLeads: `/api/admin/business-leads?t=${timestamp}`,
-        proposals: `/api/admin/proposals?t=${timestamp}`,
       } as const
 
-      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes, businessLeadsRes, proposalsRes] = await Promise.all([
+      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes] = await Promise.all([
         fetch(endpoints.projects, { cache: 'no-store' }),
         fetch(endpoints.blogs, { cache: 'no-store' }),
         fetch(endpoints.promotions, { cache: 'no-store' }),
         fetch(endpoints.talent, { cache: 'no-store' }),
         fetch(endpoints.leads, { cache: 'no-store' }),
-        fetch(endpoints.businessLeads, { cache: 'no-store' }),
-        fetch(endpoints.proposals, { cache: 'no-store' }),
       ])
 
       const failures: string[] = []
@@ -393,14 +373,12 @@ export default function AdminPage() {
         }
       }
 
-      const [projectsData, blogsData, promotionsData, talentsData, leadsData, businessLeadsData, proposalsData] = await Promise.all([
+      const [projectsData, blogsData, promotionsData, talentsData, leadsData] = await Promise.all([
         safeJson(projectsRes),
         safeJson(blogsRes),
         safeJson(promotionsRes),
         safeJson(talentsRes),
         safeJson(leadsRes),
-        safeJson(businessLeadsRes),
-        safeJson(proposalsRes),
       ])
 
       if (!projectsRes.ok) failures.push(`Projects (${projectsRes.status})`)
@@ -408,8 +386,6 @@ export default function AdminPage() {
       if (!promotionsRes.ok) failures.push(`Promotions (${promotionsRes.status})`)
       if (!talentsRes.ok) failures.push(`Talent (${talentsRes.status})`)
       if (!leadsRes.ok) failures.push(`Leads (${leadsRes.status})`)
-      if (!businessLeadsRes.ok) failures.push(`Business Leads (${businessLeadsRes.status})`)
-      if (!proposalsRes.ok) failures.push(`Proposals (${proposalsRes.status})`)
       
       // Ensure we have arrays and sort by ID (newest first)
       const sortedProjects = Array.isArray(projectsData) 
@@ -440,8 +416,6 @@ export default function AdminPage() {
       setPromotions(sortedPromotions)
       setTalents(sortedTalents)
       setLeads(sortedLeads)
-      setBusinessLeads(Array.isArray(businessLeadsData) ? businessLeadsData : [])
-      setProposals(Array.isArray(proposalsData) ? proposalsData : [])
 
       if (failures.length > 0) {
         console.error('Admin data load failures:', {
@@ -452,7 +426,6 @@ export default function AdminPage() {
           promotionsError: promotionsRes.ok ? null : promotionsData,
           talentError: talentsRes.ok ? null : talentsData,
           leadsError: leadsRes.ok ? null : leadsData,
-          businessLeadsError: businessLeadsRes.ok ? null : businessLeadsData,
         })
         setError(`Some data failed to load: ${failures.join(', ')}.`)
       }
@@ -479,6 +452,147 @@ export default function AdminPage() {
       setGscLoading(false)
     }
   }
+
+  const loadAiAutomation = async () => {
+    setAiLoading(true)
+    try {
+      const t = Date.now()
+      const [cfgRes, leadsRes] = await Promise.all([
+        fetch(`/api/admin/ai-automation/config?t=${t}`, { cache: 'no-store' }),
+        fetch(`/api/admin/ai-automation/leads?t=${t}`, { cache: 'no-store' }),
+      ])
+      const cfgJson = await cfgRes.json().catch(() => ({}))
+      const leadsJson = await leadsRes.json().catch(() => ({}))
+      if (!cfgRes.ok) throw new Error(cfgJson?.error || 'Failed to load AI config')
+      if (!leadsRes.ok) throw new Error(leadsJson?.error || 'Failed to load AI leads')
+      setAiConfig(cfgJson?.config || null)
+      setAiLeads(Array.isArray(leadsJson?.leads) ? leadsJson.leads : [])
+    } catch (e: any) {
+      setError(e?.message || 'Failed to load AI automation data')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  const runAiScan = async () => {
+    setAiScanRunning(true)
+    setError('')
+    setSuccess('')
+    try {
+      localStorage.setItem('ai_admin_secret', aiAdminSecret)
+      const res = await fetch('/api/admin/ai-automation/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': aiAdminSecret,
+        },
+        body: JSON.stringify({ limit: parseInt(aiLimit || '25', 10) || 25 }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || 'Scan failed')
+      const r = json?.result
+      setSuccess(`✅ Scan done. Scanned ${r?.scanned || 0}, inserted ${r?.inserted || 0}. Total stored: ${r?.total || 0}.`)
+      await loadAiAutomation()
+    } catch (e: any) {
+      setError(e?.message || 'Scan failed')
+    } finally {
+      setAiScanRunning(false)
+    }
+  }
+
+  const saveAiConfig = async (next: AiAutomationConfig) => {
+    setAiSaveRunning(true)
+    setError('')
+    setSuccess('')
+    try {
+      localStorage.setItem('ai_admin_secret', aiAdminSecret)
+      const res = await fetch('/api/admin/ai-automation/config', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': aiAdminSecret,
+        },
+        body: JSON.stringify(next),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || 'Failed to save settings')
+      setAiConfig(json?.config || next)
+      setSuccess('✅ AI Automation settings saved.')
+      setAiSettingsOpen(false)
+    } catch (e: any) {
+      setError(e?.message || 'Failed to save settings')
+    } finally {
+      setAiSaveRunning(false)
+    }
+  }
+
+  const openAiLead = (lead: AiLead) => {
+    setAiSelected(lead)
+    setAiNotesDraft(lead.notes || '')
+    setAiLeadOpen(true)
+  }
+
+  const updateAiLead = async (id: string, updates: Partial<AiLead>) => {
+    setAiSaveRunning(true)
+    setError('')
+    setSuccess('')
+    try {
+      localStorage.setItem('ai_admin_secret', aiAdminSecret)
+      const res = await fetch('/api/admin/ai-automation/leads', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': aiAdminSecret,
+        },
+        body: JSON.stringify({ id, ...updates }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || 'Failed to update lead')
+      const updated = json?.lead
+      setAiLeads((prev) => prev.map((l) => (l.id === id ? updated : l)))
+      setAiSelected((prev) => (prev?.id === id ? updated : prev))
+      setSuccess('✅ Saved.')
+    } catch (e: any) {
+      setError(e?.message || 'Failed to update lead')
+    } finally {
+      setAiSaveRunning(false)
+    }
+  }
+
+  const generateAiDraft = async (id: string) => {
+    setAiDraftRunning(true)
+    setError('')
+    setSuccess('')
+    try {
+      localStorage.setItem('ai_admin_secret', aiAdminSecret)
+      const res = await fetch('/api/admin/ai-automation/draft', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': aiAdminSecret,
+        },
+        body: JSON.stringify({ id }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || 'Failed to draft response')
+      const updated = json?.lead
+      setAiLeads((prev) => prev.map((l) => (l.id === id ? updated : l)))
+      setAiSelected((prev) => (prev?.id === id ? updated : prev))
+      setSuccess('✅ Draft generated.')
+    } catch (e: any) {
+      setError(e?.message || 'Failed to draft response')
+    } finally {
+      setAiDraftRunning(false)
+    }
+  }
+
+  // Lazy-load AI Automation only when tab is opened
+  useEffect(() => {
+    if (!isAuthenticated) return
+    if (tabValue !== 5) return
+    loadAiAutomation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, tabValue])
 
   // Lazy-load GSC only when tab is opened
   useEffect(() => {
@@ -1263,8 +1377,7 @@ export default function AdminPage() {
               <Tab label="Promotions" />
               <Tab label="Talent" />
               <Tab label={`Leads (${leads.filter((l) => !l.read).length})`} />
-              <Tab label={`Business Leads (${businessLeads.length})`} />
-              <Tab label={`Proposals (${proposals.length})`} />
+              <Tab label="AI Automation" />
               <Tab label="Search Console" />
             </Tabs>
           </Paper>
@@ -1728,7 +1841,7 @@ export default function AdminPage() {
             </Paper>
           )}
 
-          {/* Business Leads Tab */}
+          {/* AI Automation Tab */}
           {tabValue === 5 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box
@@ -1743,228 +1856,175 @@ export default function AdminPage() {
                   gap: 2,
                 }}
               >
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  Business Leads ({businessLeads.length})
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <Chip
-                    label={`New: ${businessLeads.filter((l) => !l.contacted).length}`}
-                    color="primary"
-                    variant="outlined"
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                    AI Automation Leads ({aiLeads.length})
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Real sources: Reddit API + X API + Indie Hackers RSS (LinkedIn requires an approved partner API).
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <TextField
+                    size="small"
+                    label="Admin secret"
+                    type="password"
+                    value={aiAdminSecret}
+                    onChange={(e) => {
+                      setAiAdminSecret(e.target.value)
+                      localStorage.setItem('ai_admin_secret', e.target.value)
+                    }}
+                    sx={{ minWidth: 220 }}
+                    helperText="AI_AUTOMATION_SECRET or LEADS_IMPORT_SECRET"
                   />
-                  <Chip
-                    label={`Contacted: ${businessLeads.filter((l) => l.contacted).length}`}
-                    color="success"
-                    variant="outlined"
+                  <TextField
+                    size="small"
+                    label="Scan limit"
+                    value={aiLimit}
+                    onChange={(e) => setAiLimit(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 5, max: 50 }}
+                    sx={{ width: 120 }}
                   />
                   <Button
                     variant="outlined"
-                    onClick={() => {
-                      setBizEnrichLimit(String(Math.min(2000, Math.max(1, businessLeads.length || 50))))
-                      setBizEnrichOpen(true)
-                    }}
-                    sx={{ borderColor: '#111827', color: '#111827', '&:hover': { borderColor: '#111827', color: '#111827' } }}
-                    disabled={loading || dataLoading}
+                    startIcon={<SettingsIcon />}
+                    onClick={() => setAiSettingsOpen(true)}
+                    disabled={aiSaveRunning || aiScanRunning}
                   >
-                    Enrich Emails
+                    Settings
                   </Button>
                   <Button
-                    variant="outlined"
-                    onClick={() => setOsmOpen(true)}
-                    sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
+                    variant="contained"
+                    startIcon={aiScanRunning ? <CircularProgress size={20} /> : <PlayIcon />}
+                    onClick={runAiScan}
+                    disabled={aiScanRunning}
+                    sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
                   >
-                    Fetch Leads
+                    {aiScanRunning ? 'Scanning...' : 'Scan now'}
                   </Button>
                 </Box>
               </Box>
 
-              {dataLoading ? (
+              {aiLoading ? (
                 <Box sx={{ p: 4, textAlign: 'center' }}>
                   <CircularProgress />
-                  <Typography sx={{ mt: 2 }}>Loading business leads...</Typography>
+                  <Typography sx={{ mt: 2 }}>Loading AI automation...</Typography>
                 </Box>
               ) : (
                 <TableContainer>
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#F9FAFB' }}>
-                        <TableCell sx={{ fontWeight: 600 }}>Business</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Score</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Source</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Lead</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Keywords</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {businessLeads.length === 0 ? (
+                      {aiLeads.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                          <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                             <Typography color="text.secondary">
-                              No business leads yet. Connect n8n to import Google Maps results here.
+                              No AI leads yet. Set keywords in Settings and click “Scan now”.
                             </Typography>
                           </TableCell>
                         </TableRow>
                       ) : (
-                        [...businessLeads]
-                          .sort((a, b) => {
-                            const ta = new Date((a as any)?.createdAt || (a as any)?.created_at || 0).getTime() || 0
-                            const tb = new Date((b as any)?.createdAt || (b as any)?.created_at || 0).getTime() || 0
-                            if (tb !== ta) return tb - ta
-                            // secondary: most contactable first
-                            const score = (l: any) => (l?.email ? 100 : 0) + (l?.phone ? 30 : 0) + (l?.website ? 10 : 0) + (!l?.contacted ? 5 : 0)
-                            return score(b) - score(a)
-                          })
-                          .map((lead) => (
+                        aiLeads.slice(0, 300).map((l) => (
                           <TableRow
-                            key={lead.id}
+                            key={l.id}
                             hover
                             sx={{ cursor: 'pointer' }}
-                            onClick={() => {
-                              setSelectedBusinessLead(lead)
-                              setBusinessLeadNotesDraft(lead.notes || '')
-                              setBusinessLeadOpen(true)
-                            }}
+                            onClick={() => openAiLead(l)}
                           >
                             <TableCell>
-                              <Typography sx={{ fontWeight: 700, color: '#111827' }}>
-                                {lead.businessName || '—'}
+                              <Chip
+                                label={String(l.score || 0)}
+                                size="small"
+                                color={l.score >= 85 ? 'success' : l.score >= 70 ? 'warning' : 'default'}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip label={l.source} size="small" variant="outlined" />
+                            </TableCell>
+                            <TableCell sx={{ maxWidth: 520 }}>
+                              <Typography sx={{ fontWeight: 800, color: '#111827' }} noWrap>
+                                {l.title || '—'}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
-                                {lead.address || '—'}
+                              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }} noWrap>
+                                {l.text || '—'}
                               </Typography>
+                              <MuiLink
+                                href={l.sourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                sx={{ display: 'inline-block', mt: 0.5, fontWeight: 700, textDecoration: 'none' }}
+                              >
+                                Open source
+                              </MuiLink>
                             </TableCell>
-                            <TableCell>
-                              {lead.email ? (
-                                <MuiLink
-                                  href={`mailto:${lead.email}`}
-                                  sx={{ color: '#111827', fontWeight: 800, textDecoration: 'none' }}
-                                >
-                                  {lead.email}
-                                </MuiLink>
-                              ) : (
-                                '—'
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {lead.phone ? (
-                                <MuiLink
-                                  href={`tel:${lead.phone}`}
-                                  sx={{ color: '#1E3A8A', fontWeight: 700, textDecoration: 'none' }}
-                                >
-                                  {lead.phone}
-                                </MuiLink>
-                              ) : (
-                                '—'
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {lead.website ? (
-                                <MuiLink
-                                  href={lead.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  sx={{ color: '#2563EB', fontWeight: 700, textDecoration: 'none' }}
-                                >
-                                  Visit
-                                </MuiLink>
-                              ) : (
-                                '—'
-                              )}
+                            <TableCell sx={{ maxWidth: 260 }}>
+                              {(l.matchedKeywords || []).slice(0, 4).map((k) => (
+                                <Chip key={k} label={k} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
+                              ))}
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2">
-                                {(lead.city || '—')}{lead.state ? `, ${lead.state}` : ''}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {(lead.countryCode || '—').toUpperCase()} • {lead.source || 'google-maps'}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                {(() => {
-                                  const t = (lead as any)?.createdAt || (lead as any)?.created_at
-                                  if (!t) return '—'
-                                  const d = new Date(t)
-                                  return isNaN(d.getTime()) ? '—' : d.toLocaleString()
-                                })()}
+                                {l.createdAt ? new Date(l.createdAt).toLocaleString() : '—'}
                               </Typography>
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={lead.contacted ? 'Contacted' : 'New'}
+                                label={l.status}
                                 size="small"
-                                color={lead.contacted ? 'success' : 'warning'}
-                                variant={lead.contacted ? 'outlined' : 'filled'}
+                                color={l.status === 'new' ? 'primary' : l.status === 'contacted' ? 'success' : 'default'}
+                                variant={l.status === 'new' ? 'filled' : 'outlined'}
                               />
                             </TableCell>
                             <TableCell>
-                              <IconButton
-                                onClick={async (e) => {
-                                  e.stopPropagation()
-                                  // prevent row click opening the modal
-                                  setLoading(true)
-                                  setError('')
-                                  setSuccess('')
-                                  try {
-                                    const response = await fetch('/api/admin/business-leads', {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({
-                                        id: lead.id,
-                                        updates: { contacted: !lead.contacted },
-                                      }),
-                                    })
-                                    const result = await response.json()
-                                    if (!response.ok) throw new Error(result?.error || 'Failed to update')
-                                    setSuccess(`Lead marked as ${result.contacted ? 'contacted' : 'new'}.`)
-                                    await loadData()
-                                  } catch (e: any) {
-                                    setError(e?.message || 'Failed to update lead')
-                                  } finally {
-                                    setLoading(false)
-                                  }
-                                }}
-                                size="small"
-                                sx={{ color: '#1E3A8A' }}
-                                disabled={loading}
-                                title={lead.contacted ? 'Mark new' : 'Mark contacted'}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                onClick={async (e) => {
-                                  e.stopPropagation()
-                                  // prevent row click opening the modal
-                                  if (!confirm('Delete this business lead?')) return
-                                  setLoading(true)
-                                  setError('')
-                                  setSuccess('')
-                                  try {
-                                    const response = await fetch('/api/admin/business-leads', {
-                                      method: 'DELETE',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ id: lead.id }),
-                                    })
-                                    const result = await response.json()
-                                    if (!response.ok) throw new Error(result?.error || 'Failed to delete')
-                                    setSuccess('Business lead deleted.')
-                                    await loadData()
-                                  } catch (e: any) {
-                                    setError(e?.message || 'Failed to delete lead')
-                                  } finally {
-                                    setLoading(false)
-                                  }
-                                }}
-                                size="small"
-                                sx={{ color: '#EF4444' }}
-                                disabled={loading}
-                                title="Delete"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
+                              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    generateAiDraft(l.id)
+                                  }}
+                                  disabled={aiDraftRunning}
+                                >
+                                  Draft
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="text"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    updateAiLead(l.id, { status: 'contacted' })
+                                  }}
+                                  disabled={aiSaveRunning}
+                                >
+                                  Contacted
+                                </Button>
+                                <Button
+                                  size="small"
+                                  color="inherit"
+                                  variant="text"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    updateAiLead(l.id, { status: 'dismissed' })
+                                  }}
+                                  disabled={aiSaveRunning}
+                                >
+                                  Dismiss
+                                </Button>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         ))
@@ -1973,126 +2033,235 @@ export default function AdminPage() {
                   </Table>
                 </TableContainer>
               )}
-            </Paper>
-          )}
 
-          {/* Proposals Tab */}
-          {tabValue === 6 && (
-            <Paper sx={{ borderRadius: 2 }}>
-              <Box
-                sx={{
-                  p: 3,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderBottom: 1,
-                  borderColor: 'divider',
-                  flexWrap: 'wrap',
-                  gap: 2,
+              {/* Settings dialog */}
+              <Dialog open={aiSettingsOpen} onClose={() => setAiSettingsOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>AI Automation Settings</DialogTitle>
+                <DialogContent sx={{ mt: 2 }}>
+                  {!aiConfig ? (
+                    <Alert severity="info">Loading settings...</Alert>
+                  ) : (
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={!!aiConfig.enabled}
+                              onChange={(e) => setAiConfig({ ...aiConfig, enabled: e.target.checked })}
+                            />
+                          }
+                          label="Enabled"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Min score"
+                          type="number"
+                          value={String(aiConfig.minLeadScore ?? 70)}
+                          onChange={(e) => setAiConfig({ ...aiConfig, minLeadScore: Number(e.target.value || 0) })}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Calendly link (optional)"
+                          value={aiConfig.calendlyLink || ''}
+                          onChange={(e) => setAiConfig({ ...aiConfig, calendlyLink: e.target.value })}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Keywords (one per line)
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          multiline
+                          minRows={6}
+                          value={(aiConfig.keywords || []).join('\n')}
+                          onChange={(e) => setAiConfig({ ...aiConfig, keywords: e.target.value.split('\n').map((x) => x.trim()).filter(Boolean) })}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Sources
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={!!aiConfig.sources?.reddit}
+                                onChange={(e) => setAiConfig({ ...aiConfig, sources: { ...aiConfig.sources, reddit: e.target.checked } })}
+                              />
+                            }
+                            label="Reddit"
+                          />
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={!!aiConfig.sources?.x}
+                                onChange={(e) => setAiConfig({ ...aiConfig, sources: { ...aiConfig.sources, x: e.target.checked } })}
+                              />
+                            }
+                            label="X (Twitter)"
+                          />
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={!!aiConfig.sources?.indieHackers}
+                                onChange={(e) =>
+                                  setAiConfig({ ...aiConfig, sources: { ...aiConfig.sources, indieHackers: e.target.checked } })
+                                }
+                              />
+                            }
+                            label="Indie Hackers"
+                          />
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  )}
+                </DialogContent>
+                <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+                  <Button onClick={() => setAiSettingsOpen(false)} disabled={aiSaveRunning}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={aiSaveRunning ? <CircularProgress size={20} /> : <SaveIcon />}
+                    disabled={aiSaveRunning || !aiConfig}
+                    sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
+                    onClick={() => {
+                      if (!aiConfig) return
+                      saveAiConfig(aiConfig)
+                    }}
+                  >
+                    Save
+                  </Button>
+                </DialogActions>
+              </Dialog>
+
+              {/* Lead dialog */}
+              <Dialog
+                open={aiLeadOpen}
+                onClose={() => {
+                  setAiLeadOpen(false)
+                  setAiSelected(null)
                 }}
+                maxWidth="md"
+                fullWidth
               >
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  Proposals ({proposals.length})
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => {
-                    setProposalLeadId(String(businessLeads?.[0]?.id || ''))
-                    setProposalOpen(true)
-                  }}
-                  sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
-                  disabled={loading || dataLoading}
-                >
-                  Generate Proposal
-                </Button>
-              </Box>
+                <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>AI Lead</DialogTitle>
+                <DialogContent sx={{ mt: 2 }}>
+                  {!aiSelected ? (
+                    <Typography color="text.secondary">No lead selected.</Typography>
+                  ) : (
+                    <Box sx={{ display: 'grid', gap: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+                        <Box sx={{ minWidth: 240 }}>
+                          <Typography sx={{ fontWeight: 900, color: '#111827' }}>{aiSelected.title || '—'}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {aiSelected.source} • {aiSelected.author || '—'}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                          <Chip label={`Score ${aiSelected.score || 0}`} size="small" />
+                          <Chip label={aiSelected.status} size="small" variant="outlined" />
+                          <MuiLink href={aiSelected.sourceUrl} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 800, textDecoration: 'none' }}>
+                            Open source
+                          </MuiLink>
+                        </Box>
+                      </Box>
 
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: '#F9FAFB' }}>
-                      <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Business</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Link</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {proposals.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                          <Typography color="text.secondary">No proposals yet. Generate one from a business lead.</Typography>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      [...proposals]
-                        .sort((a, b) => {
-                          const ta = a?.createdAt ? new Date(a.createdAt).getTime() : 0
-                          const tb = b?.createdAt ? new Date(b.createdAt).getTime() : 0
-                          return tb - ta
-                        })
-                        .map((p) => (
-                          <TableRow key={p.id} hover>
-                            <TableCell sx={{ fontWeight: 800, color: '#111827' }}>{p.title}</TableCell>
-                            <TableCell>{p.businessName || '—'}</TableCell>
-                            <TableCell>{p.createdAt ? new Date(p.createdAt).toLocaleString() : '—'}</TableCell>
-                            <TableCell>
-                              <MuiLink
-                                href={`/p/${p.slug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{ fontWeight: 800, textDecoration: 'none', color: '#2563EB' }}
-                              >
-                                Open
-                              </MuiLink>
-                            </TableCell>
-                            <TableCell>
-                              <IconButton
-                                size="small"
-                                sx={{ color: '#EF4444' }}
-                                disabled={loading}
-                                title="Delete proposal"
-                                onClick={async () => {
-                                  if (!confirm('Delete this proposal?')) return
-                                  setLoading(true)
-                                  setError('')
-                                  setSuccess('')
-                                  try {
-                                    const res = await fetch('/api/admin/proposals', {
-                                      method: 'DELETE',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'x-admin-secret': proposalSecret,
-                                      },
-                                      body: JSON.stringify({ id: p.id }),
-                                    })
-                                    const json = await res.json().catch(() => ({}))
-                                    if (!res.ok) throw new Error(json?.error || 'Failed to delete proposal')
-                                    setSuccess('✅ Proposal deleted.')
-                                    await loadData()
-                                  } catch (e: any) {
-                                    setError(e?.message || 'Failed to delete proposal')
-                                  } finally {
-                                    setLoading(false)
-                                  }
-                                }}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Lead text
+                        </Typography>
+                        <Paper sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
+                          <Typography sx={{ whiteSpace: 'pre-wrap' }}>{aiSelected.text || '—'}</Typography>
+                        </Paper>
+                      </Box>
+
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Draft response
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          multiline
+                          minRows={4}
+                          value={aiSelected.draftResponse || ''}
+                          onChange={(e) => setAiSelected({ ...aiSelected, draftResponse: e.target.value })}
+                        />
+                        <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                          <Button
+                            variant="outlined"
+                            onClick={() => generateAiDraft(aiSelected.id)}
+                            disabled={aiDraftRunning}
+                          >
+                            {aiDraftRunning ? 'Drafting...' : 'Generate draft (Claude)'}
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={() => {
+                              if (!aiSelected) return
+                              navigator.clipboard?.writeText(aiSelected.draftResponse || '')
+                              setSuccess('✅ Copied draft to clipboard.')
+                            }}
+                            disabled={!aiSelected.draftResponse}
+                          >
+                            Copy
+                          </Button>
+                        </Box>
+                      </Box>
+
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Notes
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          multiline
+                          minRows={4}
+                          value={aiNotesDraft}
+                          onChange={(e) => setAiNotesDraft(e.target.value)}
+                          placeholder="Your notes, qualification, next steps..."
+                        />
+                      </Box>
+                    </Box>
+                  )}
+                </DialogContent>
+                <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+                  {aiSelected && (
+                    <>
+                      <Button
+                        variant="outlined"
+                        disabled={aiSaveRunning}
+                        onClick={() => updateAiLead(aiSelected.id, { notes: aiNotesDraft, draftResponse: aiSelected.draftResponse || '' })}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        disabled={aiSaveRunning}
+                        onClick={() => updateAiLead(aiSelected.id, { status: 'contacted' })}
+                      >
+                        Mark Contacted
+                      </Button>
+                      <Button
+                        disabled={aiSaveRunning}
+                        onClick={() => updateAiLead(aiSelected.id, { status: 'dismissed' })}
+                      >
+                        Dismiss
+                      </Button>
+                    </>
+                  )}
+                  <Button onClick={() => setAiLeadOpen(false)}>Close</Button>
+                </DialogActions>
+              </Dialog>
             </Paper>
           )}
 
           {/* Google Search Console Tab */}
-          {tabValue === 7 && (
+          {tabValue === 6 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box
                 sx={{
@@ -3064,307 +3233,7 @@ export default function AdminPage() {
             </DialogActions>
           </Dialog>
 
-          {/* Fetch Business Leads (Google Places) */}
-          <Dialog open={osmOpen} onClose={() => setOsmOpen(false)} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
-              Fetch Business Leads (Google Places)
-            </DialogTitle>
-            <DialogContent sx={{ mt: 2 }}>
-              <Alert severity="info" sx={{ mb: 2 }}>
-                Fetches leads from <strong>Google Places API</strong> (paid). It can return websites + phone numbers, but usually not emails. Use “Enrich Emails” after fetching to crawl websites for emails.
-              </Alert>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Search keyword"
-                    value={osmQuery}
-                    onChange={(e) => setOsmQuery(e.target.value)}
-                    placeholder="e.g., web design agency"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="City"
-                    value={osmCity}
-                    onChange={(e) => setOsmCity(e.target.value)}
-                    placeholder="e.g., New York"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <TextField
-                    fullWidth
-                    label="Country"
-                    value={osmCountry}
-                    onChange={(e) => setOsmCountry(e.target.value)}
-                    placeholder="US"
-                    helperText="2-letter code"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <TextField
-                    fullWidth
-                    label="Limit"
-                    value={osmLimit}
-                    onChange={(e) => setOsmLimit(e.target.value)}
-                    type="number"
-                    inputProps={{ min: 1, max: 50 }}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Admin secret"
-                    value={osmSecret}
-                    onChange={(e) => setOsmSecret(e.target.value)}
-                    type="password"
-                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={osmGenerateNotes}
-                        onChange={(e) => setOsmGenerateNotes(e.target.checked)}
-                      />
-                    }
-                    label="Generate AI notes (requires OPENAI_API_KEY in Vercel)"
-                  />
-                </Grid>
-
-              </Grid>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-              <Button onClick={() => setOsmOpen(false)} disabled={osmRunning}>
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                disabled={osmRunning}
-                startIcon={osmRunning ? <CircularProgress size={20} /> : <AddIcon />}
-                sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
-                onClick={async () => {
-                  setOsmRunning(true)
-                  setError('')
-                  setSuccess('')
-                  try {
-                    const response = await fetch('/api/admin/business-leads/google-places-search', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'x-import-secret': osmSecret,
-                      },
-                      body: JSON.stringify({
-                        query: osmQuery,
-                        city: osmCity,
-                        country: osmCountry,
-                        limit: parseInt(osmLimit || '20', 10) || 20,
-                        generateNotes: osmGenerateNotes,
-                      }),
-                    })
-                    const json = await response.json().catch(() => ({}))
-                    if (!response.ok) throw new Error(json?.error || 'Fetch failed')
-                    setSuccess(`✅ Fetched ${json.totalFetched || 0} via Google Places — saved ${json.inserted || 0} new business leads.`)
-                    setOsmOpen(false)
-                    await loadData()
-                  } catch (e: any) {
-                    setError(e?.message || 'Fetch failed')
-                  } finally {
-                    setOsmRunning(false)
-                  }
-                }}
-              >
-                {osmRunning ? 'Fetching...' : 'Fetch & save'}
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Generate Proposal */}
-          <Dialog open={proposalOpen} onClose={() => setProposalOpen(false)} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>Generate Proposal (HTML Demo)</DialogTitle>
-            <DialogContent sx={{ mt: 2 }}>
-              <Alert severity="info" sx={{ mb: 2 }}>
-                This creates a responsive HTML demo for a selected business lead using OpenAI and gives you a share link for client review.
-              </Alert>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Admin secret"
-                    value={proposalSecret}
-                    onChange={(e) => setProposalSecret(e.target.value)}
-                    type="password"
-                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Business lead"
-                    value={proposalLeadId}
-                    onChange={(e) => setProposalLeadId(e.target.value)}
-                    helperText="Pick the business you want to pitch"
-                    SelectProps={{ native: true }}
-                  >
-                    <option value="">Select...</option>
-                    {[...businessLeads]
-                      .sort((a, b) => {
-                        const ta = new Date((a as any)?.createdAt || 0).getTime() || 0
-                        const tb = new Date((b as any)?.createdAt || 0).getTime() || 0
-                        return tb - ta
-                      })
-                      .slice(0, 500)
-                      .map((l) => (
-                        <option key={l.id} value={String(l.id)}>
-                          {l.businessName} — {(l.city || '')}{l.state ? `, ${l.state}` : ''}
-                        </option>
-                      ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Goal / style instructions"
-                    value={proposalGoal}
-                    onChange={(e) => setProposalGoal(e.target.value)}
-                    multiline
-                    minRows={4}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-              <Button onClick={() => setProposalOpen(false)} disabled={proposalRunning}>
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                disabled={proposalRunning}
-                startIcon={proposalRunning ? <CircularProgress size={20} /> : <AddIcon />}
-                sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
-                onClick={async () => {
-                  setProposalRunning(true)
-                  setError('')
-                  setSuccess('')
-                  try {
-                    if (!proposalLeadId) throw new Error('Select a business lead.')
-                    const res = await fetch('/api/admin/proposals/generate', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'x-admin-secret': proposalSecret,
-                      },
-                      body: JSON.stringify({ leadId: Number(proposalLeadId), goal: proposalGoal }),
-                    })
-                    const json = await res.json().catch(() => ({}))
-                    if (!res.ok) throw new Error(json?.error || 'Failed to generate proposal')
-                    const urlPath = json?.urlPath || (json?.proposal?.slug ? `/p/${json.proposal.slug}` : '')
-                    setSuccess(`✅ Proposal generated. Share link: ${urlPath}`)
-                    setProposalOpen(false)
-                    await loadData()
-                    if (urlPath) window.open(urlPath, '_blank', 'noopener,noreferrer')
-                  } catch (e: any) {
-                    setError(e?.message || 'Failed to generate proposal')
-                  } finally {
-                    setProposalRunning(false)
-                  }
-                }}
-              >
-                {proposalRunning ? 'Generating...' : 'Generate'}
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Enrich Existing Business Leads */}
-          <Dialog open={bizEnrichOpen} onClose={() => setBizEnrichOpen(false)} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>Enrich Emails (Existing Leads)</DialogTitle>
-            <DialogContent sx={{ mt: 2 }}>
-              <Alert severity="info" sx={{ mb: 2 }}>
-                This crawls each lead website (home/contact/about/privacy) and extracts emails. It will not magically find owner emails for businesses that have no website.
-              </Alert>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Admin secret"
-                    value={bizEnrichSecret}
-                    onChange={(e) => setBizEnrichSecret(e.target.value)}
-                    type="password"
-                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    fullWidth
-                    label="Limit"
-                    value={bizEnrichLimit}
-                    onChange={(e) => setBizEnrichLimit(e.target.value)}
-                    type="number"
-                    inputProps={{ min: 1, max: 200 }}
-                    helperText="How many latest leads to scan"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={8}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={bizEnrichOnlyMissingEmail}
-                        onChange={(e) => setBizEnrichOnlyMissingEmail(e.target.checked)}
-                      />
-                    }
-                    label="Only scan leads missing email"
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-              <Button onClick={() => setBizEnrichOpen(false)} disabled={bizEnrichRunning}>
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                disabled={bizEnrichRunning}
-                startIcon={bizEnrichRunning ? <CircularProgress size={20} /> : <AddIcon />}
-                sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
-                onClick={async () => {
-                  setBizEnrichRunning(true)
-                  setError('')
-                  setSuccess('')
-                  try {
-                    const response = await fetch('/api/admin/business-leads/enrich', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'x-import-secret': bizEnrichSecret,
-                      },
-                      body: JSON.stringify({
-                        limit: parseInt(bizEnrichLimit || '50', 10) || 50,
-                        onlyMissingEmail: bizEnrichOnlyMissingEmail,
-                      }),
-                    })
-                    const json = await response.json().catch(() => ({}))
-                    if (!response.ok) throw new Error(json?.error || 'Enrichment failed')
-                    setSuccess(`✅ Enrichment done. Scanned ${json.scanned || 0}, updated ${json.updated || 0} (${json.storage || 'storage'}).`)
-                    setBizEnrichOpen(false)
-                    await loadData()
-                  } catch (e: any) {
-                    setError(e?.message || 'Enrichment failed')
-                  } finally {
-                    setBizEnrichRunning(false)
-                  }
-                }}
-              >
-                {bizEnrichRunning ? 'Enriching...' : 'Run Enrichment'}
-              </Button>
-            </DialogActions>
-          </Dialog>
+          {/* (Business Leads fetch dialog removed) */}
 
           {/* Lead Details Dialog */}
           <Dialog
@@ -3470,175 +3339,7 @@ export default function AdminPage() {
             </DialogActions>
           </Dialog>
 
-          {/* Business Lead Details Dialog */}
-          <Dialog
-            open={businessLeadOpen}
-            onClose={() => {
-              setBusinessLeadOpen(false)
-              setSelectedBusinessLead(null)
-            }}
-            maxWidth="md"
-            fullWidth
-          >
-            <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>
-              Business Lead
-            </DialogTitle>
-            <DialogContent sx={{ mt: 2 }}>
-              {!selectedBusinessLead ? (
-                <Typography color="text.secondary">No business lead selected.</Typography>
-              ) : (
-                <Box sx={{ display: 'grid', gap: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-                    <Box>
-                      <Typography sx={{ fontWeight: 900, color: '#111827' }}>
-                        {selectedBusinessLead.businessName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {selectedBusinessLead.address || '—'}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <Chip
-                        label={selectedBusinessLead.contacted ? 'Contacted' : 'New'}
-                        size="small"
-                        color={selectedBusinessLead.contacted ? 'success' : 'warning'}
-                        variant={selectedBusinessLead.contacted ? 'outlined' : 'filled'}
-                      />
-                      <Chip
-                        label={(selectedBusinessLead.countryCode || '—').toUpperCase()}
-                        size="small"
-                        variant="outlined"
-                      />
-                      <Chip
-                        label={selectedBusinessLead.source || 'osm'}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </Box>
-                  </Box>
-
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" color="text.secondary">Phone</Typography>
-                      {selectedBusinessLead.phone ? (
-                        <MuiLink href={`tel:${selectedBusinessLead.phone}`} sx={{ fontWeight: 800, textDecoration: 'none' }}>
-                          {selectedBusinessLead.phone}
-                        </MuiLink>
-                      ) : (
-                        <Typography sx={{ fontWeight: 700 }}>—</Typography>
-                      )}
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" color="text.secondary">Website</Typography>
-                      {selectedBusinessLead.website ? (
-                        <MuiLink href={selectedBusinessLead.website} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 800, textDecoration: 'none' }}>
-                          {selectedBusinessLead.website}
-                        </MuiLink>
-                      ) : (
-                        <Typography sx={{ fontWeight: 700 }}>—</Typography>
-                      )}
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" color="text.secondary">Email</Typography>
-                      {selectedBusinessLead.email ? (
-                        <MuiLink href={`mailto:${selectedBusinessLead.email}`} sx={{ fontWeight: 800, textDecoration: 'none' }}>
-                          {selectedBusinessLead.email}
-                        </MuiLink>
-                      ) : (
-                        <Typography sx={{ fontWeight: 700 }}>—</Typography>
-                      )}
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" color="text.secondary">City / State</Typography>
-                      <Typography sx={{ fontWeight: 800 }}>
-                        {(selectedBusinessLead.city || '—')}{selectedBusinessLead.state ? `, ${selectedBusinessLead.state}` : ''}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      Notes (AI + your notes)
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      multiline
-                      minRows={6}
-                      value={businessLeadNotesDraft}
-                      onChange={(e) => setBusinessLeadNotesDraft(e.target.value)}
-                      placeholder="Add notes, outreach plan, pain points, offer..."
-                    />
-                  </Box>
-                </Box>
-              )}
-            </DialogContent>
-            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-              {selectedBusinessLead && (
-                <>
-                  <Button
-                    variant="outlined"
-                    disabled={loading}
-                    onClick={async () => {
-                      setLoading(true)
-                      setError('')
-                      setSuccess('')
-                      try {
-                        const response = await fetch('/api/admin/business-leads', {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            id: selectedBusinessLead.id,
-                            updates: { notes: businessLeadNotesDraft },
-                          }),
-                        })
-                        const json = await response.json()
-                        if (!response.ok) throw new Error(json?.error || 'Failed to save notes')
-                        setSuccess('✅ Notes saved.')
-                        await loadData()
-                      } catch (e: any) {
-                        setError(e?.message || 'Failed to save notes')
-                      } finally {
-                        setLoading(false)
-                      }
-                    }}
-                  >
-                    Save Notes
-                  </Button>
-                  <Button
-                    variant="text"
-                    disabled={loading}
-                    onClick={async () => {
-                      setLoading(true)
-                      setError('')
-                      setSuccess('')
-                      try {
-                        const response = await fetch('/api/admin/business-leads', {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            id: selectedBusinessLead.id,
-                            updates: { contacted: !selectedBusinessLead.contacted },
-                          }),
-                        })
-                        const json = await response.json()
-                        if (!response.ok) throw new Error(json?.error || 'Failed to update status')
-                        setSuccess(`Lead marked as ${json.contacted ? 'contacted' : 'new'}.`)
-                        setSelectedBusinessLead((prev) => (prev ? { ...prev, contacted: json.contacted } : prev))
-                        await loadData()
-                      } catch (e: any) {
-                        setError(e?.message || 'Failed to update lead')
-                      } finally {
-                        setLoading(false)
-                      }
-                    }}
-                  >
-                    Mark {selectedBusinessLead.contacted ? 'New' : 'Contacted'}
-                  </Button>
-                </>
-              )}
-              <Button onClick={() => setBusinessLeadOpen(false)}>Close</Button>
-            </DialogActions>
-          </Dialog>
+          {/* (Business Lead details dialog removed) */}
         </Container>
       </Box>
     </Box>
