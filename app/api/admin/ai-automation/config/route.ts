@@ -20,11 +20,29 @@ export type AiAutomationConfig = {
 
 const FILENAME = 'ai-automation-config.json'
 
+// Seed defaults from the provided "AI Automation" folder docs.
+const DEFAULT_KEYWORDS = [
+  'freelancer disappeared',
+  'developer ghosted',
+  'project stuck',
+  'website broken',
+  'need developer help',
+  'fired my developer',
+  'developer quit',
+  'rescue my project',
+  // a few broader variations
+  'need a developer',
+  'looking for a developer',
+  'need a website',
+  'website not working',
+  'app is broken',
+  'urgent help',
+]
+
 async function readConfig(): Promise<AiAutomationConfig> {
   const arr = await readDataFile<AiAutomationConfig>(FILENAME)
   const cfg = arr?.[0]
-  if (cfg) return cfg
-  return {
+  const base: AiAutomationConfig = cfg || {
     id: 1,
     enabled: true,
     minLeadScore: 70,
@@ -33,6 +51,23 @@ async function readConfig(): Promise<AiAutomationConfig> {
     calendlyLink: '',
     updatedAt: new Date().toISOString(),
   }
+
+  // Auto-seed keywords so scanning works without manual admin input.
+  if (!Array.isArray(base.keywords) || base.keywords.filter(Boolean).length === 0) {
+    const next: AiAutomationConfig = {
+      ...base,
+      keywords: DEFAULT_KEYWORDS,
+      updatedAt: new Date().toISOString(),
+    }
+    try {
+      await writeDataFile(FILENAME, [next])
+    } catch {
+      // Best-effort: if storage isn't writable here, still return seeded config to UI.
+    }
+    return next
+  }
+
+  return base
 }
 
 export async function GET() {
@@ -64,8 +99,11 @@ export async function PUT(req: NextRequest) {
     await writeDataFile(FILENAME, [next])
     return NextResponse.json({ ok: true, config: next })
   } catch (e: any) {
-    const msg = e?.message || 'Failed to update config'
-    const status = msg === 'Unauthorized' ? 401 : 500
+    const msg =
+      e?.message === 'Unauthorized'
+        ? 'Unauthorized. Enter your AI_AUTOMATION_SECRET (or LEADS_IMPORT_SECRET) in the Admin secret field, and ensure the env var is set in Vercel.'
+        : e?.message || 'Failed to update config'
+    const status = e?.message === 'Unauthorized' ? 401 : 500
     return NextResponse.json({ error: msg }, { status })
   }
 }

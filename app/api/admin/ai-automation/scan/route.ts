@@ -14,6 +14,7 @@ type ScanResult = {
   inserted: number
   total: number
   sources: Record<string, { scanned: number; inserted: number }>
+  errors?: Record<string, string>
 }
 
 function normalizeText(s: string) {
@@ -112,6 +113,7 @@ async function fetchRedditLeads(keywords: string[], limit: number): Promise<AiLe
       headers: { 'User-Agent': 'ArfaDevelopersLeadBot/1.0' },
       cache: 'no-store',
     })
+    if (!res.ok) return []
     const json: any = await res.json().catch(() => ({}))
     children = json?.data?.children || []
   }
@@ -188,7 +190,10 @@ async function fetchXLeads(keywords: string[], limit: number): Promise<AiLead[]>
 
 async function fetchIndieHackersLeads(limit: number): Promise<AiLead[]> {
   // Indie Hackers RSS (safe, no auth)
-  const res = await fetch('https://www.indiehackers.com/feed.xml', { cache: 'no-store' })
+  const res = await fetch('https://www.indiehackers.com/feed.xml', {
+    cache: 'no-store',
+    headers: { 'User-Agent': 'ArfaDevelopersLeadBot/1.0' },
+  })
   if (!res.ok) return []
   const xml = await res.text()
 
@@ -250,22 +255,37 @@ export async function POST(req: NextRequest) {
     const keywords = Array.isArray(cfg.keywords) ? cfg.keywords.filter(Boolean) : []
     const existing = await readLeads()
 
-    const result: ScanResult = { scanned: 0, inserted: 0, total: existing.length, sources: {} }
+    const result: ScanResult = { scanned: 0, inserted: 0, total: existing.length, sources: {}, errors: {} }
 
     const incoming: AiLead[] = []
 
     if (cfg.sources.reddit) {
-      const leads = await fetchRedditLeads(keywords, limit)
+      if (keywords.length === 0) {
+        result.errors!.reddit = 'No keywords set. Add keywords in Settings to search Reddit.'
+      }
+      const leads = await fetchRedditLeads(keywords, limit).catch((e: any) => {
+        result.errors!.reddit = e?.message || 'Reddit fetch failed'
+        return []
+      })
       result.sources.reddit = { scanned: leads.length, inserted: 0 }
       incoming.push(...leads)
     }
     if (cfg.sources.x) {
-      const leads = await fetchXLeads(keywords, limit)
+      if (keywords.length === 0) {
+        result.errors!.x = 'No keywords set. Add keywords in Settings to search X.'
+      }
+      const leads = await fetchXLeads(keywords, limit).catch((e: any) => {
+        result.errors!.x = e?.message || 'X fetch failed'
+        return []
+      })
       result.sources.x = { scanned: leads.length, inserted: 0 }
       incoming.push(...leads)
     }
     if (cfg.sources.indieHackers) {
-      const leads = await fetchIndieHackersLeads(limit)
+      const leads = await fetchIndieHackersLeads(limit).catch((e: any) => {
+        result.errors!.indieHackers = e?.message || 'Indie Hackers fetch failed'
+        return []
+      })
       result.sources.indieHackers = { scanned: leads.length, inserted: 0 }
       incoming.push(...leads)
     }
