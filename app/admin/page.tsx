@@ -230,16 +230,7 @@ export default function AdminPage() {
   const [bizEnrichLimit, setBizEnrichLimit] = useState('50')
   const [bizEnrichOnlyMissingEmail, setBizEnrichOnlyMissingEmail] = useState(true)
   const [bizEnrichRunning, setBizEnrichRunning] = useState(false)
-  const [apolloRunning, setApolloRunning] = useState(false)
-
-  // Apollo bulk enrichment
-  const [apolloBulkOpen, setApolloBulkOpen] = useState(false)
-  const [apolloBulkSecret, setApolloBulkSecret] = useState('')
-  const [apolloBulkLimit, setApolloBulkLimit] = useState('10')
-  const [apolloBulkOnlyMissingEmail, setApolloBulkOnlyMissingEmail] = useState(true)
-  const [apolloBulkRevealPersonalEmails, setApolloBulkRevealPersonalEmails] = useState(true)
-  const [apolloBulkSkipIfAlreadyEnriched, setApolloBulkSkipIfAlreadyEnriched] = useState(true)
-  const [apolloBulkRunning, setApolloBulkRunning] = useState(false)
+  // (Apollo actions removed from UI to keep admin clean)
 
   // Business lead details
   const [businessLeadOpen, setBusinessLeadOpen] = useState(false)
@@ -1750,14 +1741,6 @@ export default function AdminPage() {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => setApolloBulkOpen(true)}
-                    sx={{ borderColor: '#7C3AED', color: '#7C3AED', '&:hover': { borderColor: '#6D28D9', color: '#6D28D9' } }}
-                    disabled={loading || dataLoading}
-                  >
-                    Apollo Bulk
-                  </Button>
-                  <Button
-                    variant="outlined"
                     onClick={() => setOsmOpen(true)}
                     sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
                   >
@@ -1781,6 +1764,7 @@ export default function AdminPage() {
                         <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Website</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                       </TableRow>
@@ -1788,7 +1772,7 @@ export default function AdminPage() {
                     <TableBody>
                       {businessLeads.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                          <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                             <Typography color="text.secondary">
                               No business leads yet. Connect n8n to import Google Maps results here.
                             </Typography>
@@ -1797,14 +1781,12 @@ export default function AdminPage() {
                       ) : (
                         [...businessLeads]
                           .sort((a, b) => {
-                            const score = (l: any) =>
-                              (l?.email ? 100 : 0) + (l?.phone ? 30 : 0) + (l?.website ? 10 : 0) + (!l?.contacted ? 5 : 0)
-                            const sa = score(a)
-                            const sb = score(b)
-                            if (sb !== sa) return sb - sa
                             const ta = new Date((a as any)?.createdAt || (a as any)?.created_at || 0).getTime() || 0
                             const tb = new Date((b as any)?.createdAt || (b as any)?.created_at || 0).getTime() || 0
-                            return tb - ta
+                            if (tb !== ta) return tb - ta
+                            // secondary: most contactable first
+                            const score = (l: any) => (l?.email ? 100 : 0) + (l?.phone ? 30 : 0) + (l?.website ? 10 : 0) + (!l?.contacted ? 5 : 0)
+                            return score(b) - score(a)
                           })
                           .map((lead) => (
                           <TableRow
@@ -1869,6 +1851,16 @@ export default function AdminPage() {
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
                                 {(lead.countryCode || '—').toUpperCase()} • {lead.source || 'google-maps'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                {(() => {
+                                  const t = (lead as any)?.createdAt || (lead as any)?.created_at
+                                  if (!t) return '—'
+                                  const d = new Date(t)
+                                  return isNaN(d.getTime()) ? '—' : d.toLocaleString()
+                                })()}
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -3132,116 +3124,6 @@ export default function AdminPage() {
             </DialogActions>
           </Dialog>
 
-          {/* Apollo Bulk Enrichment */}
-          <Dialog open={apolloBulkOpen} onClose={() => setApolloBulkOpen(false)} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ bgcolor: '#7C3AED', color: 'white' }}>Apollo Bulk Enrichment</DialogTitle>
-            <DialogContent sx={{ mt: 2 }}>
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                Apollo enrichment may consume credits and is rate-limited. Start with small batches (10).
-              </Alert>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Admin secret"
-                    value={apolloBulkSecret}
-                    onChange={(e) => setApolloBulkSecret(e.target.value)}
-                    type="password"
-                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    fullWidth
-                    label="Limit"
-                    value={apolloBulkLimit}
-                    onChange={(e) => setApolloBulkLimit(e.target.value)}
-                    type="number"
-                    inputProps={{ min: 1, max: 50 }}
-                    helperText="Latest leads to enrich"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={8}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={apolloBulkOnlyMissingEmail}
-                        onChange={(e) => setApolloBulkOnlyMissingEmail(e.target.checked)}
-                      />
-                    }
-                    label="Only enrich leads missing email"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={apolloBulkRevealPersonalEmails}
-                        onChange={(e) => setApolloBulkRevealPersonalEmails(e.target.checked)}
-                      />
-                    }
-                    label="Reveal personal emails (uses Apollo credits if enabled on your plan)"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={apolloBulkSkipIfAlreadyEnriched}
-                        onChange={(e) => setApolloBulkSkipIfAlreadyEnriched(e.target.checked)}
-                      />
-                    }
-                    label="Skip leads already enriched by Apollo"
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-              <Button onClick={() => setApolloBulkOpen(false)} disabled={apolloBulkRunning}>
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                disabled={apolloBulkRunning}
-                startIcon={apolloBulkRunning ? <CircularProgress size={20} /> : <AddIcon />}
-                sx={{ backgroundColor: '#7C3AED', '&:hover': { backgroundColor: '#6D28D9' } }}
-                onClick={async () => {
-                  setApolloBulkRunning(true)
-                  setError('')
-                  setSuccess('')
-                  try {
-                    const response = await fetch('/api/admin/business-leads/apollo-enrich-bulk', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'x-import-secret': apolloBulkSecret,
-                      },
-                      body: JSON.stringify({
-                        limit: parseInt(apolloBulkLimit || '10', 10) || 10,
-                        onlyMissingEmail: apolloBulkOnlyMissingEmail,
-                        revealPersonalEmails: apolloBulkRevealPersonalEmails,
-                        skipIfApolloEnriched: apolloBulkSkipIfAlreadyEnriched,
-                      }),
-                    })
-                    const json = await response.json().catch(() => ({}))
-                    if (!response.ok) throw new Error(json?.error || 'Apollo bulk enrichment failed')
-                    setSuccess(
-                      `✅ Apollo bulk done. Scanned ${json.scanned || 0}, updated ${json.updated || 0}, skipped ${json.skipped || 0} (${json.storage || 'storage'}).`
-                    )
-                    setApolloBulkOpen(false)
-                    await loadData()
-                  } catch (e: any) {
-                    setError(e?.message || 'Apollo bulk enrichment failed')
-                  } finally {
-                    setApolloBulkRunning(false)
-                  }
-                }}
-              >
-                {apolloBulkRunning ? 'Running...' : 'Run Apollo Bulk'}
-              </Button>
-            </DialogActions>
-          </Dialog>
-
           {/* Lead Details Dialog */}
           <Dialog
             open={leadDetailsOpen}
@@ -3451,46 +3333,6 @@ export default function AdminPage() {
             <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
               {selectedBusinessLead && (
                 <>
-                  <Button
-                    variant="contained"
-                    disabled={loading || apolloRunning}
-                    sx={{ backgroundColor: '#7C3AED', '&:hover': { backgroundColor: '#6D28D9' } }}
-                    onClick={async () => {
-                      setApolloRunning(true)
-                      setError('')
-                      setSuccess('')
-                      try {
-                        const secret = (bizEnrichSecret || osmSecret || '').trim()
-                        if (!secret) throw new Error('Enter Admin secret first (use Enrich Emails dialog or OSM dialog).')
-                        const response = await fetch('/api/admin/business-leads/apollo-enrich', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'x-import-secret': secret,
-                          },
-                          body: JSON.stringify({
-                            id: selectedBusinessLead.id,
-                            revealPersonalEmails: true,
-                          }),
-                        })
-                        const json = await response.json().catch(() => ({}))
-                        if (!response.ok) throw new Error(json?.error || 'Apollo enrich failed')
-                        setSuccess(`✅ Apollo enriched. Decision makers found: ${json.decisionMakersFound || 0}.`)
-                        await loadData()
-                        // refresh currently open record
-                        if (json?.lead) {
-                          setSelectedBusinessLead((prev) => (prev && prev.id === json.lead.id ? { ...prev, ...json.lead } : prev))
-                          if (typeof json?.lead?.notes === 'string') setBusinessLeadNotesDraft(json.lead.notes)
-                        }
-                      } catch (e: any) {
-                        setError(e?.message || 'Apollo enrich failed')
-                      } finally {
-                        setApolloRunning(false)
-                      }
-                    }}
-                  >
-                    {apolloRunning ? 'Apollo Enriching...' : 'Enrich via Apollo'}
-                  </Button>
                   <Button
                     variant="outlined"
                     disabled={loading}

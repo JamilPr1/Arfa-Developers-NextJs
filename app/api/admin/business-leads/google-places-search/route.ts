@@ -76,7 +76,7 @@ async function googlePlaceDetails(apiKey: string, placeId: string) {
     headers: {
       'X-Goog-Api-Key': apiKey,
       'X-Goog-FieldMask':
-        'id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,nationalPhoneNumber,googleMapsUri',
+        'id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,nationalPhoneNumber,googleMapsUri,businessStatus,types,primaryType,primaryTypeDisplayName,rating,userRatingCount,priceLevel,location,plusCode',
     },
     cache: 'no-store',
   })
@@ -96,6 +96,27 @@ async function googlePlaceDetails(apiKey: string, placeId: string) {
   return json
 }
 
+function googleMetaNotes(place: any) {
+  const lines: string[] = []
+  lines.push('---')
+  lines.push(`Google Places (${new Date().toISOString()})`)
+  if (place?.id) lines.push(`Place ID: ${place.id}`)
+  if (place?.googleMapsUri) lines.push(`Maps: ${place.googleMapsUri}`)
+  if (place?.businessStatus) lines.push(`Status: ${place.businessStatus}`)
+  if (typeof place?.rating === 'number') {
+    lines.push(`Rating: ${place.rating}${typeof place?.userRatingCount === 'number' ? ` (${place.userRatingCount} reviews)` : ''}`)
+  }
+  if (place?.primaryTypeDisplayName?.text) lines.push(`Category: ${place.primaryTypeDisplayName.text}`)
+  else if (place?.primaryType) lines.push(`Category: ${place.primaryType}`)
+  const types = Array.isArray(place?.types) ? place.types.slice(0, 6).join(', ') : ''
+  if (types) lines.push(`Types: ${types}`)
+  if (place?.location?.latitude && place?.location?.longitude) {
+    lines.push(`Lat/Lng: ${place.location.latitude}, ${place.location.longitude}`)
+  }
+  lines.push('---')
+  return lines.join('\n')
+}
+
 function placeToLead(place: any, city: string, country: string): Omit<StoredBusinessLead, 'id' | 'createdAt' | 'contacted'> {
   const name = place?.displayName?.text || place?.displayName || place?.name || 'Unknown'
   const address = place?.formattedAddress
@@ -111,7 +132,7 @@ function placeToLead(place: any, city: string, country: string): Omit<StoredBusi
     state: undefined,
     countryCode: country ? country.toLowerCase().slice(0, 2) : undefined,
     source: 'google',
-    notes: undefined,
+    notes: googleMetaNotes(place),
   }
 }
 
