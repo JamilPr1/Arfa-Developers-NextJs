@@ -2928,14 +2928,14 @@ export default function AdminPage() {
             </DialogActions>
           </Dialog>
 
-          {/* Fetch Business Leads (Apollo → OSM fallback) */}
+          {/* Fetch Business Leads (Google Places) */}
           <Dialog open={osmOpen} onClose={() => setOsmOpen(false)} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
-              Fetch Business Leads
+              Fetch Business Leads (Google Places)
             </DialogTitle>
             <DialogContent sx={{ mt: 2 }}>
               <Alert severity="info" sx={{ mb: 2 }}>
-                Tries <strong>Apollo</strong> first (companies in Apollo by location + keyword). If Apollo has no results, hits quota/rate limits, or returns an error, it automatically falls back to <strong>OpenStreetMap</strong> (free). Use small batches; Apollo may consume API credits.
+                Fetches leads from <strong>Google Places API</strong> (paid). It can return websites + phone numbers, but usually not emails. Use “Enrich Emails” after fetching to crawl websites for emails.
               </Alert>
 
               <Grid container spacing={2}>
@@ -3017,7 +3017,7 @@ export default function AdminPage() {
                   setError('')
                   setSuccess('')
                   try {
-                    const response = await fetch('/api/admin/business-leads/osm-search', {
+                    const response = await fetch('/api/admin/business-leads/google-places-search', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
@@ -3033,9 +3033,7 @@ export default function AdminPage() {
                     })
                     const json = await response.json().catch(() => ({}))
                     if (!response.ok) throw new Error(json?.error || 'Fetch failed')
-                    const src = json.fetchSource === 'apollo' ? 'Apollo' : 'OSM'
-                    const why = json.fallbackReason ? ` (fallback: ${json.fallbackReason})` : ''
-                    setSuccess(`✅ Fetched ${json.totalFetched || 0} via ${src}${why} — saved ${json.inserted || 0} new business leads.`)
+                    setSuccess(`✅ Fetched ${json.totalFetched || 0} via Google Places — saved ${json.inserted || 0} new business leads.`)
                     setOsmOpen(false)
                     await loadData()
                   } catch (e: any) {
