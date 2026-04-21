@@ -127,6 +127,16 @@ interface BusinessLead {
   contacted?: boolean
 }
 
+interface Proposal {
+  id: number
+  leadId?: number
+  businessName?: string
+  slug: string
+  title: string
+  createdAt: string
+  updatedAt: string
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -139,6 +149,7 @@ export default function AdminPage() {
   const [talents, setTalents] = useState<Talent[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [businessLeads, setBusinessLeads] = useState<BusinessLead[]>([])
+  const [proposals, setProposals] = useState<Proposal[]>([])
   const [gscDays, setGscDays] = useState<7 | 28 | 90>(28)
   const [gscLoading, setGscLoading] = useState(false)
   const [gscError, setGscError] = useState('')
@@ -231,6 +242,15 @@ export default function AdminPage() {
   const [bizEnrichOnlyMissingEmail, setBizEnrichOnlyMissingEmail] = useState(true)
   const [bizEnrichRunning, setBizEnrichRunning] = useState(false)
   // (Apollo actions removed from UI to keep admin clean)
+
+  // Proposals
+  const [proposalOpen, setProposalOpen] = useState(false)
+  const [proposalSecret, setProposalSecret] = useState('')
+  const [proposalLeadId, setProposalLeadId] = useState('')
+  const [proposalGoal, setProposalGoal] = useState(
+    'Create a modern one-page website demo proposal for this business, highlighting services, benefits, and a free audit offer.'
+  )
+  const [proposalRunning, setProposalRunning] = useState(false)
 
   // Business lead details
   const [businessLeadOpen, setBusinessLeadOpen] = useState(false)
@@ -350,15 +370,17 @@ export default function AdminPage() {
         talent: `/api/admin/talent?t=${timestamp}`,
         leads: `/api/admin/leads?t=${timestamp}`,
         businessLeads: `/api/admin/business-leads?t=${timestamp}`,
+        proposals: `/api/admin/proposals?t=${timestamp}`,
       } as const
 
-      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes, businessLeadsRes] = await Promise.all([
+      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes, businessLeadsRes, proposalsRes] = await Promise.all([
         fetch(endpoints.projects, { cache: 'no-store' }),
         fetch(endpoints.blogs, { cache: 'no-store' }),
         fetch(endpoints.promotions, { cache: 'no-store' }),
         fetch(endpoints.talent, { cache: 'no-store' }),
         fetch(endpoints.leads, { cache: 'no-store' }),
         fetch(endpoints.businessLeads, { cache: 'no-store' }),
+        fetch(endpoints.proposals, { cache: 'no-store' }),
       ])
 
       const failures: string[] = []
@@ -371,13 +393,14 @@ export default function AdminPage() {
         }
       }
 
-      const [projectsData, blogsData, promotionsData, talentsData, leadsData, businessLeadsData] = await Promise.all([
+      const [projectsData, blogsData, promotionsData, talentsData, leadsData, businessLeadsData, proposalsData] = await Promise.all([
         safeJson(projectsRes),
         safeJson(blogsRes),
         safeJson(promotionsRes),
         safeJson(talentsRes),
         safeJson(leadsRes),
         safeJson(businessLeadsRes),
+        safeJson(proposalsRes),
       ])
 
       if (!projectsRes.ok) failures.push(`Projects (${projectsRes.status})`)
@@ -386,6 +409,7 @@ export default function AdminPage() {
       if (!talentsRes.ok) failures.push(`Talent (${talentsRes.status})`)
       if (!leadsRes.ok) failures.push(`Leads (${leadsRes.status})`)
       if (!businessLeadsRes.ok) failures.push(`Business Leads (${businessLeadsRes.status})`)
+      if (!proposalsRes.ok) failures.push(`Proposals (${proposalsRes.status})`)
       
       // Ensure we have arrays and sort by ID (newest first)
       const sortedProjects = Array.isArray(projectsData) 
@@ -417,6 +441,7 @@ export default function AdminPage() {
       setTalents(sortedTalents)
       setLeads(sortedLeads)
       setBusinessLeads(Array.isArray(businessLeadsData) ? businessLeadsData : [])
+      setProposals(Array.isArray(proposalsData) ? proposalsData : [])
 
       if (failures.length > 0) {
         console.error('Admin data load failures:', {
@@ -1239,6 +1264,7 @@ export default function AdminPage() {
               <Tab label="Talent" />
               <Tab label={`Leads (${leads.filter((l) => !l.read).length})`} />
               <Tab label={`Business Leads (${businessLeads.length})`} />
+              <Tab label={`Proposals (${proposals.length})`} />
               <Tab label="Search Console" />
             </Tabs>
           </Paper>
@@ -1950,8 +1976,123 @@ export default function AdminPage() {
             </Paper>
           )}
 
-          {/* Google Search Console Tab */}
+          {/* Proposals Tab */}
           {tabValue === 6 && (
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box
+                sx={{
+                  p: 3,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                  Proposals ({proposals.length})
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setProposalLeadId(String(businessLeads?.[0]?.id || ''))
+                    setProposalOpen(true)
+                  }}
+                  sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
+                  disabled={loading || dataLoading}
+                >
+                  Generate Proposal
+                </Button>
+              </Box>
+
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                      <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Business</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Link</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {proposals.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                          <Typography color="text.secondary">No proposals yet. Generate one from a business lead.</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      [...proposals]
+                        .sort((a, b) => {
+                          const ta = a?.createdAt ? new Date(a.createdAt).getTime() : 0
+                          const tb = b?.createdAt ? new Date(b.createdAt).getTime() : 0
+                          return tb - ta
+                        })
+                        .map((p) => (
+                          <TableRow key={p.id} hover>
+                            <TableCell sx={{ fontWeight: 800, color: '#111827' }}>{p.title}</TableCell>
+                            <TableCell>{p.businessName || '—'}</TableCell>
+                            <TableCell>{p.createdAt ? new Date(p.createdAt).toLocaleString() : '—'}</TableCell>
+                            <TableCell>
+                              <MuiLink
+                                href={`/p/${p.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ fontWeight: 800, textDecoration: 'none', color: '#2563EB' }}
+                              >
+                                Open
+                              </MuiLink>
+                            </TableCell>
+                            <TableCell>
+                              <IconButton
+                                size="small"
+                                sx={{ color: '#EF4444' }}
+                                disabled={loading}
+                                title="Delete proposal"
+                                onClick={async () => {
+                                  if (!confirm('Delete this proposal?')) return
+                                  setLoading(true)
+                                  setError('')
+                                  setSuccess('')
+                                  try {
+                                    const res = await fetch('/api/admin/proposals', {
+                                      method: 'DELETE',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'x-admin-secret': proposalSecret,
+                                      },
+                                      body: JSON.stringify({ id: p.id }),
+                                    })
+                                    const json = await res.json().catch(() => ({}))
+                                    if (!res.ok) throw new Error(json?.error || 'Failed to delete proposal')
+                                    setSuccess('✅ Proposal deleted.')
+                                    await loadData()
+                                  } catch (e: any) {
+                                    setError(e?.message || 'Failed to delete proposal')
+                                  } finally {
+                                    setLoading(false)
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          )}
+
+          {/* Google Search Console Tab */}
+          {tabValue === 7 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box
                 sx={{
@@ -3039,6 +3180,104 @@ export default function AdminPage() {
                 }}
               >
                 {osmRunning ? 'Fetching...' : 'Fetch & save'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Generate Proposal */}
+          <Dialog open={proposalOpen} onClose={() => setProposalOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>Generate Proposal (HTML Demo)</DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                This creates a responsive HTML demo for a selected business lead using OpenAI and gives you a share link for client review.
+              </Alert>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Admin secret"
+                    value={proposalSecret}
+                    onChange={(e) => setProposalSecret(e.target.value)}
+                    type="password"
+                    helperText="Use the same value as Vercel env LEADS_IMPORT_SECRET"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Business lead"
+                    value={proposalLeadId}
+                    onChange={(e) => setProposalLeadId(e.target.value)}
+                    helperText="Pick the business you want to pitch"
+                    SelectProps={{ native: true }}
+                  >
+                    <option value="">Select...</option>
+                    {[...businessLeads]
+                      .sort((a, b) => {
+                        const ta = new Date((a as any)?.createdAt || 0).getTime() || 0
+                        const tb = new Date((b as any)?.createdAt || 0).getTime() || 0
+                        return tb - ta
+                      })
+                      .slice(0, 500)
+                      .map((l) => (
+                        <option key={l.id} value={String(l.id)}>
+                          {l.businessName} — {(l.city || '')}{l.state ? `, ${l.state}` : ''}
+                        </option>
+                      ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Goal / style instructions"
+                    value={proposalGoal}
+                    onChange={(e) => setProposalGoal(e.target.value)}
+                    multiline
+                    minRows={4}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button onClick={() => setProposalOpen(false)} disabled={proposalRunning}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                disabled={proposalRunning}
+                startIcon={proposalRunning ? <CircularProgress size={20} /> : <AddIcon />}
+                sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
+                onClick={async () => {
+                  setProposalRunning(true)
+                  setError('')
+                  setSuccess('')
+                  try {
+                    if (!proposalLeadId) throw new Error('Select a business lead.')
+                    const res = await fetch('/api/admin/proposals/generate', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-secret': proposalSecret,
+                      },
+                      body: JSON.stringify({ leadId: Number(proposalLeadId), goal: proposalGoal }),
+                    })
+                    const json = await res.json().catch(() => ({}))
+                    if (!res.ok) throw new Error(json?.error || 'Failed to generate proposal')
+                    const urlPath = json?.urlPath || (json?.proposal?.slug ? `/p/${json.proposal.slug}` : '')
+                    setSuccess(`✅ Proposal generated. Share link: ${urlPath}`)
+                    setProposalOpen(false)
+                    await loadData()
+                    if (urlPath) window.open(urlPath, '_blank', 'noopener,noreferrer')
+                  } catch (e: any) {
+                    setError(e?.message || 'Failed to generate proposal')
+                  } finally {
+                    setProposalRunning(false)
+                  }
+                }}
+              >
+                {proposalRunning ? 'Generating...' : 'Generate'}
               </Button>
             </DialogActions>
           </Dialog>

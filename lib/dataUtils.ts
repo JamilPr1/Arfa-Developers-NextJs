@@ -13,6 +13,7 @@ const tableMap: Record<string, string> = {
   'talent.json': 'talent',
   'leads.json': 'leads',
   'business-leads.json': 'business_leads',
+  'proposals.json': 'proposals',
 }
 
 // Check if Redis is available
