@@ -2198,7 +2198,7 @@ export default function AdminPage() {
                             onClick={() => generateAiDraft(aiSelected.id)}
                             disabled={aiDraftRunning}
                           >
-                            {aiDraftRunning ? 'Drafting...' : 'Generate draft (Claude)'}
+                            {aiDraftRunning ? 'Drafting...' : 'Generate draft (OpenAI)'}
                           </Button>
                           <Button
                             variant="outlined"

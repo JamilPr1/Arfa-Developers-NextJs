@@ -26,12 +26,12 @@ export async function POST(req: NextRequest) {
     const lead = leads[idx]
 
     const calendly = process.env.CALENDLY_LINK || ''
-    const apiKey = process.env.ANTHROPIC_API_KEY || ''
-    const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
+    const openAiKey = process.env.OPENAI_API_KEY || ''
+    const openAiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini'
 
     let draft = ''
 
-    if (apiKey) {
+    if (openAiKey) {
       const prompt = `You are an SDR for a software/AI automation agency.
 
 Write a short, friendly outreach message replying to this lead. Keep it under 90 words.
@@ -45,30 +45,29 @@ Matched keywords: ${(lead.matchedKeywords || []).join(', ')}
 Calendly: ${calendly || '(none)'}
 `
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
+          Authorization: `Bearer ${openAiKey}`,
         },
         body: JSON.stringify({
-          model,
-          max_tokens: 250,
+          model: openAiModel,
           temperature: 0.5,
-          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 250,
+          messages: [
+            { role: 'system', content: 'You write concise outbound sales replies.' },
+            { role: 'user', content: prompt },
+          ],
         }),
       })
 
       const json: any = await res.json().catch(() => ({}))
       if (!res.ok) {
-        throw new Error(json?.error?.message || json?.message || 'Anthropic request failed')
+        throw new Error(json?.error?.message || json?.message || 'OpenAI request failed')
       }
 
-      draft =
-        json?.content?.map?.((c: any) => (c?.type === 'text' ? c.text : '')).join('') ||
-        json?.content?.[0]?.text ||
-        ''
+      draft = json?.choices?.[0]?.message?.content || ''
     } else {
       // Fallback (no AI key) — still useful during setup.
       const tail = calendly ? `\n\nWant me to share a quick plan? Book here: ${calendly}` : ''

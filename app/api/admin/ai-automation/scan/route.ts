@@ -65,43 +65,56 @@ async function fetchRedditLeads(keywords: string[], limit: number): Promise<AiLe
   const username = process.env.REDDIT_USERNAME
   const password = process.env.REDDIT_PASSWORD
 
-  if (!clientId || !clientSecret || !username || !password) return []
   if (keywords.length === 0) return []
 
-  const authRes = await fetch('https://www.reddit.com/api/v1/access_token', {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': 'ArfaDevelopersLeadBot/1.0',
-    },
-    body: new URLSearchParams({
-      grant_type: 'password',
-      username,
-      password,
-    }),
-  })
-
-  const authJson: any = await authRes.json().catch(() => ({}))
-  const token = authJson?.access_token
-  if (!token) return []
-
   const q = keywords.slice(0, 5).map((k) => `"${k}"`).join(' OR ')
-  const url = `https://oauth.reddit.com/search?q=${encodeURIComponent(q)}&sort=new&limit=${Math.min(
-    25,
-    Math.max(1, limit),
-  )}&type=link`
+  const capped = Math.min(25, Math.max(1, limit))
 
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'ArfaDevelopersLeadBot/1.0',
-    },
-    cache: 'no-store',
-  })
+  // Prefer official OAuth API when available. If Reddit app/OAuth isn't approved yet,
+  // fall back to public search.json (real posts, but more rate-limited).
+  let children: any[] = []
 
-  const json: any = await res.json().catch(() => ({}))
-  const children: any[] = json?.data?.children || []
+  const canOAuth = !!(clientId && clientSecret && username && password)
+  if (canOAuth) {
+    const authRes = await fetch('https://www.reddit.com/api/v1/access_token', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'ArfaDevelopersLeadBot/1.0',
+      },
+      body: new URLSearchParams({
+        grant_type: 'password',
+        username,
+        password,
+      }),
+    })
+
+    const authJson: any = await authRes.json().catch(() => ({}))
+    const token = authJson?.access_token
+    if (token) {
+      const url = `https://oauth.reddit.com/search?q=${encodeURIComponent(q)}&sort=new&limit=${capped}&type=link`
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'User-Agent': 'ArfaDevelopersLeadBot/1.0',
+        },
+        cache: 'no-store',
+      })
+      const json: any = await res.json().catch(() => ({}))
+      children = json?.data?.children || []
+    }
+  }
+
+  if (children.length === 0) {
+    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&sort=new&limit=${capped}&type=link`
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'ArfaDevelopersLeadBot/1.0' },
+      cache: 'no-store',
+    })
+    const json: any = await res.json().catch(() => ({}))
+    children = json?.data?.children || []
+  }
 
   const out: AiLead[] = []
   for (const c of children) {
