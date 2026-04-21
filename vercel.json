@@ -5,6 +5,12 @@
   "env": {
     "SKIP_ENV_VALIDATION": "true"
   },
+  "crons": [
+    {
+      "path": "/api/leadgen-v2/cron",
+      "schedule": "*/10 * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/revalidate",

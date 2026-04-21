@@ -200,45 +200,6 @@ export default function AdminPage() {
   const [bulkTalentRunning, setBulkTalentRunning] = useState(false)
   const [bulkTalentProgress, setBulkTalentProgress] = useState({ done: 0, total: 0 })
 
-  // AI Automation
-  type AiLeadStatus = 'new' | 'dismissed' | 'contacted'
-  type AiLeadSource = 'reddit' | 'x' | 'indiehackers'
-  type AiLead = {
-    id: string
-    createdAt: string
-    source: AiLeadSource
-    sourceUrl: string
-    title: string
-    text: string
-    author?: string
-    score: number
-    matchedKeywords: string[]
-    status: AiLeadStatus
-    draftResponse?: string
-    notes?: string
-    respondedAt?: string
-  }
-  type AiAutomationConfig = {
-    enabled: boolean
-    minLeadScore: number
-    keywords: string[]
-    sources: { reddit: boolean; x: boolean; indieHackers: boolean }
-    calendlyLink?: string
-  }
-
-  const [aiAdminSecret, setAiAdminSecret] = useState('')
-  const [aiConfig, setAiConfig] = useState<AiAutomationConfig | null>(null)
-  const [aiLeads, setAiLeads] = useState<AiLead[]>([])
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiScanRunning, setAiScanRunning] = useState(false)
-  const [aiSettingsOpen, setAiSettingsOpen] = useState(false)
-  const [aiLimit, setAiLimit] = useState('25')
-  const [aiSelected, setAiSelected] = useState<AiLead | null>(null)
-  const [aiLeadOpen, setAiLeadOpen] = useState(false)
-  const [aiDraftRunning, setAiDraftRunning] = useState(false)
-  const [aiSaveRunning, setAiSaveRunning] = useState(false)
-  const [aiNotesDraft, setAiNotesDraft] = useState('')
-
   // Helper function to convert ImgBB page URLs to direct image URLs
   const convertToDirectImageUrl = (url: string): string => {
     if (!url) return url
@@ -293,8 +254,6 @@ export default function AdminPage() {
       setIsAuthenticated(true)
       loadData()
     }
-    const savedSecret = localStorage.getItem('ai_admin_secret') || ''
-    if (savedSecret) setAiAdminSecret(savedSecret)
   }, [])
 
   const handleLogin = async () => {
@@ -453,151 +412,12 @@ export default function AdminPage() {
     }
   }
 
-  const loadAiAutomation = async () => {
-    setAiLoading(true)
-    try {
-      const t = Date.now()
-      const [cfgRes, leadsRes] = await Promise.all([
-        fetch(`/api/admin/ai-automation/config?t=${t}`, { cache: 'no-store' }),
-        fetch(`/api/admin/ai-automation/leads?t=${t}`, { cache: 'no-store' }),
-      ])
-      const cfgJson = await cfgRes.json().catch(() => ({}))
-      const leadsJson = await leadsRes.json().catch(() => ({}))
-      if (!cfgRes.ok) throw new Error(cfgJson?.error || 'Failed to load AI config')
-      if (!leadsRes.ok) throw new Error(leadsJson?.error || 'Failed to load AI leads')
-      setAiConfig(cfgJson?.config || null)
-      setAiLeads(Array.isArray(leadsJson?.leads) ? leadsJson.leads : [])
-    } catch (e: any) {
-      setError(e?.message || 'Failed to load AI automation data')
-    } finally {
-      setAiLoading(false)
-    }
-  }
-
-  const runAiScan = async () => {
-    setAiScanRunning(true)
-    setError('')
-    setSuccess('')
-    try {
-      localStorage.setItem('ai_admin_secret', aiAdminSecret)
-      const res = await fetch('/api/admin/ai-automation/scan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-secret': aiAdminSecret,
-        },
-        body: JSON.stringify({ limit: parseInt(aiLimit || '25', 10) || 25 }),
-      })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json?.error || 'Scan failed')
-      const r = json?.result
-      setSuccess(`✅ Scan done. Scanned ${r?.scanned || 0}, inserted ${r?.inserted || 0}. Total stored: ${r?.total || 0}.`)
-      await loadAiAutomation()
-    } catch (e: any) {
-      setError(e?.message || 'Scan failed')
-    } finally {
-      setAiScanRunning(false)
-    }
-  }
-
-  const saveAiConfig = async (next: AiAutomationConfig) => {
-    setAiSaveRunning(true)
-    setError('')
-    setSuccess('')
-    try {
-      localStorage.setItem('ai_admin_secret', aiAdminSecret)
-      const res = await fetch('/api/admin/ai-automation/config', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-secret': aiAdminSecret,
-        },
-        body: JSON.stringify(next),
-      })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json?.error || 'Failed to save settings')
-      setAiConfig(json?.config || next)
-      setSuccess('✅ AI Automation settings saved.')
-      setAiSettingsOpen(false)
-    } catch (e: any) {
-      setError(e?.message || 'Failed to save settings')
-    } finally {
-      setAiSaveRunning(false)
-    }
-  }
-
-  const openAiLead = (lead: AiLead) => {
-    setAiSelected(lead)
-    setAiNotesDraft(lead.notes || '')
-    setAiLeadOpen(true)
-  }
-
-  const updateAiLead = async (id: string, updates: Partial<AiLead>) => {
-    setAiSaveRunning(true)
-    setError('')
-    setSuccess('')
-    try {
-      localStorage.setItem('ai_admin_secret', aiAdminSecret)
-      const res = await fetch('/api/admin/ai-automation/leads', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-secret': aiAdminSecret,
-        },
-        body: JSON.stringify({ id, ...updates }),
-      })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json?.error || 'Failed to update lead')
-      const updated = json?.lead
-      setAiLeads((prev) => prev.map((l) => (l.id === id ? updated : l)))
-      setAiSelected((prev) => (prev?.id === id ? updated : prev))
-      setSuccess('✅ Saved.')
-    } catch (e: any) {
-      setError(e?.message || 'Failed to update lead')
-    } finally {
-      setAiSaveRunning(false)
-    }
-  }
-
-  const generateAiDraft = async (id: string) => {
-    setAiDraftRunning(true)
-    setError('')
-    setSuccess('')
-    try {
-      localStorage.setItem('ai_admin_secret', aiAdminSecret)
-      const res = await fetch('/api/admin/ai-automation/draft', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-secret': aiAdminSecret,
-        },
-        body: JSON.stringify({ id }),
-      })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json?.error || 'Failed to draft response')
-      const updated = json?.lead
-      setAiLeads((prev) => prev.map((l) => (l.id === id ? updated : l)))
-      setAiSelected((prev) => (prev?.id === id ? updated : prev))
-      setSuccess('✅ Draft generated.')
-    } catch (e: any) {
-      setError(e?.message || 'Failed to draft response')
-    } finally {
-      setAiDraftRunning(false)
-    }
-  }
-
-  // Lazy-load AI Automation only when tab is opened
-  useEffect(() => {
-    if (!isAuthenticated) return
-    if (tabValue !== 5) return
-    loadAiAutomation()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, tabValue])
+  // AI Automation (v1) UI removed. V2 lives at /leadgen-v2.
 
   // Lazy-load GSC only when tab is opened
   useEffect(() => {
     if (!isAuthenticated) return
-    if (tabValue !== 6) return
+    if (tabValue !== 5) return
     loadGsc(gscDays)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, tabValue, gscDays])
@@ -1367,19 +1187,30 @@ export default function AdminPage() {
           )}
 
           <Paper sx={{ mb: 3, borderRadius: 2, overflow: 'hidden' }}>
-            <Tabs 
-              value={tabValue} 
-              onChange={(e, v) => setTabValue(v)}
-              sx={{ borderBottom: 1, borderColor: 'divider' }}
-            >
-              <Tab label="Projects" />
-              <Tab label="Blogs" />
-              <Tab label="Promotions" />
-              <Tab label="Talent" />
-              <Tab label={`Leads (${leads.filter((l) => !l.read).length})`} />
-              <Tab label="AI Automation" />
-              <Tab label="Search Console" />
-            </Tabs>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 2 }}>
+              <Tabs
+                value={tabValue}
+                onChange={(e, v) => setTabValue(v)}
+                sx={{ borderBottom: 1, borderColor: 'divider', flex: 1 }}
+              >
+                <Tab label="Projects" />
+                <Tab label="Blogs" />
+                <Tab label="Promotions" />
+                <Tab label="Talent" />
+                <Tab label={`Leads (${leads.filter((l) => !l.read).length})`} />
+                <Tab label="Search Console" />
+              </Tabs>
+
+              <Button
+                component={Link}
+                href="/leadgen-v2"
+                target="_blank"
+                variant="contained"
+                sx={{ ml: 2, backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
+              >
+                Automation
+              </Button>
+            </Box>
           </Paper>
 
           {/* Projects Tab */}
@@ -1841,427 +1672,10 @@ export default function AdminPage() {
             </Paper>
           )}
 
-          {/* AI Automation Tab */}
-          {tabValue === 5 && (
-            <Paper sx={{ borderRadius: 2 }}>
-              <Box
-                sx={{
-                  p: 3,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderBottom: 1,
-                  borderColor: 'divider',
-                  flexWrap: 'wrap',
-                  gap: 2,
-                }}
-              >
-                <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    AI Automation Leads ({aiLeads.length})
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Real sources: Reddit API + X API + Indie Hackers RSS (LinkedIn requires an approved partner API).
-                  </Typography>
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <TextField
-                    size="small"
-                    label="Admin secret"
-                    type="password"
-                    value={aiAdminSecret}
-                    onChange={(e) => {
-                      setAiAdminSecret(e.target.value)
-                      localStorage.setItem('ai_admin_secret', e.target.value)
-                    }}
-                    sx={{ minWidth: 220 }}
-                    helperText="AI_AUTOMATION_SECRET or LEADS_IMPORT_SECRET"
-                  />
-                  <TextField
-                    size="small"
-                    label="Scan limit"
-                    value={aiLimit}
-                    onChange={(e) => setAiLimit(e.target.value)}
-                    type="number"
-                    inputProps={{ min: 5, max: 50 }}
-                    sx={{ width: 120 }}
-                  />
-                  <Button
-                    variant="outlined"
-                    startIcon={<SettingsIcon />}
-                    onClick={() => setAiSettingsOpen(true)}
-                    disabled={aiSaveRunning || aiScanRunning}
-                  >
-                    Settings
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={aiScanRunning ? <CircularProgress size={20} /> : <PlayIcon />}
-                    onClick={runAiScan}
-                    disabled={aiScanRunning}
-                    sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
-                  >
-                    {aiScanRunning ? 'Scanning...' : 'Scan now'}
-                  </Button>
-                </Box>
-              </Box>
-
-              {aiLoading ? (
-                <Box sx={{ p: 4, textAlign: 'center' }}>
-                  <CircularProgress />
-                  <Typography sx={{ mt: 2 }}>Loading AI automation...</Typography>
-                </Box>
-              ) : (
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
-                        <TableCell sx={{ fontWeight: 600 }}>Score</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Source</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Lead</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Keywords</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {aiLeads.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                            <Typography color="text.secondary">
-                              No AI leads yet. Set keywords in Settings and click “Scan now”.
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        aiLeads.slice(0, 300).map((l) => (
-                          <TableRow
-                            key={l.id}
-                            hover
-                            sx={{ cursor: 'pointer' }}
-                            onClick={() => openAiLead(l)}
-                          >
-                            <TableCell>
-                              <Chip
-                                label={String(l.score || 0)}
-                                size="small"
-                                color={l.score >= 85 ? 'success' : l.score >= 70 ? 'warning' : 'default'}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Chip label={l.source} size="small" variant="outlined" />
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 520 }}>
-                              <Typography sx={{ fontWeight: 800, color: '#111827' }} noWrap>
-                                {l.title || '—'}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }} noWrap>
-                                {l.text || '—'}
-                              </Typography>
-                              <MuiLink
-                                href={l.sourceUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                sx={{ display: 'inline-block', mt: 0.5, fontWeight: 700, textDecoration: 'none' }}
-                              >
-                                Open source
-                              </MuiLink>
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 260 }}>
-                              {(l.matchedKeywords || []).slice(0, 4).map((k) => (
-                                <Chip key={k} label={k} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
-                              ))}
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2">
-                                {l.createdAt ? new Date(l.createdAt).toLocaleString() : '—'}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={l.status}
-                                size="small"
-                                color={l.status === 'new' ? 'primary' : l.status === 'contacted' ? 'success' : 'default'}
-                                variant={l.status === 'new' ? 'filled' : 'outlined'}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    generateAiDraft(l.id)
-                                  }}
-                                  disabled={aiDraftRunning}
-                                >
-                                  Draft
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant="text"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    updateAiLead(l.id, { status: 'contacted' })
-                                  }}
-                                  disabled={aiSaveRunning}
-                                >
-                                  Contacted
-                                </Button>
-                                <Button
-                                  size="small"
-                                  color="inherit"
-                                  variant="text"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    updateAiLead(l.id, { status: 'dismissed' })
-                                  }}
-                                  disabled={aiSaveRunning}
-                                >
-                                  Dismiss
-                                </Button>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-
-              {/* Settings dialog */}
-              <Dialog open={aiSettingsOpen} onClose={() => setAiSettingsOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>AI Automation Settings</DialogTitle>
-                <DialogContent sx={{ mt: 2 }}>
-                  {!aiConfig ? (
-                    <Alert severity="info">Loading settings...</Alert>
-                  ) : (
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={!!aiConfig.enabled}
-                              onChange={(e) => setAiConfig({ ...aiConfig, enabled: e.target.checked })}
-                            />
-                          }
-                          label="Enabled"
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Min score"
-                          type="number"
-                          value={String(aiConfig.minLeadScore ?? 70)}
-                          onChange={(e) => setAiConfig({ ...aiConfig, minLeadScore: Number(e.target.value || 0) })}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Calendly link (optional)"
-                          value={aiConfig.calendlyLink || ''}
-                          onChange={(e) => setAiConfig({ ...aiConfig, calendlyLink: e.target.value })}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Keywords (one per line)
-                        </Typography>
-                        <TextField
-                          fullWidth
-                          multiline
-                          minRows={6}
-                          value={(aiConfig.keywords || []).join('\n')}
-                          onChange={(e) => setAiConfig({ ...aiConfig, keywords: e.target.value.split('\n').map((x) => x.trim()).filter(Boolean) })}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Sources
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={!!aiConfig.sources?.reddit}
-                                onChange={(e) => setAiConfig({ ...aiConfig, sources: { ...aiConfig.sources, reddit: e.target.checked } })}
-                              />
-                            }
-                            label="Reddit"
-                          />
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={!!aiConfig.sources?.x}
-                                onChange={(e) => setAiConfig({ ...aiConfig, sources: { ...aiConfig.sources, x: e.target.checked } })}
-                              />
-                            }
-                            label="X (Twitter)"
-                          />
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={!!aiConfig.sources?.indieHackers}
-                                onChange={(e) =>
-                                  setAiConfig({ ...aiConfig, sources: { ...aiConfig.sources, indieHackers: e.target.checked } })
-                                }
-                              />
-                            }
-                            label="Indie Hackers"
-                          />
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  )}
-                </DialogContent>
-                <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-                  <Button onClick={() => setAiSettingsOpen(false)} disabled={aiSaveRunning}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={aiSaveRunning ? <CircularProgress size={20} /> : <SaveIcon />}
-                    disabled={aiSaveRunning || !aiConfig}
-                    sx={{ backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
-                    onClick={() => {
-                      if (!aiConfig) return
-                      saveAiConfig(aiConfig)
-                    }}
-                  >
-                    Save
-                  </Button>
-                </DialogActions>
-              </Dialog>
-
-              {/* Lead dialog */}
-              <Dialog
-                open={aiLeadOpen}
-                onClose={() => {
-                  setAiLeadOpen(false)
-                  setAiSelected(null)
-                }}
-                maxWidth="md"
-                fullWidth
-              >
-                <DialogTitle sx={{ bgcolor: '#111827', color: 'white' }}>AI Lead</DialogTitle>
-                <DialogContent sx={{ mt: 2 }}>
-                  {!aiSelected ? (
-                    <Typography color="text.secondary">No lead selected.</Typography>
-                  ) : (
-                    <Box sx={{ display: 'grid', gap: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-                        <Box sx={{ minWidth: 240 }}>
-                          <Typography sx={{ fontWeight: 900, color: '#111827' }}>{aiSelected.title || '—'}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {aiSelected.source} • {aiSelected.author || '—'}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <Chip label={`Score ${aiSelected.score || 0}`} size="small" />
-                          <Chip label={aiSelected.status} size="small" variant="outlined" />
-                          <MuiLink href={aiSelected.sourceUrl} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 800, textDecoration: 'none' }}>
-                            Open source
-                          </MuiLink>
-                        </Box>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Lead text
-                        </Typography>
-                        <Paper sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
-                          <Typography sx={{ whiteSpace: 'pre-wrap' }}>{aiSelected.text || '—'}</Typography>
-                        </Paper>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Draft response
-                        </Typography>
-                        <TextField
-                          fullWidth
-                          multiline
-                          minRows={4}
-                          value={aiSelected.draftResponse || ''}
-                          onChange={(e) => setAiSelected({ ...aiSelected, draftResponse: e.target.value })}
-                        />
-                        <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
-                          <Button
-                            variant="outlined"
-                            onClick={() => generateAiDraft(aiSelected.id)}
-                            disabled={aiDraftRunning}
-                          >
-                            {aiDraftRunning ? 'Drafting...' : 'Generate draft (OpenAI)'}
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            onClick={() => {
-                              if (!aiSelected) return
-                              navigator.clipboard?.writeText(aiSelected.draftResponse || '')
-                              setSuccess('✅ Copied draft to clipboard.')
-                            }}
-                            disabled={!aiSelected.draftResponse}
-                          >
-                            Copy
-                          </Button>
-                        </Box>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Notes
-                        </Typography>
-                        <TextField
-                          fullWidth
-                          multiline
-                          minRows={4}
-                          value={aiNotesDraft}
-                          onChange={(e) => setAiNotesDraft(e.target.value)}
-                          placeholder="Your notes, qualification, next steps..."
-                        />
-                      </Box>
-                    </Box>
-                  )}
-                </DialogContent>
-                <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-                  {aiSelected && (
-                    <>
-                      <Button
-                        variant="outlined"
-                        disabled={aiSaveRunning}
-                        onClick={() => updateAiLead(aiSelected.id, { notes: aiNotesDraft, draftResponse: aiSelected.draftResponse || '' })}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        disabled={aiSaveRunning}
-                        onClick={() => updateAiLead(aiSelected.id, { status: 'contacted' })}
-                      >
-                        Mark Contacted
-                      </Button>
-                      <Button
-                        disabled={aiSaveRunning}
-                        onClick={() => updateAiLead(aiSelected.id, { status: 'dismissed' })}
-                      >
-                        Dismiss
-                      </Button>
-                    </>
-                  )}
-                  <Button onClick={() => setAiLeadOpen(false)}>Close</Button>
-                </DialogActions>
-              </Dialog>
-            </Paper>
-          )}
+          {/* AI Automation (v1) removed from Admin UI */}
 
           {/* Google Search Console Tab */}
-          {tabValue === 6 && (
+          {tabValue === 5 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box
                 sx={{

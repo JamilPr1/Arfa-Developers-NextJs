@@ -34,6 +34,8 @@
     "react-leaflet": "^4.2.1",
     "react-slick": "^0.29.0",
     "slick-carousel": "^1.8.1"
+    ,
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@types/aos": "^3.0.7",

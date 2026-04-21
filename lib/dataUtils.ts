@@ -14,6 +14,7 @@ const tableMap: Record<string, string> = {
   'leads.json': 'leads',
   'ai-leads.json': 'ai_leads',
   'ai-automation-config.json': 'ai_automation_config',
+  'leadgen-v2.json': 'leadgen_v2',
 }
 
 // Check if Redis is available
