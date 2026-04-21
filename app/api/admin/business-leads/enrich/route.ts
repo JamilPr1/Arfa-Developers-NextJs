@@ -63,7 +63,9 @@ export async function POST(req: NextRequest) {
     if (!expected || secret !== expected) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = (await req.json().catch(() => ({}))) as any
-    const limit = Math.min(200, Math.max(1, Number(body?.limit || 50)))
+    // Allow "enrich all" for the typical admin dataset sizes.
+    // Keep an upper cap to reduce the risk of serverless timeouts.
+    const limit = Math.min(2000, Math.max(1, Number(body?.limit || 50)))
     const onlyMissingEmail = body?.onlyMissingEmail !== false
 
     const useSupabase =
@@ -76,6 +78,8 @@ export async function POST(req: NextRequest) {
       const supabase = await getSupabaseClient()
       if (!supabase) return NextResponse.json({ error: 'Supabase not available' }, { status: 500 })
 
+      // If onlyMissingEmail=true, we can safely scan more rows by filtering in DB.
+      // Otherwise, scan the latest 'limit' rows.
       let query = supabase.from('business_leads').select('*').order('created_at', { ascending: false }).limit(limit)
       if (onlyMissingEmail) query = query.is('email', null)
 

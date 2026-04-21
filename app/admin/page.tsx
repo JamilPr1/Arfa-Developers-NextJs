@@ -1733,7 +1733,10 @@ export default function AdminPage() {
                   />
                   <Button
                     variant="outlined"
-                    onClick={() => setBizEnrichOpen(true)}
+                    onClick={() => {
+                      setBizEnrichLimit(String(Math.min(2000, Math.max(1, businessLeads.length || 50))))
+                      setBizEnrichOpen(true)
+                    }}
                     sx={{ borderColor: '#111827', color: '#111827', '&:hover': { borderColor: '#111827', color: '#111827' } }}
                     disabled={loading || dataLoading}
                   >
