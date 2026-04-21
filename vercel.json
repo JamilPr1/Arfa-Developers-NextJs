@@ -8,7 +8,7 @@
   "crons": [
     {
       "path": "/api/leadgen-v2/cron",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 6 * * *"
     }
   ],
   "rewrites": [
