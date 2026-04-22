@@ -66,12 +66,22 @@ function Parse-CsvToLeads($csvPath) {
   if (-not $rows) { return @() }
 
   # De-duplicate (Google Maps sometimes repeats the same listing)
+  function First-NonEmpty([object[]] $vals) {
+    foreach ($v in $vals) {
+      if ($null -ne $v) {
+        $s = $v.ToString().Trim()
+        if ($s) { return $s }
+      }
+    }
+    return ""
+  }
+
   $seen = @{}
   $out = New-Object System.Collections.Generic.List[object]
   foreach ($r in $rows) {
-    $name = ($r.name ?? $r.Name ?? "").ToString().Trim()
-    $addr = ($r.address ?? $r.Address ?? "").ToString().Trim()
-    $phone = ($r.phone_number ?? $r.phone ?? $r.Phone ?? "").ToString().Trim()
+    $name = First-NonEmpty @($r.name, $r.Name)
+    $addr = First-NonEmpty @($r.address, $r.Address)
+    $phone = First-NonEmpty @($r.phone_number, $r.phone, $r.Phone)
     $key = ($name + "||" + $addr + "||" + $phone).ToLowerInvariant()
     if (-not $seen.ContainsKey($key)) {
       $seen[$key] = $true
