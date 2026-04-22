@@ -81,27 +81,41 @@ while ($true) {
     $outFile = Join-Path $env:TEMP ("gmaps_" + $job.id + ".csv")
     if (Test-Path $outFile) { Remove-Item $outFile -Force }
 
-    $logFile = Join-Path $env:TEMP ("gmaps_" + $job.id + ".log.txt")
-    if (Test-Path $logFile) { Remove-Item $logFile -Force }
+    $stdoutFile = Join-Path $env:TEMP ("gmaps_" + $job.id + ".stdout.txt")
+    $stderrFile = Join-Path $env:TEMP ("gmaps_" + $job.id + ".stderr.txt")
+    if (Test-Path $stdoutFile) { Remove-Item $stdoutFile -Force }
+    if (Test-Path $stderrFile) { Remove-Item $stderrFile -Force }
 
     # Capture stdout/stderr for debugging
-    $proc = Start-Process -FilePath $pythonExe -ArgumentList @($scraperPath, "-s", $job.query, "-t", $job.total, "-o", $outFile) -Wait -PassThru -NoNewWindow -RedirectStandardOutput $logFile -RedirectStandardError $logFile
+    $proc = Start-Process -FilePath $pythonExe -ArgumentList @($scraperPath, "-s", $job.query, "-t", $job.total, "-o", $outFile) -Wait -PassThru -NoNewWindow -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile
     if ($proc.ExitCode -ne 0) {
       $tail = ""
-      if (Test-Path $logFile) { $tail = (Get-Content $logFile -Tail 40) -join "`n" }
+      $tailOut = ""
+      $tailErr = ""
+      if (Test-Path $stdoutFile) { $tailOut = (Get-Content $stdoutFile -Tail 40) -join "`n" }
+      if (Test-Path $stderrFile) { $tailErr = (Get-Content $stderrFile -Tail 40) -join "`n" }
+      if ($tailOut -or $tailErr) { $tail = "STDOUT:`n$tailOut`n`nSTDERR:`n$tailErr" }
       throw "Scraper failed (exit=$($proc.ExitCode)). Log tail:`n$tail"
     }
 
     if (-not (Test-Path $outFile)) {
       $tail = ""
-      if (Test-Path $logFile) { $tail = (Get-Content $logFile -Tail 40) -join "`n" }
+      $tailOut = ""
+      $tailErr = ""
+      if (Test-Path $stdoutFile) { $tailOut = (Get-Content $stdoutFile -Tail 40) -join "`n" }
+      if (Test-Path $stderrFile) { $tailErr = (Get-Content $stderrFile -Tail 40) -join "`n" }
+      if ($tailOut -or $tailErr) { $tail = "STDOUT:`n$tailOut`n`nSTDERR:`n$tailErr" }
       throw "Scraper produced no CSV file. Likely blocked by consent/captcha or selectors changed. Log tail:`n$tail"
     }
 
     $leads = Parse-CsvToLeads $outFile
     if (-not $leads -or $leads.Count -eq 0) {
       $tail = ""
-      if (Test-Path $logFile) { $tail = (Get-Content $logFile -Tail 40) -join "`n" }
+      $tailOut = ""
+      $tailErr = ""
+      if (Test-Path $stdoutFile) { $tailOut = (Get-Content $stdoutFile -Tail 40) -join "`n" }
+      if (Test-Path $stderrFile) { $tailErr = (Get-Content $stderrFile -Tail 40) -join "`n" }
+      if ($tailOut -or $tailErr) { $tail = "STDOUT:`n$tailOut`n`nSTDERR:`n$tailErr" }
       throw "Scraper returned 0 rows. Likely blocked by Google Maps or no listings found. Log tail:`n$tail"
     }
     Write-Host "Scrape done. Leads: $($leads.Count). Uploading..."
