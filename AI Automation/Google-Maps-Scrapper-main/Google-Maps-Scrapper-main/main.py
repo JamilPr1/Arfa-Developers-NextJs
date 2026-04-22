@@ -7,6 +7,7 @@ import platform
 import time
 import os
 import csv
+from urllib.parse import quote_plus
 
 @dataclass
 class Place:
@@ -112,18 +113,70 @@ def scrape_places(search_for: str, total: int) -> List[Place]:
     setup_logging()
     places: List[Place] = []
     with sync_playwright() as p:
+        # Prefer system Chrome on Windows, but gracefully fall back to bundled Chromium.
+        launch_kwargs = {"headless": False}
         if platform.system() == "Windows":
             browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-            browser = p.chromium.launch(executable_path=browser_path, headless=False)
-        else:
-            browser = p.chromium.launch(headless=False)
+            if os.path.isfile(browser_path):
+                launch_kwargs["executable_path"] = browser_path
+        browser = p.chromium.launch(**launch_kwargs)
         page = browser.new_page()
+        page.set_default_timeout(60000)
         try:
-            page.goto("https://www.google.com/maps/@32.9817464,70.1930781,3.67z?", timeout=60000)
-            page.wait_for_timeout(1000)
-            page.locator('//input[@id="searchboxinput"]').fill(search_for)
-            page.keyboard.press("Enter")
-            page.wait_for_selector('//a[contains(@href, "https://www.google.com/maps/place")]')
+            # Navigate directly to the search URL; this is more reliable than depending on a specific input id
+            # that Google may change in different layouts.
+            search_url = "https://www.google.com/maps/search/" + quote_plus(search_for)
+            page.goto(search_url, timeout=60000, wait_until="domcontentloaded")
+            page.wait_for_timeout(750)
+            logging.info(f"Loaded URL: {page.url}")
+
+            # Cookie consent / overlays can block the search box in some regions.
+            # Try a few common consent buttons without failing if they don't exist.
+            try:
+                consent_labels = [
+                    "Accept all",
+                    "Accept",
+                    "I agree",
+                    "Agree",
+                    "Reject all",
+                    "Reject",
+                    "Got it",
+                    "Continue",
+                ]
+                for label in consent_labels:
+                    btn = page.get_by_role("button", name=label)
+                    if btn.count() > 0:
+                        btn.first.click(timeout=3000)
+                        page.wait_for_timeout(750)
+                        break
+
+                # Fallback for non-role buttons (some consent screens don't expose proper roles/names)
+                for label in consent_labels:
+                    loc = page.locator(f'button:has-text("{label}")')
+                    if loc.count() > 0:
+                        loc.first.click(timeout=3000)
+                        page.wait_for_timeout(750)
+                        break
+            except Exception:
+                pass
+
+            # Wait for results to appear.
+            try:
+                page.wait_for_load_state("networkidle", timeout=30000)
+            except Exception:
+                pass
+
+            try:
+                page.wait_for_selector('//a[contains(@href, "https://www.google.com/maps/place")]', timeout=60000)
+            except Exception as e:
+                # Write a screenshot to help diagnose what screen we're on (consent/captcha/etc.)
+                try:
+                    debug_path = os.path.join(os.environ.get("TEMP", "."), "gmaps_debug.png")
+                    page.screenshot(path=debug_path, full_page=True)
+                    logging.error(f"Results not visible. URL={page.url}. Screenshot={debug_path}")
+                except Exception:
+                    logging.error(f"Results not visible. URL={page.url}. (Screenshot failed)")
+                raise e
             page.hover('//a[contains(@href, "https://www.google.com/maps/place")]')
             previously_counted = 0
             while True:

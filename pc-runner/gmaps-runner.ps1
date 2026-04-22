@@ -63,7 +63,22 @@ function Invoke-Json($method, $url, $body) {
 function Parse-CsvToLeads($csvPath) {
   if (-not (Test-Path $csvPath)) { return @() }
   $rows = Import-Csv $csvPath
-  return $rows
+  if (-not $rows) { return @() }
+
+  # De-duplicate (Google Maps sometimes repeats the same listing)
+  $seen = @{}
+  $out = New-Object System.Collections.Generic.List[object]
+  foreach ($r in $rows) {
+    $name = ($r.name ?? $r.Name ?? "").ToString().Trim()
+    $addr = ($r.address ?? $r.Address ?? "").ToString().Trim()
+    $phone = ($r.phone_number ?? $r.phone ?? $r.Phone ?? "").ToString().Trim()
+    $key = ($name + "||" + $addr + "||" + $phone).ToLowerInvariant()
+    if (-not $seen.ContainsKey($key)) {
+      $seen[$key] = $true
+      [void]$out.Add($r)
+    }
+  }
+  return $out
 }
 
 while ($true) {
