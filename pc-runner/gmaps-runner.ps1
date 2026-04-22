@@ -22,6 +22,10 @@ $baseUrl = $env:GMAPS_RUNNER_BASE_URL
 if (-not $baseUrl) {
   $baseUrl = Read-Host "Enter GMAPS_RUNNER_BASE_URL (e.g. https://www.arfadevelopers.com)"
 }
+$baseUrl = $baseUrl.Trim().TrimEnd("/")
+if (-not ($baseUrl -match '^https?://')) {
+  $baseUrl = "https://$baseUrl"
+}
 $secret = $env:GMAPS_RUNNER_SECRET
 if (-not $secret) {
   $secret = Read-Host -AsSecureString "Enter GMAPS_RUNNER_SECRET"
@@ -50,9 +54,9 @@ function Invoke-Json($method, $url, $body) {
     "x-runner-secret" = $secret
   }
   if ($body) {
-    return Invoke-RestMethod -Method $method -Uri $url -Headers $headers -Body ($body | ConvertTo-Json -Depth 10)
+    return Invoke-RestMethod -Method $method -Uri $url -Headers $headers -Body ($body | ConvertTo-Json -Depth 10) -MaximumRedirection 5
   } else {
-    return Invoke-RestMethod -Method $method -Uri $url -Headers $headers
+    return Invoke-RestMethod -Method $method -Uri $url -Headers $headers -MaximumRedirection 5
   }
 }
 
