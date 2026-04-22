@@ -90,16 +90,19 @@ while ($true) {
     if (Test-Path $stdoutFile) { Remove-Item $stdoutFile -Force }
     if (Test-Path $stderrFile) { Remove-Item $stderrFile -Force }
 
-    # Capture stdout/stderr for debugging
-    $proc = Start-Process -FilePath $pythonExe -ArgumentList @($scraperPath, "-s", $job.query, "-t", $job.total, "-o", $outFile) -Wait -PassThru -NoNewWindow -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile
-    if ($proc.ExitCode -ne 0) {
+    # Capture stdout/stderr for debugging.
+    # NOTE: Start-Process argument quoting is fragile with spaces in paths.
+    # Use call operator so script paths with spaces work reliably.
+    & $pythonExe $scraperPath -s $job.query -t $job.total -o $outFile 1> $stdoutFile 2> $stderrFile
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) {
       $tail = ""
       $tailOut = ""
       $tailErr = ""
       if (Test-Path $stdoutFile) { $tailOut = (Get-Content $stdoutFile -Tail 40) -join "`n" }
       if (Test-Path $stderrFile) { $tailErr = (Get-Content $stderrFile -Tail 40) -join "`n" }
       if ($tailOut -or $tailErr) { $tail = "STDOUT:`n$tailOut`n`nSTDERR:`n$tailErr" }
-      throw "Scraper failed (exit=$($proc.ExitCode)). Log tail:`n$tail"
+      throw "Scraper failed (exit=$exitCode). Log tail:`n$tail"
     }
 
     if (-not (Test-Path $outFile)) {
