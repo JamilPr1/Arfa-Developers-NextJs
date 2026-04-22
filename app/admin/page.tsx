@@ -412,7 +412,7 @@ export default function AdminPage() {
     }
   }
 
-  // AI Automation (v1) UI removed. V2 lives at /leadgen-v2.
+  // AI Automation UI removed. Automation lives at /automation.
 
   // Lazy-load GSC only when tab is opened
   useEffect(() => {

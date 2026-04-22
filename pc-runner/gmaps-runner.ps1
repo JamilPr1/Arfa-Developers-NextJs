@@ -21,7 +21,12 @@ $ErrorActionPreference = "Stop"
 $baseUrl = $env:GMAPS_RUNNER_BASE_URL
 if (-not $baseUrl) { throw "GMAPS_RUNNER_BASE_URL is not set" }
 $secret = $env:GMAPS_RUNNER_SECRET
-if (-not $secret) { throw "GMAPS_RUNNER_SECRET is not set" }
+if (-not $secret) {
+  $secret = Read-Host -AsSecureString "Enter GMAPS_RUNNER_SECRET"
+  $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
+  $secret = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+  [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+}
 
 $pythonExe = $env:GMAPS_PYTHON
 if (-not $pythonExe) { $pythonExe = "python" }
@@ -33,6 +38,9 @@ if (-not $scraperPath) { $scraperPath = $defaultScraper }
 Write-Host "GMAPS Runner starting..."
 Write-Host "Base URL: $baseUrl"
 Write-Host "Scraper: $scraperPath"
+Write-Host "Tip: if pip/playwright isn't installed, run:"
+Write-Host "  $pythonExe -m pip install -r `"$((Resolve-Path (Join-Path $PSScriptRoot '..\\AI Automation\\Google-Maps-Scrapper-main\\Google-Maps-Scrapper-main\\requirements.txt')).Path)`""
+Write-Host "  $pythonExe -m playwright install"
 
 function Invoke-Json($method, $url, $body) {
   $headers = @{
