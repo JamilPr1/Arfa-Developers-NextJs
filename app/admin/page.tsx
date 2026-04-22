@@ -1203,7 +1203,7 @@ export default function AdminPage() {
 
               <Button
                 component={Link}
-                href="/leadgen-v2"
+                href="/automation"
                 target="_blank"
                 variant="contained"
                 sx={{ ml: 2, backgroundColor: '#111827', '&:hover': { backgroundColor: '#0B1220' } }}
