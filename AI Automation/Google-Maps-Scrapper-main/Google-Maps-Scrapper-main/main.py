@@ -40,7 +40,8 @@ def extract_text(page: Page, xpath: str) -> str:
 
 def extract_place(page: Page) -> Place:
     # XPaths
-    name_xpath = '//div[@class="TIHn2 "]//h1[@class="DUwDvf lfPIob"]'
+    # Prefer stable CSS selectors where possible (Google frequently changes wrapper class names).
+    name_xpath = 'h1.DUwDvf'
     address_xpath = '//button[@data-item-id="address"]//div[contains(@class, "fontBodyMedium")]'
     website_xpath = '//a[@data-item-id="authority"]//div[contains(@class, "fontBodyMedium")]'
     phone_number_xpath = '//button[contains(@data-item-id, "phone:tel:")]//div[contains(@class, "fontBodyMedium")]'
@@ -166,8 +167,9 @@ def scrape_places(search_for: str, total: int) -> List[Place]:
             except Exception:
                 pass
 
+            place_link_selector = '//a[contains(@href, "https://www.google.com/maps/place")]'
             try:
-                page.wait_for_selector('//a[contains(@href, "https://www.google.com/maps/place")]', timeout=60000)
+                page.wait_for_selector(place_link_selector, timeout=60000)
             except Exception as e:
                 # Write a screenshot to help diagnose what screen we're on (consent/captcha/etc.)
                 try:
@@ -177,29 +179,79 @@ def scrape_places(search_for: str, total: int) -> List[Place]:
                 except Exception:
                     logging.error(f"Results not visible. URL={page.url}. (Screenshot failed)")
                 raise e
-            page.hover('//a[contains(@href, "https://www.google.com/maps/place")]')
+            page.hover(place_link_selector)
+            feed = page.locator('div[role="feed"]')
+            if feed.count() > 0:
+                try:
+                    feed.first.hover()
+                except Exception:
+                    pass
+
             previously_counted = 0
+            stagnant = 0
+            max_scrolls = 40
             while True:
-                page.mouse.wheel(0, 10000)
-                page.wait_for_selector('//a[contains(@href, "https://www.google.com/maps/place")]')
-                found = page.locator('//a[contains(@href, "https://www.google.com/maps/place")]').count()
+                # Scroll the results list (not the map) so more listings load.
+                if feed.count() > 0:
+                    try:
+                        feed.first.hover()
+                    except Exception:
+                        pass
+                page.mouse.wheel(0, 12000)
+                page.wait_for_selector(place_link_selector)
+                found = page.locator(place_link_selector).count()
                 logging.info(f"Currently Found: {found}")
                 if found >= total:
                     break
                 if found == previously_counted:
-                    logging.info("Arrived at all available")
+                    stagnant += 1
+                    if stagnant >= 3:
+                        logging.info("Arrived at all available")
+                        break
+                else:
+                    stagnant = 0
+                    previously_counted = found
+                max_scrolls -= 1
+                if max_scrolls <= 0:
                     break
-                previously_counted = found
-            listings = page.locator('//a[contains(@href, "https://www.google.com/maps/place")]').all()[:total]
-            listings = [listing.locator("xpath=..") for listing in listings]
-            logging.info(f"Total Found: {len(listings)}")
-            for idx, listing in enumerate(listings):
+
+            total_found = min(total, page.locator(place_link_selector).count())
+            logging.info(f"Total Found: {total_found}")
+
+            # Capture hrefs first, then visit each place URL directly.
+            hrefs = []
+            for idx in range(total_found):
                 try:
-                    listing.click()
-                    page.wait_for_selector('//div[@class="TIHn2 "]//h1[@class="DUwDvf lfPIob"]', timeout=10000)
+                    href = page.locator(place_link_selector).nth(idx).get_attribute("href")
+                    if href:
+                        hrefs.append(href)
+                except Exception:
+                    continue
+
+            # De-dupe while preserving order
+            seen_href = set()
+            place_urls = []
+            for h in hrefs:
+                if h not in seen_href:
+                    seen_href.add(h)
+                    place_urls.append(h)
+
+            seen_names = set()
+            for idx, href in enumerate(place_urls[:total_found]):
+                try:
+                    url = href
+                    if url.startswith("/"):
+                        url = "https://www.google.com" + url
+                    page.goto(url, timeout=60000, wait_until="domcontentloaded")
+                    page.wait_for_selector('h1.DUwDvf', timeout=30000)
                     time.sleep(1.5)  # Give time for details to load
                     place = extract_place(page)
-                    if place.name:
+                    if not place.name:
+                        # One quick retry if the pane loaded but text extraction lagged.
+                        page.wait_for_timeout(800)
+                        place = extract_place(page)
+                    if place.name and place.name not in seen_names:
+                        seen_names.add(place.name)
                         places.append(place)
                     else:
                         logging.warning(f"No name found for listing {idx+1}, skipping.")
