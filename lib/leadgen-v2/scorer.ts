@@ -1,4 +1,4 @@
-export type LeadGenV2Source = 'Reddit' | 'Upwork' | 'HN' | 'IndieHackers'
+export type LeadGenV2Source = 'Reddit' | 'Upwork' | 'HN' | 'IndieHackers' | 'GitHub' | 'StackOverflow'
 
 export type LeadGenV2Lead = {
   id: string
@@ -22,7 +22,16 @@ export function scoreLead(text: string) {
   for (const k of painSignals) if (t.includes(k)) score += 20
   for (const k of moneySignals) if (t.includes(k)) score += 15
 
+  // Extra free “near-AI” signals (quality upgrade)
+  if (t.includes('?')) score += 10
+  if (t.includes('error')) score += 15
+  if (t.includes('fix')) score += 20
+  if (t.includes('help')) score += 15
+
+  // Down-rank noisy “dev news” type posts (basic filter)
+  if (t.includes('study finds') || t.includes('release') || t.includes('benchmark')) score -= 15
+
   if (t.length > 200) score += 10
-  return Math.min(score, 100)
+  return Math.min(Math.max(score, 0), 100)
 }
 

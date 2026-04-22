@@ -5,6 +5,8 @@ import { getRedditLeads } from '@/lib/leadgen-v2/sources/reddit'
 import { getUpworkLeads } from '@/lib/leadgen-v2/sources/upwork'
 import { getHNLeads } from '@/lib/leadgen-v2/sources/hn'
 import { getIndieLeads } from '@/lib/leadgen-v2/sources/indie'
+import { getGitHubIssueLeads } from '@/lib/leadgen-v2/sources/github'
+import { getStackOverflowLeads } from '@/lib/leadgen-v2/sources/stackoverflow'
 
 export const runtime = 'nodejs'
 
@@ -29,19 +31,41 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ leads: sorted, stored: stored.length })
   }
 
-  const [r, u, h, i] = await Promise.allSettled([
+  const upworkQueries = ['website fix', 'bug fix', 'urgent developer']
+
+  const [r, u1, u2, u3, h, i, gh, so] = await Promise.allSettled([
     getRedditLeads(query),
-    getUpworkLeads('web developer'),
-    getHNLeads('developer help'),
+    getUpworkLeads(upworkQueries[0]),
+    getUpworkLeads(upworkQueries[1]),
+    getUpworkLeads(upworkQueries[2]),
+    getHNLeads('hire developer'),
     getIndieLeads(),
+    getGitHubIssueLeads('bug help web in:title'),
+    getStackOverflowLeads('error'),
   ])
 
   const all = [
     ...(r.status === 'fulfilled' ? r.value : []),
-    ...(u.status === 'fulfilled' ? u.value : []),
     ...(h.status === 'fulfilled' ? h.value : []),
     ...(i.status === 'fulfilled' ? i.value : []),
+    ...(u1.status === 'fulfilled' ? u1.value : []),
+    ...(u2.status === 'fulfilled' ? u2.value : []),
+    ...(u3.status === 'fulfilled' ? u3.value : []),
+    ...(gh.status === 'fulfilled' ? gh.value : []),
+    ...(so.status === 'fulfilled' ? so.value : []),
   ]
+
+  // Debug logs (visible in Vercel function logs)
+  console.log('[leadgen-v2] fetched counts', {
+    reddit: r.status === 'fulfilled' ? r.value.length : 'ERR',
+    upwork1: u1.status === 'fulfilled' ? u1.value.length : 'ERR',
+    upwork2: u2.status === 'fulfilled' ? u2.value.length : 'ERR',
+    upwork3: u3.status === 'fulfilled' ? u3.value.length : 'ERR',
+    hn: h.status === 'fulfilled' ? h.value.length : 'ERR',
+    indie: i.status === 'fulfilled' ? i.value.length : 'ERR',
+    github: gh.status === 'fulfilled' ? gh.value.length : 'ERR',
+    stackoverflow: so.status === 'fulfilled' ? so.value.length : 'ERR',
+  })
 
   const scored: LeadGenV2Lead[] = all.map((l) => ({
     ...l,
@@ -59,9 +83,11 @@ export async function GET(req: NextRequest) {
     stored: Math.min(sortedStored.length, 500),
     fetched: {
       reddit: r.status === 'fulfilled' ? r.value.length : 0,
-      upwork: u.status === 'fulfilled' ? u.value.length : 0,
+      upwork: (u1.status === 'fulfilled' ? u1.value.length : 0) + (u2.status === 'fulfilled' ? u2.value.length : 0) + (u3.status === 'fulfilled' ? u3.value.length : 0),
       hn: h.status === 'fulfilled' ? h.value.length : 0,
       indie: i.status === 'fulfilled' ? i.value.length : 0,
+      github: gh.status === 'fulfilled' ? gh.value.length : 0,
+      stackoverflow: so.status === 'fulfilled' ? so.value.length : 0,
     },
   })
 }
