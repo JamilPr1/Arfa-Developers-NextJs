@@ -6,7 +6,7 @@ function base64Id(s: string) {
 
 const UA = 'Mozilla/5.0 (LeadGenBot/1.0)'
 
-function mapChildrenToLeads(children: any[]): Omit<LeadGenV2Lead, 'score'>[] {
+function mapChildrenToLeads(children: any[]): Omit<LeadGenV2Lead, 'intent' | 'confidence'>[] {
   return (children || [])
     .map((p) => p?.data)
     .filter(Boolean)
@@ -20,13 +20,13 @@ function mapChildrenToLeads(children: any[]): Omit<LeadGenV2Lead, 'score'>[] {
     }))
 }
 
-export async function getRedditLeads(query: string): Promise<Omit<LeadGenV2Lead, 'score'>[]> {
+export async function getRedditLeads(query: string): Promise<Omit<LeadGenV2Lead, 'intent' | 'confidence'>[]> {
   // Best quality: target specific subreddits instead of generic search.
   const subredditFeeds = [
     'https://www.reddit.com/r/forhire/new.json?limit=25',
-    'https://www.reddit.com/r/freelance/new.json?limit=25',
-    'https://www.reddit.com/r/webdev/new.json?limit=25',
-    'https://www.reddit.com/r/startups/new.json?limit=25',
+    'https://www.reddit.com/r/hireaprogrammer/new.json?limit=25',
+    'https://www.reddit.com/r/jobbit/new.json?limit=25',
+    'https://www.reddit.com/r/remotejs/new.json?limit=25',
   ]
 
   const results = await Promise.allSettled(
@@ -52,7 +52,7 @@ export async function getRedditLeads(query: string): Promise<Omit<LeadGenV2Lead,
   const searchJson: any = await searchRes.json().catch(() => ({}))
   const fromSearch = mapChildrenToLeads(searchJson?.data?.children || [])
 
-  const map = new Map<string, Omit<LeadGenV2Lead, 'score'>>()
+  const map = new Map<string, Omit<LeadGenV2Lead, 'intent' | 'confidence'>>()
   for (const l of [...fromSubs, ...fromSearch]) map.set(l.id, l)
   return Array.from(map.values())
 }

@@ -6,11 +6,10 @@ import { Box, Button, Chip, Container, Divider, Paper, TextField, Typography } f
 type Lead = {
   id: string
   title: string
-  text: string
   url: string
   source: string
-  createdAt: string
-  score: number
+  intent: 'HIRING'
+  confidence: number
 }
 
 export default function LeadGenV2Page() {
@@ -54,7 +53,7 @@ export default function LeadGenV2Page() {
               LeadGen V2
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Multi-platform (Reddit + Upwork + HN + IndieHackers) • Smart scoring (no paid AI) • Cron-ready
+              V3: Only hiring intent (Reddit hiring subs + YC Jobs + Indie Hackers) • Zero paid APIs • No scoring, strict filter
             </Typography>
             {lastFetched && (
               <Typography variant="caption" color="text.secondary">
@@ -98,8 +97,8 @@ export default function LeadGenV2Page() {
           <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
             <Typography sx={{ fontWeight: 900 }}>Top Leads ({top.length})</Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Chip label="Score = intent + pain + money + detail" size="small" variant="outlined" />
-              <Chip label="No paid APIs" size="small" variant="outlined" />
+              <Chip label="Intent-only: HIRING" size="small" variant="outlined" />
+              <Chip label="Noise killed (bugs/errors removed)" size="small" variant="outlined" />
             </Box>
           </Box>
           <Divider />
@@ -113,17 +112,14 @@ export default function LeadGenV2Page() {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
                     <Box sx={{ minWidth: 220, flex: 1 }}>
                       <Typography sx={{ fontWeight: 900, color: '#111827' }}>{l.title || '—'}</Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, whiteSpace: 'pre-wrap' }}>
-                        {(l.text || '').slice(0, 240)}
-                        {(l.text || '').length > 240 ? '…' : ''}
-                      </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-end' }}>
                       <Chip
-                        label={`Score ${l.score || 0}`}
-                        color={l.score >= 80 ? 'success' : l.score >= 50 ? 'warning' : 'default'}
+                        label={`Confidence ${l.confidence || 0}`}
+                        color={l.confidence >= 85 ? 'success' : l.confidence >= 70 ? 'warning' : 'default'}
                         size="small"
                       />
+                      <Chip label={l.intent} size="small" variant="outlined" />
                       <Chip label={l.source} variant="outlined" size="small" />
                       <Button
                         href={l.url}

@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readDataFile, writeDataFile } from '@/lib/dataUtils'
-import { scoreLead, type LeadGenV2Lead } from '@/lib/leadgen-v2/scorer'
+import { hiringConfidence, isHiringPost, isNoisePost, type LeadGenV2Lead } from '@/lib/leadgen-v2/scorer'
 import { getRedditLeads } from '@/lib/leadgen-v2/sources/reddit'
-import { getUpworkLeads } from '@/lib/leadgen-v2/sources/upwork'
-import { getHNLeads } from '@/lib/leadgen-v2/sources/hn'
 import { getIndieLeads } from '@/lib/leadgen-v2/sources/indie'
-import { getGitHubIssueLeads } from '@/lib/leadgen-v2/sources/github'
-import { getStackOverflowLeads } from '@/lib/leadgen-v2/sources/stackoverflow'
+import { getYcJobsLeads } from '@/lib/leadgen-v2/sources/yc-jobs'
 
 export const runtime = 'nodejs'
 
@@ -27,53 +24,44 @@ export async function GET(req: NextRequest) {
   const stored = Array.isArray(existing) ? existing : []
 
   if (!refresh) {
-    const sorted = [...stored].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 50)
+    const sorted = [...stored].sort((a, b) => (b.confidence || 0) - (a.confidence || 0)).slice(0, 50)
     return NextResponse.json({ leads: sorted, stored: stored.length })
   }
 
-  const upworkQueries = ['website fix', 'bug fix', 'urgent developer']
-
-  const [r, u1, u2, u3, h, i, gh, so] = await Promise.allSettled([
+  // V3: ONLY HIRING POSTS (hard source lock)
+  const [r, i, yc] = await Promise.allSettled([
     getRedditLeads(query),
-    getUpworkLeads(upworkQueries[0]),
-    getUpworkLeads(upworkQueries[1]),
-    getUpworkLeads(upworkQueries[2]),
-    getHNLeads('hire developer'),
     getIndieLeads(),
-    getGitHubIssueLeads('bug help web in:title'),
-    getStackOverflowLeads('error'),
+    getYcJobsLeads(),
   ])
 
   const all = [
     ...(r.status === 'fulfilled' ? r.value : []),
-    ...(h.status === 'fulfilled' ? h.value : []),
     ...(i.status === 'fulfilled' ? i.value : []),
-    ...(u1.status === 'fulfilled' ? u1.value : []),
-    ...(u2.status === 'fulfilled' ? u2.value : []),
-    ...(u3.status === 'fulfilled' ? u3.value : []),
-    ...(gh.status === 'fulfilled' ? gh.value : []),
-    ...(so.status === 'fulfilled' ? so.value : []),
+    ...(yc.status === 'fulfilled' ? yc.value : []),
   ]
 
+  // Pipeline: source ok -> noise kill -> hiring detector -> output
+  const filtered: LeadGenV2Lead[] = all
+    .filter((l) => l?.title && l?.url && l?.source)
+    .filter((l) => !isNoisePost(l.text))
+    .filter((l) => isHiringPost(l.text))
+    .map((l) => ({
+      ...l,
+      intent: 'HIRING' as const,
+      confidence: hiringConfidence(l.text),
+    }))
+
   // Debug logs (visible in Vercel function logs)
-  console.log('[leadgen-v2] fetched counts', {
+  console.log('[leadgen-v2:v3] fetched counts', {
     reddit: r.status === 'fulfilled' ? r.value.length : 'ERR',
-    upwork1: u1.status === 'fulfilled' ? u1.value.length : 'ERR',
-    upwork2: u2.status === 'fulfilled' ? u2.value.length : 'ERR',
-    upwork3: u3.status === 'fulfilled' ? u3.value.length : 'ERR',
-    hn: h.status === 'fulfilled' ? h.value.length : 'ERR',
     indie: i.status === 'fulfilled' ? i.value.length : 'ERR',
-    github: gh.status === 'fulfilled' ? gh.value.length : 'ERR',
-    stackoverflow: so.status === 'fulfilled' ? so.value.length : 'ERR',
+    yc_jobs: yc.status === 'fulfilled' ? yc.value.length : 'ERR',
+    filtered: filtered.length,
   })
 
-  const scored: LeadGenV2Lead[] = all.map((l) => ({
-    ...l,
-    score: scoreLead(l.text),
-  }))
-
-  const combined = dedupe(stored, scored)
-  const sortedStored = combined.sort((a, b) => (b.score || 0) - (a.score || 0))
+  const combined = dedupe(stored, filtered)
+  const sortedStored = combined.sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
 
   await writeDataFile(FILENAME, sortedStored.slice(0, 500))
 
@@ -83,11 +71,8 @@ export async function GET(req: NextRequest) {
     stored: Math.min(sortedStored.length, 500),
     fetched: {
       reddit: r.status === 'fulfilled' ? r.value.length : 0,
-      upwork: (u1.status === 'fulfilled' ? u1.value.length : 0) + (u2.status === 'fulfilled' ? u2.value.length : 0) + (u3.status === 'fulfilled' ? u3.value.length : 0),
-      hn: h.status === 'fulfilled' ? h.value.length : 0,
       indie: i.status === 'fulfilled' ? i.value.length : 0,
-      github: gh.status === 'fulfilled' ? gh.value.length : 0,
-      stackoverflow: so.status === 'fulfilled' ? so.value.length : 0,
+      yc_jobs: yc.status === 'fulfilled' ? yc.value.length : 0,
     },
   })
 }

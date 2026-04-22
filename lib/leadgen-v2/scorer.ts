@@ -1,4 +1,4 @@
-export type LeadGenV2Source = 'Reddit' | 'Upwork' | 'HN' | 'IndieHackers' | 'GitHub' | 'StackOverflow'
+export type LeadGenV2Source = 'Reddit' | 'IndieHackers' | 'YC Jobs' | 'Wellfound'
 
 export type LeadGenV2Lead = {
   id: string
@@ -7,31 +7,64 @@ export type LeadGenV2Lead = {
   url: string
   source: LeadGenV2Source
   createdAt: string
-  score: number
+  intent: 'HIRING'
+  confidence: number
 }
 
-export function scoreLead(text: string) {
+export function isNoisePost(text: string) {
   const t = String(text || '').toLowerCase()
-  let score = 0
+  const noise = ['error', 'bug', 'stack trace', 'exception', 'github issue', 'help me fix', 'not working', 'debug']
+  return noise.some((k) => t.includes(k))
+}
 
-  const highIntent = ['need developer', 'looking for developer', 'hire developer', 'urgent help', 'asap']
-  const painSignals = ['developer disappeared', 'developer ghosted', 'project stuck', 'website broken', 'not working', 'bug']
-  const moneySignals = ['budget', 'paid', 'cost', 'price', 'hourly']
+export function hiringConfidence(text: string) {
+  const t = String(text || '').toLowerCase()
 
-  for (const k of highIntent) if (t.includes(k)) score += 25
-  for (const k of painSignals) if (t.includes(k)) score += 20
-  for (const k of moneySignals) if (t.includes(k)) score += 15
+  const hireSignals = [
+    'looking for developer',
+    'looking to hire',
+    'hire developer',
+    'freelancer needed',
+    'need a developer',
+    'seeking developer',
+    'budget',
+    'quote',
+    'proposal',
+    'contract work',
+    'remote developer',
+    'agency',
+    'paid',
+    'rate',
+    'hourly',
+  ]
 
-  // Extra free “near-AI” signals (quality upgrade)
-  if (t.includes('?')) score += 10
-  if (t.includes('error')) score += 15
-  if (t.includes('fix')) score += 20
-  if (t.includes('help')) score += 15
+  const matches = hireSignals.filter((k) => t.includes(k)).length
 
-  // Down-rank noisy “dev news” type posts (basic filter)
-  if (t.includes('study finds') || t.includes('release') || t.includes('benchmark')) score -= 15
+  // Confidence heuristic: signals + budget mentions + “job request” style length
+  let confidence = 50 + matches * 10
+  if (t.includes('$') || t.includes('usd') || t.includes('budget')) confidence += 10
+  if (t.length > 200) confidence += 5
 
-  if (t.length > 200) score += 10
-  return Math.min(Math.max(score, 0), 100)
+  return Math.min(100, Math.max(0, confidence))
+}
+
+export function isHiringPost(text: string) {
+  if (isNoisePost(text)) return false
+  const t = String(text || '').toLowerCase()
+  const strongHireSignals = [
+    'looking for developer',
+    'looking to hire',
+    'hire developer',
+    'freelancer needed',
+    'need a developer',
+    'seeking developer',
+    'proposal',
+    'quote',
+    'contract work',
+    'remote developer',
+  ]
+  const hasHiring = strongHireSignals.some((k) => t.includes(k))
+  const hasMoneyOrJob = t.includes('budget') || t.includes('$') || t.includes('paid') || t.includes('rate') || t.includes('hourly')
+  return hasHiring || hasMoneyOrJob
 }
 

@@ -1,7 +1,7 @@
 import type { LeadGenV2Lead } from '../scorer'
 import { parseRss } from './rss'
 
-export async function getIndieLeads(): Promise<Omit<LeadGenV2Lead, 'score'>[]> {
+export async function getIndieLeads(): Promise<Omit<LeadGenV2Lead, 'intent' | 'confidence'>[]> {
   const feed = await parseRss('https://www.indiehackers.com/posts.rss')
   const items = feed?.items || []
   return items.map((item: any) => ({
