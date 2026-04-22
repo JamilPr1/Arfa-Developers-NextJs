@@ -69,6 +69,9 @@ function Parse-CsvToLeads($csvPath) {
 while ($true) {
   try {
     $job = $null
+    $stdoutFile = $null
+    $stderrFile = $null
+    $outFile = $null
     Write-Host ("Polling for jobs... " + (Get-Date).ToString("s"))
     $claimUrl = "$baseUrl/api/admin/gmaps/jobs/claim"
     $claimed = Invoke-Json "POST" $claimUrl $null
@@ -138,6 +141,18 @@ while ($true) {
   }
   catch {
     $msg = $_.Exception.Message
+
+    # If we have captured output files, append tails to make debugging easy on /automation.
+    try {
+      $tailOut = ""
+      $tailErr = ""
+      if ($stdoutFile -and (Test-Path $stdoutFile)) { $tailOut = (Get-Content $stdoutFile -Tail 60) -join "`n" }
+      if ($stderrFile -and (Test-Path $stderrFile)) { $tailErr = (Get-Content $stderrFile -Tail 60) -join "`n" }
+      if ($tailOut -or $tailErr) {
+        $msg = ($msg + "`n`nSTDOUT:`n" + $tailOut + "`n`nSTDERR:`n" + $tailErr)
+      }
+    } catch {}
+
     Write-Warning "Runner error: $msg"
     try {
       if ($job -and $job.id) {
