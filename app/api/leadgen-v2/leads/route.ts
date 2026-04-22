@@ -18,10 +18,16 @@ function dedupe(existing: LeadGenV2Lead[], incoming: LeadGenV2Lead[]) {
 
 export async function GET(req: NextRequest) {
   const refresh = req.nextUrl.searchParams.get('refresh') === '1'
+  const clear = req.nextUrl.searchParams.get('clear') === '1'
   const query = req.nextUrl.searchParams.get('q') || 'developer help'
 
   const existing = await readDataFile<LeadGenV2Lead>(FILENAME)
   const stored = Array.isArray(existing) ? existing : []
+
+  if (clear) {
+    await writeDataFile(FILENAME, [])
+    return NextResponse.json({ leads: [], stored: 0, cleared: true })
+  }
 
   if (!refresh) {
     const sorted = [...stored].sort((a, b) => (b.confidence || 0) - (a.confidence || 0)).slice(0, 50)
@@ -60,8 +66,9 @@ export async function GET(req: NextRequest) {
     filtered: filtered.length,
   })
 
-  const combined = dedupe(stored, filtered)
-  const sortedStored = combined.sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
+  // IMPORTANT: on refresh we replace stored leads with the latest filtered set.
+  // This prevents “same old leads” from accumulating forever.
+  const sortedStored = [...filtered].sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
 
   await writeDataFile(FILENAME, sortedStored.slice(0, 500))
 
@@ -74,6 +81,7 @@ export async function GET(req: NextRequest) {
       indie: i.status === 'fulfilled' ? i.value.length : 0,
       yc_jobs: yc.status === 'fulfilled' ? yc.value.length : 0,
     },
+    filtered: filtered.length,
   })
 }
 

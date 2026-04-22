@@ -23,10 +23,10 @@ function mapChildrenToLeads(children: any[]): Omit<LeadGenV2Lead, 'intent' | 'co
 export async function getRedditLeads(query: string): Promise<Omit<LeadGenV2Lead, 'intent' | 'confidence'>[]> {
   // Best quality: target specific subreddits instead of generic search.
   const subredditFeeds = [
-    'https://www.reddit.com/r/forhire/new.json?limit=25',
-    'https://www.reddit.com/r/hireaprogrammer/new.json?limit=25',
-    'https://www.reddit.com/r/jobbit/new.json?limit=25',
-    'https://www.reddit.com/r/remotejs/new.json?limit=25',
+    'https://www.reddit.com/r/forhire/new.json?limit=50',
+    'https://www.reddit.com/r/hireaprogrammer/new.json?limit=50',
+    'https://www.reddit.com/r/jobbit/new.json?limit=50',
+    'https://www.reddit.com/r/remotejs/new.json?limit=50',
   ]
 
   const results = await Promise.allSettled(

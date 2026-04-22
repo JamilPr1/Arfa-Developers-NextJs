@@ -18,6 +18,7 @@ export default function LeadGenV2Page() {
   const [query, setQuery] = useState('developer help')
   const [leads, setLeads] = useState<Lead[]>([])
   const [lastFetched, setLastFetched] = useState<string>('')
+  const [stats, setStats] = useState<{ stored?: number; fetched?: any; filtered?: number } | null>(null)
 
   const top = useMemo(() => leads.slice(0, 50), [leads])
 
@@ -31,9 +32,27 @@ export default function LeadGenV2Page() {
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json?.error || 'Failed to load leads')
       setLeads(Array.isArray(json?.leads) ? json.leads : [])
+      setStats({ stored: json?.stored, fetched: json?.fetched, filtered: json?.filtered })
       setLastFetched(new Date().toLocaleString())
     } catch (e: any) {
       setError(e?.message || 'Failed to load leads')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const clearSaved = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/leadgen-v2/leads?clear=1', { cache: 'no-store' })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || 'Failed to clear')
+      setLeads([])
+      setStats({ stored: 0 })
+      setLastFetched(new Date().toLocaleString())
+    } catch (e: any) {
+      setError(e?.message || 'Failed to clear')
     } finally {
       setLoading(false)
     }
@@ -75,6 +94,9 @@ export default function LeadGenV2Page() {
               <Button variant="outlined" onClick={() => load(false)} disabled={loading}>
                 Load cached
               </Button>
+              <Button variant="outlined" color="inherit" onClick={clearSaved} disabled={loading}>
+                Clear saved
+              </Button>
               <Button
                 variant="contained"
                 onClick={() => load(true)}
@@ -86,6 +108,16 @@ export default function LeadGenV2Page() {
             </Box>
           </Paper>
         </Box>
+
+        {stats?.fetched && (
+          <Paper sx={{ mt: 2, p: 2, borderRadius: 2 }}>
+            <Typography sx={{ fontWeight: 800, mb: 0.5 }}>Last refresh stats</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Fetched — Reddit: {stats.fetched?.reddit ?? 0}, IndieHackers: {stats.fetched?.indie ?? 0}, YC Jobs:{' '}
+              {stats.fetched?.yc_jobs ?? 0}. Filtered (HIRING): {stats.filtered ?? 0}. Stored: {stats.stored ?? 0}.
+            </Typography>
+          </Paper>
+        )}
 
         {error && (
           <Paper sx={{ p: 2, mt: 2, borderRadius: 2, border: '1px solid', borderColor: '#FCA5A5', bgcolor: '#FEF2F2' }}>
