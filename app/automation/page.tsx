@@ -50,6 +50,7 @@ export default function AutomationPage() {
   const [total, setTotal] = useState('30')
   const [jobs, setJobs] = useState<Job[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
+  const [expandedJobErrors, setExpandedJobErrors] = useState<Record<string, boolean>>({})
   const [leadSearch, setLeadSearch] = useState('')
   const [leadQueryFilter, setLeadQueryFilter] = useState('')
   const [loading, setLoading] = useState(false)
@@ -186,9 +187,45 @@ export default function AutomationPage() {
                         {new Date(j.createdAt).toLocaleString()} • total {j.total}
                       </Typography>
                       {j.error && (
-                        <Typography variant="body2" sx={{ color: '#991B1B', fontWeight: 700, mt: 0.5 }}>
-                          {j.error}
-                        </Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <Typography variant="body2" sx={{ color: '#991B1B', fontWeight: 900 }}>
+                              Error
+                            </Typography>
+                            <Button
+                              size="small"
+                              variant="text"
+                              onClick={() =>
+                                setExpandedJobErrors((prev) => ({ ...prev, [j.id]: !prev[j.id] }))
+                              }
+                              sx={{ textTransform: 'none', px: 1 }}
+                            >
+                              {expandedJobErrors[j.id] ? 'Hide details' : 'Show details'}
+                            </Button>
+                          </Box>
+                          <Box
+                            component="pre"
+                            sx={{
+                              m: 0,
+                              mt: 0.5,
+                              p: 1.25,
+                              borderRadius: 1.5,
+                              border: '1px solid #FCA5A5',
+                              bgcolor: '#FEF2F2',
+                              color: '#991B1B',
+                              fontSize: 12,
+                              lineHeight: 1.35,
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                              maxHeight: expandedJobErrors[j.id] ? 420 : 64,
+                              overflow: 'auto',
+                            }}
+                          >
+                            {j.error}
+                          </Box>
+                        </Box>
                       )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-end' }}>
