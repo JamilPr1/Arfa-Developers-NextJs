@@ -19,7 +19,9 @@ $ErrorActionPreference = "Stop"
 #
 
 $baseUrl = $env:GMAPS_RUNNER_BASE_URL
-if (-not $baseUrl) { throw "GMAPS_RUNNER_BASE_URL is not set" }
+if (-not $baseUrl) {
+  $baseUrl = Read-Host "Enter GMAPS_RUNNER_BASE_URL (e.g. https://www.arfadevelopers.com)"
+}
 $secret = $env:GMAPS_RUNNER_SECRET
 if (-not $secret) {
   $secret = Read-Host -AsSecureString "Enter GMAPS_RUNNER_SECRET"
@@ -63,10 +65,12 @@ function Parse-CsvToLeads($csvPath) {
 while ($true) {
   try {
     $job = $null
+    Write-Host ("Polling for jobs... " + (Get-Date).ToString("s"))
     $claimUrl = "$baseUrl/api/admin/gmaps/jobs/claim"
     $claimed = Invoke-Json "POST" $claimUrl $null
 
     if (-not $claimed.job) {
+      Write-Host "No queued jobs. Waiting 10s..."
       Start-Sleep -Seconds 10
       continue
     }
