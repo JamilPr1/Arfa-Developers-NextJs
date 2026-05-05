@@ -105,9 +105,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google tag (gtag.js) — G-11WM5NSEL2 */}
+        {/* Google tag (gtag.js) — G-11WWSNSEL2 */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-11WM5NSEL2"
+          src="https://www.googletagmanager.com/gtag/js?id=G-11WWSNSEL2"
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -115,7 +115,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-11WM5NSEL2');
+            gtag('config', 'G-11WWSNSEL2');
           `}
         </Script>
         <StructuredData />
