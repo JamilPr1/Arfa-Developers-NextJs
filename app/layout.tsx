@@ -105,6 +105,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* CookieHub */}
+        <Script
+          id="cookiehub-sdk"
+          src="https://cdn.cookiehub.eu/c2/ac7679c2.js"
+          strategy="beforeInteractive"
+        />
+        <Script
+          id="cookiehub-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+document.addEventListener("DOMContentLoaded", function(event) {
+var cpm = {};
+window.cookiehub.load(cpm);
+});
+`,
+          }}
+        />
         {/* Google tag (gtag.js) — G-11WWSNSEL2 */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-11WWSNSEL2"
