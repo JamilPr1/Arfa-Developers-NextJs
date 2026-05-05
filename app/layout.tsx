@@ -105,6 +105,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Google tag (gtag.js) — G-11WM5NSEL2 */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-11WM5NSEL2"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-11WM5NSEL2');
+          `}
+        </Script>
         <StructuredData />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#1E3A8A" />
@@ -135,19 +148,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             style={{ display: 'none', visibility: 'hidden' }}
           />
         </noscript>
-        {/* Google Analytics 4 */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-T643HESSSN"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-T643HESSSN');
-          `}
-        </Script>
         {/* Hotjar - Now installed via Google Tag Manager (Tag ID: 9e555ac46ce75) */}
         {/* See HOTJAR_GTM_SETUP.md for configuration instructions */}
         <AOSInit />
