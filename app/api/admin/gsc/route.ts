@@ -1,73 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { google } from 'googleapis'
+import {
+  createSearchConsoleClient,
+  listAccessibleGscSites,
+  parseGscServiceAccount,
+  rankGscSites,
+  siteUrlCandidates,
+} from '@/lib/gscClient'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-function parseServiceAccount(): { client_email: string; private_key: string } {
-  const raw =
-    process.env.GSC_SERVICE_ACCOUNT_JSON ||
-    process.env.GOOGLE_SERVICE_ACCOUNT_JSON ||
-    ''
-
-  if (!raw) {
-    throw new Error(
-      'Missing service account JSON. Set GSC_SERVICE_ACCOUNT_JSON (recommended) or GOOGLE_SERVICE_ACCOUNT_JSON in Vercel env vars.'
-    )
-  }
-
-  let jsonText = raw.trim()
-
-  // Support base64-encoded JSON
-  if (!jsonText.startsWith('{')) {
-    try {
-      jsonText = Buffer.from(jsonText, 'base64').toString('utf8')
-    } catch {
-      // ignore, will fail JSON.parse below
-    }
-  }
-
-  const parsed = JSON.parse(jsonText)
-  if (!parsed?.client_email || !parsed?.private_key) {
-    throw new Error('Invalid service account JSON. Must include client_email and private_key.')
-  }
-
-  // Fix escaped newlines
-  const private_key = String(parsed.private_key).replace(/\\n/g, '\n')
-
-  return {
-    client_email: String(parsed.client_email),
-    private_key,
-  }
-}
-
 function toISODate(d: Date): string {
-  // YYYY-MM-DD
   return d.toISOString().slice(0, 10)
 }
 
-/** GSC siteUrl must match the property exactly (trailing slash often required). */
-function siteUrlCandidates(configured?: string): string[] {
-  const defaults = ['https://www.arfadevelopers.com/', 'https://www.arfadevelopers.com']
-  const raw = (configured || '').trim()
-  const candidates = new Set<string>(defaults)
-
-  if (raw) {
-    candidates.add(raw)
-    const noSlash = raw.replace(/\/$/, '')
-    candidates.add(noSlash)
-    candidates.add(`${noSlash}/`)
-    if (raw.includes('www.')) {
-      candidates.add(raw.replace('www.', ''))
-      candidates.add(`${raw.replace('www.', '').replace(/\/$/, '')}/`)
-    }
-  }
-
-  return [...candidates]
-}
-
 async function queryGsc(
-  searchconsole: ReturnType<typeof google.searchconsole>,
+  searchconsole: ReturnType<typeof createSearchConsoleClient>['searchconsole'],
   siteUrl: string,
   startDate: string,
   endDate: string
@@ -75,30 +23,15 @@ async function queryGsc(
   const [timeSeriesRes, topQueriesRes, topPagesRes] = await Promise.all([
     searchconsole.searchanalytics.query({
       siteUrl,
-      requestBody: {
-        startDate,
-        endDate,
-        dimensions: ['date'],
-        rowLimit: 5000,
-      },
+      requestBody: { startDate, endDate, dimensions: ['date'], rowLimit: 5000 },
     }),
     searchconsole.searchanalytics.query({
       siteUrl,
-      requestBody: {
-        startDate,
-        endDate,
-        dimensions: ['query'],
-        rowLimit: 10,
-      },
+      requestBody: { startDate, endDate, dimensions: ['query'], rowLimit: 10 },
     }),
     searchconsole.searchanalytics.query({
       siteUrl,
-      requestBody: {
-        startDate,
-        endDate,
-        dimensions: ['page'],
-        rowLimit: 10,
-      },
+      requestBody: { startDate, endDate, dimensions: ['page'], rowLimit: 10 },
     }),
   ])
   return { timeSeriesRes, topQueriesRes, topPagesRes }
@@ -113,15 +46,12 @@ export async function GET(request: NextRequest) {
   if (!hasCredentials) {
     return NextResponse.json(
       {
-        error:
-          'Missing service account JSON. Set GSC_SERVICE_ACCOUNT_JSON (recommended) or GOOGLE_SERVICE_ACCOUNT_JSON in Vercel env vars.',
-        hint:
-          'Ensure service account JSON env var is set and the service account email is added as an owner/user to your Search Console property.',
+        error: 'Missing GSC_SERVICE_ACCOUNT_JSON in Vercel env vars.',
         setupSteps: [
-          'Google Cloud → enable Google Search Console API',
-          'Create a service account → download JSON key → copy client_email',
-          'Search Console → Settings → Users → add that client_email (view access)',
-          'Vercel → Environment Variables → GSC_SERVICE_ACCOUNT_JSON + GSC_SITE_URL → redeploy',
+          'Google Cloud → enable Search Console API',
+          'Create service account → download JSON',
+          'Search Console → Users → add client_email to https://www.arfadevelopers.com',
+          'Vercel env → redeploy',
         ],
         docs: 'seo-audit/GSC-SERVICE-ACCOUNT-SETUP.md',
       },
@@ -131,68 +61,79 @@ export async function GET(request: NextRequest) {
 
   try {
     const url = new URL(request.url)
-    const days = Math.min(Math.max(parseInt(url.searchParams.get('days') || '28', 10) || 28, 7), 90)
+    const listOnly = url.searchParams.get('list') === 'sites'
 
+    const { client_email, sites, ranked } = await listAccessibleGscSites()
+
+    if (listOnly) {
+      return NextResponse.json({
+        serviceAccountEmail: client_email,
+        accessibleSites: sites,
+        recommendedSiteUrl: ranked[0]?.siteUrl || null,
+      })
+    }
+
+    const days = Math.min(Math.max(parseInt(url.searchParams.get('days') || '28', 10) || 28, 7), 90)
     const configuredSiteUrl =
       process.env.GSC_SITE_URL ||
       process.env.NEXT_PUBLIC_SITE_URL ||
       'https://www.arfadevelopers.com/'
 
     const end = new Date()
-    // GSC data can lag; use yesterday to be safe
     end.setDate(end.getDate() - 1)
     const start = new Date(end)
     start.setDate(end.getDate() - (days - 1))
     const startDate = toISODate(start)
     const endDate = toISODate(end)
 
-    const { client_email, private_key } = parseServiceAccount()
+    const { searchconsole } = createSearchConsoleClient()
 
-    const auth = new google.auth.JWT({
-      email: client_email,
-      key: private_key,
-      scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
-    })
+    const tryUrls = [
+      ...ranked.map((s) => s.siteUrl).filter(Boolean) as string[],
+      ...siteUrlCandidates(configuredSiteUrl),
+    ]
+    const uniqueTry = Array.from(new Set(tryUrls))
 
-    const searchconsole = google.searchconsole({ version: 'v1', auth })
-
-    let siteUrl = ''
-    let timeSeriesRes: Awaited<ReturnType<typeof queryGsc>>['timeSeriesRes']
-    let topQueriesRes: Awaited<ReturnType<typeof queryGsc>>['topQueriesRes']
-    let topPagesRes: Awaited<ReturnType<typeof queryGsc>>['topPagesRes']
-    const tried: string[] = []
+    let matched: Awaited<ReturnType<typeof queryGsc>> & { siteUrl: string } | null = null
     const errors: string[] = []
 
-    for (const candidate of siteUrlCandidates(configuredSiteUrl)) {
-      tried.push(candidate)
+    for (const candidate of uniqueTry) {
       try {
         const result = await queryGsc(searchconsole, candidate, startDate, endDate)
-        siteUrl = candidate
-        timeSeriesRes = result.timeSeriesRes
-        topQueriesRes = result.topQueriesRes
-        topPagesRes = result.topPagesRes
+        matched = { siteUrl: candidate, ...result }
         break
       } catch (e: any) {
         errors.push(`${candidate}: ${e?.message || String(e)}`)
       }
     }
 
-    if (!siteUrl || !timeSeriesRes || !topQueriesRes || !topPagesRes) {
+    if (!matched) {
       return NextResponse.json(
         {
-          error: 'Failed to load Google Search Console data for any configured site URL.',
+          error: 'No Search Console property accessible for analytics queries.',
           hint:
-            'Add the service account client_email as a user on the exact GSC property URL. GSC_SITE_URL must match the property (usually https://www.arfadevelopers.com/ with trailing slash).',
+            'In Google Search Console → Settings → Users and permissions → Add user → paste the serviceAccountEmail below with Full permission on property https://www.arfadevelopers.com (not only /sitemap.xml/).',
+          setupSteps: [
+            `Open: https://search.google.com/search-console/users?resource_id=https%3A%2F%2Fwww.arfadevelopers.com%2F`,
+            `Add user → paste: ${client_email}`,
+            'Permission: Full (or Owner)',
+            'Save → wait 2 minutes → click Refresh in admin',
+          ],
           serviceAccountEmail: client_email,
-          triedSiteUrls: tried,
+          accessibleSites: sites,
+          recommendedSiteUrl: ranked[0]?.siteUrl || null,
+          triedSiteUrls: uniqueTry,
           details: errors,
+          fixUrl:
+            'https://search.google.com/search-console/users?resource_id=https%3A%2F%2Fwww.arfadevelopers.com%2F',
         },
-        { status: 500 }
+        { status: 403 }
       )
     }
 
-    const timeSeriesRaw = timeSeriesRes.data.rows || []
-    const timeSeries = timeSeriesRaw
+    const { siteUrl, timeSeriesRes, topQueriesRes, topPagesRes } = matched
+
+    const timeSeries = (timeSeriesRes.data.rows || [])
       .map((r) => ({
         date: r.keys?.[0] || '',
         clicks: r.clicks || 0,
@@ -231,6 +172,7 @@ export async function GET(request: NextRequest) {
     const response = NextResponse.json({
       siteUrl,
       serviceAccountEmail: client_email,
+      accessibleSites: sites,
       dateRange: { startDate, endDate, days },
       totals,
       timeSeries,
@@ -240,15 +182,21 @@ export async function GET(request: NextRequest) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     return response
   } catch (error: any) {
-    console.error('❌ GSC API error:', error?.message || error)
+    let client_email = ''
+    try {
+      client_email = parseGscServiceAccount().client_email
+    } catch {
+      /* ignore */
+    }
     return NextResponse.json(
       {
         error: error?.message || 'Failed to load Google Search Console data',
+        serviceAccountEmail: client_email || undefined,
         hint:
-          'Ensure service account JSON env var is set and the service account email is added as an owner/user to your Search Console property.',
+          'Add service account email as a user on https://www.arfadevelopers.com in Search Console. Enable Search Console API in the same Google Cloud project as the JSON key.',
+        diagnostic: 'GET /api/admin/gsc?list=sites',
       },
       { status: 500 }
     )
   }
 }
-

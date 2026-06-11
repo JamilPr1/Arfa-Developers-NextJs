@@ -129,6 +129,8 @@ export default function AdminPage() {
   const [gscLoading, setGscLoading] = useState(false)
   const [gscError, setGscError] = useState('')
   const [gscSetupSteps, setGscSetupSteps] = useState<string[]>([])
+  const [gscDiag, setGscDiag] = useState<any>(null)
+  const [indexingStatus, setIndexingStatus] = useState<string>('')
   const [gscData, setGscData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
@@ -401,12 +403,14 @@ export default function AdminPage() {
     setGscLoading(true)
     setGscError('')
     setGscSetupSteps([])
+    setGscDiag(null)
     try {
       const timestamp = Date.now()
       const res = await fetch(`/api/admin/gsc?days=${days}&t=${timestamp}`, { cache: 'no-store' })
       const json = await res.json()
       if (!res.ok) {
         setGscSetupSteps(Array.isArray(json?.setupSteps) ? json.setupSteps : [])
+        setGscDiag(json)
         throw new Error(json?.error || 'Failed to load Search Console data')
       }
       setGscData(json)
@@ -414,6 +418,20 @@ export default function AdminPage() {
       setGscError(e?.message || 'Failed to load Search Console data')
     } finally {
       setGscLoading(false)
+    }
+  }
+
+  const requestIndexing = async () => {
+    setIndexingStatus('Requesting indexing…')
+    try {
+      const res = await fetch('/api/admin/seo/indexing', { method: 'POST', cache: 'no-store' })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || 'Indexing request failed')
+      const ok = (json.results || []).filter((r: any) => r.status === 'ok').length
+      const total = (json.results || []).length
+      setIndexingStatus(`Indexing API: ${ok}/${total} URLs submitted.`)
+    } catch (e: any) {
+      setIndexingStatus(e?.message || 'Indexing request failed')
     }
   }
 
@@ -1728,13 +1746,39 @@ export default function AdminPage() {
                   <Button variant="outlined" onClick={() => loadGsc(gscDays)} disabled={gscLoading}>
                     Refresh
                   </Button>
+                  <Button variant="contained" onClick={requestIndexing} disabled={gscLoading}>
+                    Request indexing
+                  </Button>
                 </Box>
               </Box>
+
+              {indexingStatus && (
+                <Box sx={{ px: 3, pb: 1 }}>
+                  <Alert severity="info">{indexingStatus}</Alert>
+                </Box>
+              )}
 
               {gscError && (
                 <Box sx={{ p: 3 }}>
                   <Alert severity="error">
                     {gscError}
+                    {gscDiag?.serviceAccountEmail && (
+                      <Typography variant="body2" sx={{ mt: 1.5 }}>
+                        Add this email in Search Console → Users:{' '}
+                        <strong>{gscDiag.serviceAccountEmail}</strong>
+                      </Typography>
+                    )}
+                    {gscDiag?.accessibleSites?.length > 0 && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        Accessible properties:{' '}
+                        {gscDiag.accessibleSites.map((s: any) => s.siteUrl).join(', ')}
+                      </Typography>
+                    )}
+                    {gscDiag?.hint && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        {gscDiag.hint}
+                      </Typography>
+                    )}
                     {gscSetupSteps.length > 0 && (
                       <Box component="ul" sx={{ mt: 1.5, mb: 0, pl: 2.5 }}>
                         {gscSetupSteps.map((step) => (
@@ -1744,11 +1788,6 @@ export default function AdminPage() {
                         ))}
                       </Box>
                     )}
-                    <Typography variant="body2" sx={{ mt: 1.5 }}>
-                      See <strong>seo-audit/GSC-SERVICE-ACCOUNT-SETUP.md</strong> in the repo, then set{' '}
-                      <strong>GSC_SERVICE_ACCOUNT_JSON</strong> and <strong>GSC_SITE_URL</strong> in Vercel and
-                      redeploy.
-                    </Typography>
                   </Alert>
                 </Box>
               )}
