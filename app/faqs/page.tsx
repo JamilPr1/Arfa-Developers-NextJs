@@ -8,26 +8,32 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
 import Script from 'next/script'
+import { SITE_URL } from '@/lib/seoKeywords'
+
+const pageUrl = `${SITE_URL}/faqs`
 
 export const metadata: Metadata = {
-  title: 'FAQs - Straight Answers to Common Questions | Arfa Developers',
-  description: 'Straight answers to common questions about cost, timeline, trust, and our services. Get clarity on web development, project rescue, and pricing.',
+  title: 'Web Development & Project Rescue FAQs | Cost, Timeline & Support | Arfa Developers',
+  description:
+    'FAQs on web development cost, project rescue, failed freelancer takeovers, timelines, SEO services, and ongoing support. Straight answers from a US web development agency.',
   keywords: [
-    'web development FAQs',
-    'project rescue questions',
-    'pricing questions',
-    'timeline questions',
     'web development cost',
     'project rescue cost',
+    'failed freelancer project',
+    'how much does web development cost',
+    'website rescue FAQ',
+    'project takeover FAQ',
+    'web development timeline',
+    'SEO services FAQ',
   ],
   openGraph: {
-    title: 'FAQs - Straight Answers to Common Questions | Arfa Developers',
-    description: 'Straight answers to common questions about cost, timeline, and our services.',
+    title: 'Web Development & Project Rescue FAQs | Arfa Developers',
+    description: 'Answers on cost, timelines, project rescue, and support.',
     type: 'website',
-    url: 'https://arfadevelopers.com/faqs',
+    url: pageUrl,
   },
   alternates: {
-    canonical: 'https://arfadevelopers.com/faqs',
+    canonical: pageUrl,
   },
 }
 
@@ -82,20 +88,38 @@ const breadcrumbStructuredData = {
       '@type': 'ListItem',
       position: 1,
       name: 'Home',
-      item: 'https://arfadevelopers.com',
+      item: SITE_URL,
     },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'FAQs',
-      item: 'https://arfadevelopers.com/faqs',
+      item: pageUrl,
     },
   ],
+}
+
+const faqPageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer,
+    },
+  })),
 }
 
 export default function FAQsPage() {
   return (
     <>
+      <Script
+        id="faq-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }}
+      />
       <Script
         id="breadcrumb-structured-data"
         type="application/ld+json"

@@ -28,6 +28,7 @@ import CTA from '@/components/CTA'
 import Link from 'next/link'
 import Script from 'next/script'
 import { notFound } from 'next/navigation'
+import { keywordsForService, SITE_URL } from '@/lib/seoKeywords'
 
 const services = [
   {
@@ -552,24 +553,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
   }
 
+  const pageUrl = `${SITE_URL}/services/${service.id}`
+
   return {
-    title: `${service.title} - Professional Services | Arfa Developers`,
-    description: service.fullDescription,
-    keywords: [
-      service.title.toLowerCase(),
-      `${service.title} services`,
-      'web development',
-      'custom software',
-      'enterprise solutions',
-    ],
+    title: `${service.title} Services USA | Arfa Developers`,
+    description: `${service.shortDescription} US-focused delivery, free consultation.`,
+    keywords: keywordsForService(service.id, service.title),
     openGraph: {
-      title: `${service.title} - Professional Services | Arfa Developers`,
-      description: service.fullDescription,
+      title: `${service.title} Services USA | Arfa Developers`,
+      description: service.shortDescription,
       type: 'website',
-      url: `https://arfadevelopers.com/services/${service.id}`,
+      url: pageUrl,
     },
     alternates: {
-      canonical: `https://arfadevelopers.com/services/${service.id}`,
+      canonical: pageUrl,
     },
   }
 }
@@ -590,11 +587,13 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     provider: {
       '@type': 'Organization',
       name: 'Arfa Developers',
-      url: 'https://arfadevelopers.com',
+      url: SITE_URL,
     },
     areaServed: ['United States', 'United Kingdom', 'Qatar', 'Saudi Arabia', 'Pakistan'],
     serviceType: service.title,
   }
+
+  const pageUrl = `${SITE_URL}/services/${service.id}`
 
   const breadcrumbStructuredData = {
     '@context': 'https://schema.org',
@@ -604,19 +603,19 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://arfadevelopers.com',
+        item: SITE_URL,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Services',
-        item: 'https://arfadevelopers.com/services',
+        item: `${SITE_URL}/services`,
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: service.title,
-        item: `https://arfadevelopers.com/services/${service.id}`,
+        item: pageUrl,
       },
     ],
   }

@@ -11,6 +11,9 @@ import CTA from '@/components/CTA'
 import dynamic from 'next/dynamic'
 import Script from 'next/script'
 import { siteConfig } from '@/lib/siteConfig'
+import { SITE_URL } from '@/lib/seoKeywords'
+
+const contactUrl = `${SITE_URL}/contact`
 
 // Dynamically import LocationMap to avoid SSR issues
 const LocationMap = dynamic(() => import('@/components/LocationMap'), {
@@ -21,20 +24,21 @@ export const metadata: Metadata = {
   title: 'Contact Us - Get Free Consultation | Arfa Developers',
   description: 'Contact Arfa Developers for your web development needs. Get a free consultation and let us help rescue your failed project or build your next application.',
   keywords: [
-    'contact web developers',
-    'free consultation',
+    'contact web developers USA',
+    'free consultation web development',
     'web development quote',
     'project rescue consultation',
     'hire web developers',
+    'get website fixed',
   ],
   openGraph: {
     title: 'Contact Us - Get Free Consultation | Arfa Developers',
     description: 'Contact us for a free consultation on your web development project.',
     type: 'website',
-    url: 'https://arfadevelopers.com/contact',
+    url: contactUrl,
   },
   alternates: {
-    canonical: 'https://arfadevelopers.com/contact',
+    canonical: contactUrl,
   },
 }
 
@@ -53,13 +57,13 @@ const breadcrumbStructuredData = {
       '@type': 'ListItem',
       position: 1,
       name: 'Home',
-      item: 'https://arfadevelopers.com',
+      item: SITE_URL,
     },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'Contact',
-      item: 'https://arfadevelopers.com/contact',
+      item: contactUrl,
     },
   ],
 }

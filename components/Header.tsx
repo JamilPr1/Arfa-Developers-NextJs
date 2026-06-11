@@ -31,12 +31,11 @@ type NavLink = {
 const navLinks: NavLink[] = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services', hasDropdown: true },
-  { label: 'US Web Dev', href: '/web-development-agency-usa' },
-  { label: 'Portfolio', href: '/portfolio' },
   { label: 'Project Rescue', href: '/project-rescue' },
-  { label: 'About', href: '/about' },
+  { label: 'Case Studies', href: '/case-studies' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Free Audit', href: '/free-audit' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Hire Our Talent', href: '/hire-talent' },
 ]
 
 type ServiceLink = {

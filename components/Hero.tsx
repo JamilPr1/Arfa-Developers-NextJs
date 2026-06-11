@@ -63,11 +63,11 @@ export default function Hero() {
                 data-aos="fade-up"
                 suppressHydrationWarning
               >
-                From Startups to Enterprises – We Build{' '}
+                US Web Development Agency —{' '}
                 <Box component="span" sx={{ color: '#ffd700' }}>
-                  Web Solutions
+                  Project Rescue
                 </Box>{' '}
-                That Scale Globally
+                &amp; Custom Web Apps
               </Typography>
             </motion.div>
 
@@ -78,9 +78,11 @@ export default function Hero() {
             >
               <Typography
                 variant="h5"
+                component="p"
+                data-seo-lead
                 sx={{
                   color: 'rgba(255, 255, 255, 0.9)',
-                  mb: 4,
+                  mb: 3,
                   fontWeight: 400,
                   fontSize: { xs: '1.1rem', md: '1.5rem' },
                 }}
@@ -88,10 +90,42 @@ export default function Hero() {
                 data-aos-delay="100"
                 suppressHydrationWarning
               >
-                Transform your digital presence with cutting-edge web solutions. 
-                We combine innovation, expertise, and global reach to deliver 
-                scalable applications that drive business growth.
+                We rescue failed freelancer and agency builds, fix broken websites, and ship
+                production-ready Next.js/React applications for US businesses.
               </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 1.5,
+                  mb: 4,
+                }}
+              >
+                {[
+                  { label: 'Project Rescue', href: '/project-rescue' },
+                  { label: 'Free Website Audit', href: '/free-audit' },
+                  { label: 'Web Dev Agency USA', href: '/web-development-agency-usa' },
+                ].map((link) => (
+                  <MuiLink
+                    key={link.href}
+                    component={Link}
+                    href={link.href}
+                    underline="hover"
+                    sx={{
+                      color: 'rgba(255,255,255,0.95)',
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
+                      border: '1px solid rgba(255,255,255,0.35)',
+                      borderRadius: 2,
+                      px: 1.5,
+                      py: 0.75,
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
+                    }}
+                  >
+                    {link.label} →
+                  </MuiLink>
+                ))}
+              </Box>
             </motion.div>
 
             <motion.div
@@ -128,9 +162,10 @@ export default function Hero() {
                 Get a Free Consultation
               </Button>
               <Button
+                component={Link}
+                href="/free-audit"
                 variant="outlined"
                 size="large"
-                onClick={() => handleNavClick('#portfolio')}
                 sx={{
                   borderColor: 'white',
                   color: 'white',
@@ -151,7 +186,7 @@ export default function Hero() {
                 data-aos-delay="300"
                 suppressHydrationWarning
               >
-                View Portfolio
+                Free Website Audit
               </Button>
             </motion.div>
           </Grid>

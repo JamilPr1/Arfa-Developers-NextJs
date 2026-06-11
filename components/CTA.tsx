@@ -17,6 +17,7 @@ import SendIcon from '@mui/icons-material/Send'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import { motion } from 'framer-motion'
 import { submitLead, detectRegion, type LeadData } from '@/lib/formHandler'
+import { trackEvent } from '@/lib/analytics'
 import Link from 'next/link'
 
 const projectTypes = [
@@ -105,12 +106,14 @@ export default function CTA() {
       if (result.success) {
         setSubmitted(true)
         // Track conversion in analytics
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-          ;(window as any).gtag('event', 'form_submission', {
-            event_category: 'lead_generation',
-            event_label: formData.projectType || 'general',
-          })
-        }
+        trackEvent('form_submission', {
+          event_category: 'lead_generation',
+          event_label: formData.projectType || 'general',
+        })
+        trackEvent('generate_lead', {
+          method: 'website_form',
+          project_type: formData.projectType || 'general',
+        })
         
         // Reset form after 3 seconds
         setTimeout(() => {
@@ -180,12 +183,13 @@ export default function CTA() {
 
     setShowCalendly(true)
     // Track Calendly click
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      ;(window as any).gtag('event', 'calendly_click', {
-        event_category: 'lead_generation',
-        event_label: 'direct_booking',
-      })
-    }
+    trackEvent('calendly_click', {
+      event_category: 'lead_generation',
+      event_label: 'direct_booking',
+    })
+    trackEvent('generate_lead', {
+      method: 'calendly',
+    })
   }
 
   return (

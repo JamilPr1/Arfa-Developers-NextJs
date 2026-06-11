@@ -12,27 +12,32 @@ import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
 import Link from 'next/link'
 import Script from 'next/script'
+import { SITE_URL } from '@/lib/seoKeywords'
+
+const pageUrl = `${SITE_URL}/website-rescue`
 
 export const metadata: Metadata = {
-  title: 'Website Rescue / Fix-It - Take Over Broken Projects | Arfa Developers',
-  description: 'Take over broken, abandoned, or underperforming projects. We rescue failed websites and applications with fast recovery and ongoing support.',
+  title: 'Website Rescue USA | Fix Broken Websites & Abandoned Projects | Arfa Developers',
+  description:
+    'Website rescue for US businesses — fix broken sites, recover abandoned builds, improve speed and security. Free assessment from a project rescue agency.',
   keywords: [
     'website rescue',
     'fix broken website',
-    'project rescue',
+    'broken website repair',
     'failed project recovery',
-    'take over project',
-    'fix abandoned project',
-    'website fix it service',
+    'take over abandoned website',
+    'website fix it service USA',
+    'wordpress rescue',
+    'next.js site recovery',
   ],
   openGraph: {
-    title: 'Website Rescue / Fix-It - Take Over Broken Projects | Arfa Developers',
-    description: 'Take over broken, abandoned, or underperforming projects. Fast recovery and ongoing support.',
+    title: 'Website Rescue USA | Fix Broken Websites | Arfa Developers',
+    description: 'Fix broken, abandoned, or underperforming websites. Fast recovery and support.',
     type: 'website',
-    url: 'https://arfadevelopers.com/website-rescue',
+    url: pageUrl,
   },
   alternates: {
-    canonical: 'https://arfadevelopers.com/website-rescue',
+    canonical: pageUrl,
   },
 }
 

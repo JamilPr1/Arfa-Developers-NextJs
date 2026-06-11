@@ -4,9 +4,18 @@ import { Fab } from '@mui/material'
 import WhatsAppIcon from '@mui/icons-material/WhatsApp'
 import { motion } from 'framer-motion'
 import { siteConfig } from '@/lib/siteConfig'
+import { trackEvent } from '@/lib/analytics'
 
 export default function WhatsAppButton() {
   const whatsappUrl = siteConfig.whatsappLink
+
+  const handleClick = () => {
+    trackEvent('whatsapp_click', {
+      event_category: 'lead_generation',
+      event_label: 'floating_button',
+    })
+    trackEvent('generate_lead', { method: 'whatsapp' })
+  }
 
   return (
     <motion.div
@@ -26,6 +35,7 @@ export default function WhatsAppButton() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleClick}
         sx={{
           width: 60,
           height: 60,

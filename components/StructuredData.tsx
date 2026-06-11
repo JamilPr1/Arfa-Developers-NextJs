@@ -30,11 +30,6 @@ export default function StructuredData() {
       'SaaS Development',
       'Project Rescue',
     ],
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: 5,
-      reviewCount: 50,
-    },
     contactPoint: [
       {
         '@type': 'ContactPoint',
@@ -71,11 +66,8 @@ export default function StructuredData() {
     '@type': 'WebSite',
     name: 'Arfa Developers',
     url: siteUrl,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${siteUrl}/search?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
+    description:
+      'Web development agency USA — custom apps, project rescue, and website recovery.',
   }
 
   return (

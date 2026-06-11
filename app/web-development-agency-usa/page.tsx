@@ -32,6 +32,15 @@ export const metadata: Metadata = {
   title: 'Web Development Agency USA | Next.js, React & Custom Web Apps | Arfa Developers',
   description:
     'US-focused web development agency building high-performance websites and custom web applications. Next.js/React builds, eCommerce, SaaS, integrations, and ongoing support. Free consultation.',
+  keywords: [
+    'web development agency USA',
+    'next.js development agency',
+    'react development company USA',
+    'custom web application development',
+    'SaaS development agency',
+    'ecommerce development USA',
+    'hire web developers USA',
+  ],
   alternates: { canonical: pageUrl },
   openGraph: {
     title: 'Web Development Agency USA | Next.js, React & Custom Web Apps',

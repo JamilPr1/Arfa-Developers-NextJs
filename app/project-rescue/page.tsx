@@ -32,6 +32,16 @@ export const metadata: Metadata = {
   title: 'Project Rescue USA | Take Over Failed Builds & Fix Broken Websites | Arfa Developers',
   description:
     'Project rescue for US businesses. We take over failed freelancer/agency builds, fix bugs, performance and security issues, and ship production-ready software fast. Free consultation.',
+  keywords: [
+    'project rescue USA',
+    'rescue failed projects',
+    'failed freelancer project',
+    'take over abandoned project',
+    'fix broken website',
+    'SaaS project rescue',
+    'half-built app recovery',
+    'agency project takeover',
+  ],
   alternates: { canonical: pageUrl },
   openGraph: {
     title: 'Project Rescue USA | Take Over Failed Builds & Fix Broken Websites',

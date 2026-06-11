@@ -1,43 +1,51 @@
-'use client'
+import type { Metadata } from 'next'
+import Script from 'next/script'
+import HomePageClient from '@/components/HomePageClient'
+import { CORE_KEYWORDS, SITE_URL } from '@/lib/seoKeywords'
 
-import { useState } from 'react'
-import Header from '@/components/Header'
-import Hero from '@/components/Hero'
-import Services from '@/components/Services'
-import Portfolio from '@/components/Portfolio'
-import About from '@/components/About'
-import Testimonials from '@/components/Testimonials'
-import Blog from '@/components/Blog'
-import CTA from '@/components/CTA'
-import Footer from '@/components/Footer'
-import ExitIntentPopup from '@/components/ExitIntentPopup'
+export const metadata: Metadata = {
+  title: 'Arfa Developers | Web Development Agency USA & Project Rescue',
+  description:
+    'US-focused web development agency. Custom Next.js/React apps, website rescue, and failed project takeover. Free consultation — we fix broken builds and ship production-ready software.',
+  keywords: [...CORE_KEYWORDS],
+  openGraph: {
+    title: 'Arfa Developers | Web Development Agency USA & Project Rescue',
+    description:
+      'Custom web apps, project rescue, and website fixes for US businesses. Next.js experts. Free consultation.',
+    type: 'website',
+    url: SITE_URL,
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+}
 
-export default function Home() {
-  const [showExitPopup, setShowExitPopup] = useState(false)
+const homePageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Arfa Developers — Web Development Agency USA',
+  url: SITE_URL,
+  description:
+    'Web development agency specializing in custom applications, project rescue, and website recovery for US businesses.',
+  about: {
+    '@type': 'Thing',
+    name: 'Web development and project rescue services',
+  },
+  speakable: {
+    '@type': 'SpeakableSpecification',
+    cssSelector: ['h1', '[data-seo-lead]'],
+  },
+}
 
-  const handleScheduleConsultation = () => {
-    // Scroll to CTA section or open Calendly
-    const ctaSection = document.getElementById('contact')
-    if (ctaSection) {
-      ctaSection.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
+export default function HomePage() {
   return (
-    <main>
-      <Header />
-      <Hero />
-      <Services />
-      <Portfolio />
-      <About />
-      <Testimonials />
-      <Blog />
-      <CTA />
-      <Footer />
-      <ExitIntentPopup
-        onClose={() => setShowExitPopup(false)}
-        onScheduleConsultation={handleScheduleConsultation}
+    <>
+      <Script
+        id="homepage-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homePageSchema) }}
       />
-    </main>
+      <HomePageClient />
+    </>
   )
 }

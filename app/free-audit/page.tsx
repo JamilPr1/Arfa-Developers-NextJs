@@ -18,11 +18,12 @@ export const metadata: Metadata = {
   description: 'Get a free website audit or consultation. Low-risk entry point for new clients. Identify issues and opportunities for improvement.',
   keywords: [
     'free website audit',
-    'free consultation',
-    'website analysis',
     'free SEO audit',
-    'website review',
-    'free consultation',
+    'website performance audit',
+    'broken website review',
+    'project rescue assessment',
+    'free web development consultation',
+    'website security audit',
   ],
   openGraph: {
     title: 'Free Audit / Consultation - Low-Risk Entry Point | Arfa Developers',
