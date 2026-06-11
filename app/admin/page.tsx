@@ -128,6 +128,7 @@ export default function AdminPage() {
   const [gscDays, setGscDays] = useState<7 | 28 | 90>(28)
   const [gscLoading, setGscLoading] = useState(false)
   const [gscError, setGscError] = useState('')
+  const [gscSetupSteps, setGscSetupSteps] = useState<string[]>([])
   const [gscData, setGscData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
@@ -399,11 +400,15 @@ export default function AdminPage() {
   const loadGsc = async (days: number) => {
     setGscLoading(true)
     setGscError('')
+    setGscSetupSteps([])
     try {
       const timestamp = Date.now()
       const res = await fetch(`/api/admin/gsc?days=${days}&t=${timestamp}`, { cache: 'no-store' })
       const json = await res.json()
-      if (!res.ok) throw new Error(json?.error || 'Failed to load Search Console data')
+      if (!res.ok) {
+        setGscSetupSteps(Array.isArray(json?.setupSteps) ? json.setupSteps : [])
+        throw new Error(json?.error || 'Failed to load Search Console data')
+      }
       setGscData(json)
     } catch (e: any) {
       setGscError(e?.message || 'Failed to load Search Console data')
@@ -1728,7 +1733,23 @@ export default function AdminPage() {
 
               {gscError && (
                 <Box sx={{ p: 3 }}>
-                  <Alert severity="error">{gscError}</Alert>
+                  <Alert severity="error">
+                    {gscError}
+                    {gscSetupSteps.length > 0 && (
+                      <Box component="ul" sx={{ mt: 1.5, mb: 0, pl: 2.5 }}>
+                        {gscSetupSteps.map((step) => (
+                          <li key={step}>
+                            <Typography variant="body2">{step}</Typography>
+                          </li>
+                        ))}
+                      </Box>
+                    )}
+                    <Typography variant="body2" sx={{ mt: 1.5 }}>
+                      See <strong>seo-audit/GSC-SERVICE-ACCOUNT-SETUP.md</strong> in the repo, then set{' '}
+                      <strong>GSC_SERVICE_ACCOUNT_JSON</strong> and <strong>GSC_SITE_URL</strong> in Vercel and
+                      redeploy.
+                    </Typography>
+                  </Alert>
                 </Box>
               )}
 

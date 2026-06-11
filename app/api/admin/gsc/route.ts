@@ -47,6 +47,30 @@ function toISODate(d: Date): string {
 }
 
 export async function GET(request: NextRequest) {
+  const hasCredentials = !!(
+    process.env.GSC_SERVICE_ACCOUNT_JSON?.trim() ||
+    process.env.GOOGLE_SERVICE_ACCOUNT_JSON?.trim()
+  )
+
+  if (!hasCredentials) {
+    return NextResponse.json(
+      {
+        error:
+          'Missing service account JSON. Set GSC_SERVICE_ACCOUNT_JSON (recommended) or GOOGLE_SERVICE_ACCOUNT_JSON in Vercel env vars.',
+        hint:
+          'Ensure service account JSON env var is set and the service account email is added as an owner/user to your Search Console property.',
+        setupSteps: [
+          'Google Cloud → enable Google Search Console API',
+          'Create a service account → download JSON key → copy client_email',
+          'Search Console → Settings → Users → add that client_email (view access)',
+          'Vercel → Environment Variables → GSC_SERVICE_ACCOUNT_JSON + GSC_SITE_URL → redeploy',
+        ],
+        docs: 'seo-audit/GSC-SERVICE-ACCOUNT-SETUP.md',
+      },
+      { status: 503 }
+    )
+  }
+
   try {
     const url = new URL(request.url)
     const days = Math.min(Math.max(parseInt(url.searchParams.get('days') || '28', 10) || 28, 7), 90)
