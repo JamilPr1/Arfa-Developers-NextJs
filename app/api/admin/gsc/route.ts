@@ -46,6 +46,64 @@ function toISODate(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
+/** GSC siteUrl must match the property exactly (trailing slash often required). */
+function siteUrlCandidates(configured?: string): string[] {
+  const defaults = ['https://www.arfadevelopers.com/', 'https://www.arfadevelopers.com']
+  const raw = (configured || '').trim()
+  const candidates = new Set<string>(defaults)
+
+  if (raw) {
+    candidates.add(raw)
+    const noSlash = raw.replace(/\/$/, '')
+    candidates.add(noSlash)
+    candidates.add(`${noSlash}/`)
+    if (raw.includes('www.')) {
+      candidates.add(raw.replace('www.', ''))
+      candidates.add(`${raw.replace('www.', '').replace(/\/$/, '')}/`)
+    }
+  }
+
+  return [...candidates]
+}
+
+async function queryGsc(
+  searchconsole: ReturnType<typeof google.searchconsole>,
+  siteUrl: string,
+  startDate: string,
+  endDate: string
+) {
+  const [timeSeriesRes, topQueriesRes, topPagesRes] = await Promise.all([
+    searchconsole.searchanalytics.query({
+      siteUrl,
+      requestBody: {
+        startDate,
+        endDate,
+        dimensions: ['date'],
+        rowLimit: 5000,
+      },
+    }),
+    searchconsole.searchanalytics.query({
+      siteUrl,
+      requestBody: {
+        startDate,
+        endDate,
+        dimensions: ['query'],
+        rowLimit: 10,
+      },
+    }),
+    searchconsole.searchanalytics.query({
+      siteUrl,
+      requestBody: {
+        startDate,
+        endDate,
+        dimensions: ['page'],
+        rowLimit: 10,
+      },
+    }),
+  ])
+  return { timeSeriesRes, topQueriesRes, topPagesRes }
+}
+
 export async function GET(request: NextRequest) {
   const hasCredentials = !!(
     process.env.GSC_SERVICE_ACCOUNT_JSON?.trim() ||
@@ -75,7 +133,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const days = Math.min(Math.max(parseInt(url.searchParams.get('days') || '28', 10) || 28, 7), 90)
 
-    const siteUrl =
+    const configuredSiteUrl =
       process.env.GSC_SITE_URL ||
       process.env.NEXT_PUBLIC_SITE_URL ||
       'https://www.arfadevelopers.com/'
@@ -85,6 +143,8 @@ export async function GET(request: NextRequest) {
     end.setDate(end.getDate() - 1)
     const start = new Date(end)
     start.setDate(end.getDate() - (days - 1))
+    const startDate = toISODate(start)
+    const endDate = toISODate(end)
 
     const { client_email, private_key } = parseServiceAccount()
 
@@ -96,35 +156,40 @@ export async function GET(request: NextRequest) {
 
     const searchconsole = google.searchconsole({ version: 'v1', auth })
 
-    const [timeSeriesRes, topQueriesRes, topPagesRes] = await Promise.all([
-      searchconsole.searchanalytics.query({
-        siteUrl,
-        requestBody: {
-          startDate: toISODate(start),
-          endDate: toISODate(end),
-          dimensions: ['date'],
-          rowLimit: 5000,
+    let siteUrl = ''
+    let timeSeriesRes: Awaited<ReturnType<typeof queryGsc>>['timeSeriesRes']
+    let topQueriesRes: Awaited<ReturnType<typeof queryGsc>>['topQueriesRes']
+    let topPagesRes: Awaited<ReturnType<typeof queryGsc>>['topPagesRes']
+    const tried: string[] = []
+    const errors: string[] = []
+
+    for (const candidate of siteUrlCandidates(configuredSiteUrl)) {
+      tried.push(candidate)
+      try {
+        const result = await queryGsc(searchconsole, candidate, startDate, endDate)
+        siteUrl = candidate
+        timeSeriesRes = result.timeSeriesRes
+        topQueriesRes = result.topQueriesRes
+        topPagesRes = result.topPagesRes
+        break
+      } catch (e: any) {
+        errors.push(`${candidate}: ${e?.message || String(e)}`)
+      }
+    }
+
+    if (!siteUrl || !timeSeriesRes || !topQueriesRes || !topPagesRes) {
+      return NextResponse.json(
+        {
+          error: 'Failed to load Google Search Console data for any configured site URL.',
+          hint:
+            'Add the service account client_email as a user on the exact GSC property URL. GSC_SITE_URL must match the property (usually https://www.arfadevelopers.com/ with trailing slash).',
+          serviceAccountEmail: client_email,
+          triedSiteUrls: tried,
+          details: errors,
         },
-      }),
-      searchconsole.searchanalytics.query({
-        siteUrl,
-        requestBody: {
-          startDate: toISODate(start),
-          endDate: toISODate(end),
-          dimensions: ['query'],
-          rowLimit: 10,
-        },
-      }),
-      searchconsole.searchanalytics.query({
-        siteUrl,
-        requestBody: {
-          startDate: toISODate(start),
-          endDate: toISODate(end),
-          dimensions: ['page'],
-          rowLimit: 10,
-        },
-      }),
-    ])
+        { status: 500 }
+      )
+    }
 
     const timeSeriesRaw = timeSeriesRes.data.rows || []
     const timeSeries = timeSeriesRaw
@@ -165,7 +230,8 @@ export async function GET(request: NextRequest) {
 
     const response = NextResponse.json({
       siteUrl,
-      dateRange: { startDate: toISODate(start), endDate: toISODate(end), days },
+      serviceAccountEmail: client_email,
+      dateRange: { startDate, endDate, days },
       totals,
       timeSeries,
       topQueries,
