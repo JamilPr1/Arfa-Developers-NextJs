@@ -12,6 +12,7 @@
 | [NEXT-STEPS-ACTION-PLAN.md](./NEXT-STEPS-ACTION-PLAN.md) | Prioritized 90-day roadmap (what to do next) |
 | [KEYWORD-PAGE-MAP.md](./KEYWORD-PAGE-MAP.md) | Target keywords mapped to URLs and content gaps |
 | [GSC-LIVE-DATA-GUIDE.md](./GSC-LIVE-DATA-GUIDE.md) | How to pull real clicks, impressions, and top queries from Search Console |
+| [PERFORMANCE-AUDIT-JUNE-2026.md](./PERFORMANCE-AUDIT-JUNE-2026.md) | **Live GA4 traffic, leads, clicks, keywords** (May 14 – Jun 10, 2026) |
 
 ## How to refresh with live ranking data
 
