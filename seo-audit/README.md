@@ -13,6 +13,8 @@
 | [KEYWORD-PAGE-MAP.md](./KEYWORD-PAGE-MAP.md) | Target keywords mapped to URLs and content gaps |
 | [GSC-LIVE-DATA-GUIDE.md](./GSC-LIVE-DATA-GUIDE.md) | How to pull real clicks, impressions, and top queries from Search Console |
 | [PERFORMANCE-AUDIT-JUNE-2026.md](./PERFORMANCE-AUDIT-JUNE-2026.md) | **Live GA4 traffic, leads, clicks, keywords** (May 14 – Jun 10, 2026) |
+| [GSC-PROPERTY-CHECKLIST.md](./GSC-PROPERTY-CHECKLIST.md) | Add full-site GSC property, sitemap, indexing |
+| [SOCIAL-UTM-LINKS.md](./SOCIAL-UTM-LINKS.md) | Facebook share URLs with UTM tags |
 
 ## How to refresh with live ranking data
 

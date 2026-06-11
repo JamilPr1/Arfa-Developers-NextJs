@@ -6,12 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "build:vercel": "SKIP_ENV_VALIDATION=true next build",
-    "postbuild": "node scripts/clear-cache-on-deploy.js --force",
+    "postbuild": "node scripts/clear-cache-on-deploy.js --force && node scripts/seo-submit.js",
     "start": "next start",
     "lint": "next lint",
     "revalidate": "node scripts/revalidate-cache.js",
     "revalidate:all": "node scripts/revalidate-cache.js --tag=all",
-    "clear-cache": "node scripts/clear-cache-on-deploy.js --force"
+    "clear-cache": "node scripts/clear-cache-on-deploy.js --force",
+    "seo:ping": "node scripts/seo-submit.js",
+    "seo:index": "node scripts/seo-submit.js --index"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",

@@ -10,6 +10,8 @@ import {
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 import { siteConfig } from '@/lib/siteConfig'
+import { SOCIAL_SHARE_LINKS } from '@/lib/utm'
+import FacebookIcon from '@mui/icons-material/Facebook'
 
 const quickLinks = [
   { label: 'Home', href: '/', isRoute: true },
@@ -119,6 +121,41 @@ export default function Footer() {
                 <br />
                 WhatsApp: {siteConfig.phoneDisplay}
               </Typography>
+              <Typography variant="body2" sx={{ mt: 2, mb: 1, color: '#9CA3AF', fontWeight: 600 }}>
+                Share (UTM tracked)
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                <MuiLink
+                  href={SOCIAL_SHARE_LINKS.projectRescue}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    color: '#9CA3AF',
+                    fontSize: '0.85rem',
+                    '&:hover': { color: '#1877F2' },
+                  }}
+                >
+                  <FacebookIcon sx={{ fontSize: 18 }} /> Rescue
+                </MuiLink>
+                <MuiLink
+                  href={SOCIAL_SHARE_LINKS.freeAudit}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    color: '#9CA3AF',
+                    fontSize: '0.85rem',
+                    '&:hover': { color: '#1877F2' },
+                  }}
+                >
+                  <FacebookIcon sx={{ fontSize: 18 }} /> Free audit
+                </MuiLink>
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
                 <PhoneIcon sx={{ color: '#25D366', fontSize: 24 }} />
                 <MuiLink

@@ -4,6 +4,7 @@ import { Box, Container, Typography, Chip, Divider } from '@mui/material'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import SocialShare from '@/components/SocialShare'
 import Script from 'next/script'
 import { readDataFile } from '@/lib/dataUtils'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -217,6 +218,8 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
             }}
             dangerouslySetInnerHTML={{ __html: safeHtml }}
           />
+
+          <SocialShare path={`/blog/${blog.id}`} campaign={`blog_${blog.id}`} title="Share this article" />
         </Container>
 
         <CTA />
