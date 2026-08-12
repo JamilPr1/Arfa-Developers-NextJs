@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import Script from 'next/script'
 import {
@@ -33,6 +32,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
 import PageHero from '@/components/PageHero'
+import ExpandableImage from '@/components/ExpandableImage'
 
 const baseUrl = 'https://www.arfadevelopers.com'
 const pageUrl = `${baseUrl}/ai-automation`
@@ -278,40 +278,6 @@ const faqStructuredData = {
   })),
 }
 
-function SectionImage({
-  src,
-  alt,
-  priority = false,
-}: {
-  src: string
-  alt: string
-  priority?: boolean
-}) {
-  return (
-    <Box
-      sx={{
-        position: 'relative',
-        width: '100%',
-        borderRadius: 2,
-        overflow: 'hidden',
-        border: '1px solid',
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-        aspectRatio: '16 / 9',
-      }}
-    >
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        priority={priority}
-        sizes="(max-width: 900px) 100vw, 560px"
-        style={{ objectFit: 'cover' }}
-      />
-    </Box>
-  )
-}
-
 export default function AiAutomationPage() {
   return (
     <>
@@ -336,7 +302,7 @@ export default function AiAutomationPage() {
       <PageHero
         align="left"
         media={
-          <SectionImage
+          <ExpandableImage
             src="/images/ai-automation/n8n-automation-workflow.webp"
             alt="n8n-style AI workflow automation connecting webhooks, OpenAI, CRM, and messaging"
             priority
@@ -398,7 +364,7 @@ export default function AiAutomationPage() {
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <SectionImage
+              <ExpandableImage
                 src="/images/ai-automation/ai-llm-apps.webp"
                 alt="LLM application dashboard with RAG answers and source citations"
               />
@@ -451,7 +417,7 @@ export default function AiAutomationPage() {
         <Container maxWidth="lg">
           <Grid container spacing={5} alignItems="center">
             <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
-              <SectionImage
+              <ExpandableImage
                 src="/images/ai-automation/ai-voice-agent-ui.webp"
                 alt="AI voice agent console with live transcript and CRM sync"
               />
@@ -540,11 +506,11 @@ export default function AiAutomationPage() {
             </Grid>
             <Grid item xs={12} md={6}>
               <Stack spacing={3}>
-                <SectionImage
+                <ExpandableImage
                   src="/images/ai-automation/n8n-automation-workflow.webp"
                   alt="n8n workflow automation canvas with AI and CRM nodes"
                 />
-                <SectionImage
+                <ExpandableImage
                   src="/images/ai-automation/whatsapp-ai-automation.webp"
                   alt="Messaging AI automation with suggested replies and human handoff"
                 />
