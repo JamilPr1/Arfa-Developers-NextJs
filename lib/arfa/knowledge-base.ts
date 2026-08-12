@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/siteConfig'
 import { getProductsKnowledge } from './products-knowledge'
+import { getAllPagesKnowledge } from './pages-knowledge'
 
 /**
  * Grounded knowledge for Arfa voice assistant — sourced from arfadevelopers.com content.
@@ -132,23 +133,7 @@ export const WEBSITE_KNOWLEDGE = {
       includes: ['Campaign management', 'Conversion tracking', 'A/B testing', 'Monthly strategy review'],
     },
   ],
-  pages: [
-    { path: '/', title: 'Home', description: 'Main landing page with services overview' },
-    { path: '/about', title: 'About Us', description: 'Company story and team' },
-    { path: '/products', title: 'Products', description: 'Software products — Voice Agent, POS, CRM, HRM, E-commerce, School ERP, Healthcare, Real Estate, and more' },
-    { path: '/case-studies', title: 'Case Studies', description: 'Detailed project success stories' },
-    { path: '/pricing', title: 'Pricing', description: 'Transparent pricing packages and ranges' },
-    { path: '/contact', title: 'Contact', description: 'Get in touch for a free consultation' },
-    { path: '/project-rescue', title: 'Project Rescue', description: 'Failed project takeover and recovery' },
-    { path: '/free-audit', title: 'Free Audit', description: 'Free website or project audit' },
-    { path: '/hire-talent', title: 'Hire Talent', description: 'Hire dedicated developers' },
-    { path: '/hire-nextjs-developers-usa', title: 'Hire Next.js Developers', description: 'US-based Next.js experts' },
-    { path: '/custom-software-development-usa', title: 'Custom Software', description: 'Custom software for US businesses' },
-    { path: '/our-process', title: 'Our Process', description: 'How we work with clients' },
-    { path: '/faqs', title: 'FAQs', description: 'Frequently asked questions' },
-    { path: '/blog', title: 'Blog', description: 'Articles on web development and SEO' },
-    { path: '/automation', title: 'Automation', description: 'Business automation solutions' },
-  ],
+  pages: [] as { path: string; title: string; description: string }[],
   faq: [
     {
       q: 'Do you offer free consultations?',
@@ -179,5 +164,6 @@ export const WEBSITE_KNOWLEDGE = {
 
 export function buildKnowledgePrompt(): string {
   const products = getProductsKnowledge()
-  return JSON.stringify({ ...WEBSITE_KNOWLEDGE, products }, null, 2)
+  const pages = getAllPagesKnowledge()
+  return JSON.stringify({ ...WEBSITE_KNOWLEDGE, pages, products }, null, 2)
 }

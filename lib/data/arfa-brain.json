@@ -1,0 +1,56 @@
+[
+  {
+    "id": "mem_1786551969822_0cz45w",
+    "question": "Do you rescue abandoned freelancer projects?",
+    "answer": "Yes, we specialize in project rescue, taking over abandoned or poorly executed projects from freelancers and inexperienced developers. We assess, fix, and rebuild these projects to get them back on track. If you'd like to know more, I can connect you with our team for a free consultation.",
+    "normalizedQuestion": "do you rescue abandoned freelancer projects",
+    "hitCount": 1,
+    "createdAt": "2026-08-12T16:26:09.822Z",
+    "updatedAt": "2026-08-12T16:26:09.822Z"
+  },
+  {
+    "id": "seed_consult",
+    "question": "Do you offer free consultations?",
+    "answer": "Yes. We offer a free consultation to discuss your project, timeline, and budget. You can reach us via the contact page, WhatsApp, or email.",
+    "normalizedQuestion": "do you offer free consultations",
+    "hitCount": 3,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": "seed_rescue",
+    "question": "Can you rescue a failed project?",
+    "answer": "Yes. Project rescue is one of our specialties. We assess, fix, and rebuild abandoned or poorly executed projects — often delivering working solutions in days. Visit /project-rescue for details.",
+    "normalizedQuestion": "can you rescue a failed project",
+    "hitCount": 6,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-08-12T16:26:04.794Z"
+  },
+  {
+    "id": "seed_tech",
+    "question": "What technologies do you use?",
+    "answer": "We primarily use React, Next.js, Node.js, React Native, Flutter, and cloud platforms like AWS, Azure, and GCP.",
+    "normalizedQuestion": "what technologies do you use",
+    "hitCount": 4,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": "seed_pricing",
+    "question": "How much does web development cost?",
+    "answer": "Web development typically ranges from $2,500 to $15,000+, depending on scope. Website redesign is $1,500–$8,000 and ecommerce is $3,000–$20,000+. Visit /pricing for full packages.",
+    "normalizedQuestion": "how much does web development cost",
+    "hitCount": 4,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": "seed_products",
+    "question": "What software products do you sell?",
+    "answer": "We offer products including Arfa Voice Agent, Ice Cream POS, Restaurant POS, Meta Automation CRM, Procurement OS, HRM, AI Sales Agents, WhatsApp Automation, School Management, E-commerce Store Builder, Real Estate CRM, and Clinic Management. See /products for the full catalog.",
+    "normalizedQuestion": "what software products do you sell",
+    "hitCount": 3,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  }
+]

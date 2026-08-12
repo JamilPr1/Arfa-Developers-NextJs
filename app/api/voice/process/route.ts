@@ -3,10 +3,20 @@ import {
   processWithOpenAI,
   processWithEngine,
   transcribeWithWhisper,
+  CHAT_MODEL,
 } from '@/lib/arfa/openai'
 import { enrichResponseWithNavigation } from '@/lib/arfa/navigation'
+import { rememberExchange } from '@/lib/arfa/brain'
 import type { ChatMessage } from '@/lib/arfa/types'
 
+/**
+ * Voice process pipeline (local + Vercel):
+ * 1) Optional Whisper transcription (whisper-1) if audio uploaded
+ * 2) Recall from Arfa Brain (Redis on Vercel / JSON file locally)
+ * 3) gpt-4o-mini (or OPENAI_CHAT_MODEL) with full site knowledge + brain memories
+ * 4) Save successful Q&A back into brain for next time
+ * 5) Client then calls /api/voice/speak (tts-1, voice=nova) for audio reply
+ */
 export async function POST(request: NextRequest) {
   try {
     const contentType = request.headers.get('content-type') || ''
@@ -57,13 +67,21 @@ export async function POST(request: NextRequest) {
       } catch (e) {
         console.warn('OpenAI fallback to engine:', e)
         result = processWithEngine(cleaned)
+        void rememberExchange(cleaned, result.text)
       }
     } else {
       result = processWithEngine(cleaned)
+      void rememberExchange(cleaned, result.text)
     }
 
     result = enrichResponseWithNavigation(cleaned, result)
-    return NextResponse.json(result)
+    return NextResponse.json({
+      ...result,
+      meta: {
+        model: apiKey ? CHAT_MODEL : 'local-engine',
+        brain: true,
+      },
+    })
   } catch (error) {
     console.error('Voice process error:', error)
     return NextResponse.json({ error: 'Processing failed' }, { status: 500 })

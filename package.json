@@ -13,6 +13,7 @@
     "revalidate:all": "node scripts/revalidate-cache.js --tag=all",
     "clear-cache": "node scripts/clear-cache-on-deploy.js --force",
     "compress-images": "node scripts/compress-product-images.js",
+    "test:arfa-brain": "node scripts/test-arfa-brain.js",
     "seo:ping": "node scripts/seo-submit.js",
     "seo:index": "node scripts/seo-submit.js --index"
   },
