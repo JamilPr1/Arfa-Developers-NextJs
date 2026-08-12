@@ -8,6 +8,7 @@ const dataDir = path.join(process.cwd(), 'lib', 'data')
 // Map JSON filenames to Supabase table names
 const tableMap: Record<string, string> = {
   'projects.json': 'projects',
+  'products.json': 'products',
   'blogs.json': 'blogs',
   'promotions.json': 'promotions',
   'talent.json': 'talent',

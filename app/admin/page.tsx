@@ -63,6 +63,26 @@ interface Project {
   published: boolean
 }
 
+interface Product {
+  id: number
+  name: string
+  slug: string
+  shortDescription: string
+  description: string
+  image: string
+  price: number
+  currency: string
+  priceDisplay?: string
+  features: string[]
+  benefits?: string[]
+  category: string
+  ctaText: string
+  ctaLink: string
+  demoLink?: string
+  sortOrder: number
+  published: boolean
+}
+
 interface Blog {
   id: number
   title: string
@@ -120,6 +140,7 @@ export default function AdminPage() {
   const [resetLoading, setResetLoading] = useState(false)
   const [tabValue, setTabValue] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [talents, setTalents] = useState<Talent[]>([])
@@ -137,7 +158,7 @@ export default function AdminPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [openDialog, setOpenDialog] = useState(false)
-  const [dialogType, setDialogType] = useState<'project' | 'blog' | 'promotion' | 'talent' | null>(null)
+  const [dialogType, setDialogType] = useState<'project' | 'product' | 'blog' | 'promotion' | 'talent' | null>(null)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [leadDetailsOpen, setLeadDetailsOpen] = useState(false)
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
@@ -152,6 +173,25 @@ export default function AdminPage() {
     tech: '',
     description: '',
     fullDescription: '',
+    published: true,
+  })
+
+  const [productForm, setProductForm] = useState({
+    name: '',
+    slug: '',
+    shortDescription: '',
+    description: '',
+    image: '',
+    price: '',
+    currency: 'USD',
+    priceDisplay: '',
+    features: '',
+    benefits: '',
+    category: 'AI Software',
+    ctaText: 'Get Started',
+    ctaLink: '/contact',
+    demoLink: '',
+    sortOrder: '0',
     published: true,
   })
 
@@ -191,6 +231,7 @@ export default function AdminPage() {
   const [imagePreview, setImagePreview] = useState<string>('')
   const [imageError, setImageError] = useState(false)
   const [projectImagePreview, setProjectImagePreview] = useState<string>('')
+  const [productImagePreview, setProductImagePreview] = useState<string>('')
   const [blogImagePreview, setBlogImagePreview] = useState<string>('')
 
   // Bulk talent generator (admin utility)
@@ -311,14 +352,16 @@ export default function AdminPage() {
       const timestamp = Date.now()
       const endpoints = {
         projects: `/api/admin/projects?t=${timestamp}`,
+        products: `/api/admin/products?t=${timestamp}`,
         blogs: `/api/admin/blogs?t=${timestamp}`,
         promotions: `/api/admin/promotions?t=${timestamp}`,
         talent: `/api/admin/talent?t=${timestamp}`,
         leads: `/api/admin/leads?t=${timestamp}`,
       } as const
 
-      const [projectsRes, blogsRes, promotionsRes, talentsRes, leadsRes] = await Promise.all([
+      const [projectsRes, productsRes, blogsRes, promotionsRes, talentsRes, leadsRes] = await Promise.all([
         fetch(endpoints.projects, { cache: 'no-store' }),
+        fetch(endpoints.products, { cache: 'no-store' }),
         fetch(endpoints.blogs, { cache: 'no-store' }),
         fetch(endpoints.promotions, { cache: 'no-store' }),
         fetch(endpoints.talent, { cache: 'no-store' }),
@@ -335,8 +378,9 @@ export default function AdminPage() {
         }
       }
 
-      const [projectsData, blogsData, promotionsData, talentsData, leadsData] = await Promise.all([
+      const [projectsData, productsData, blogsData, promotionsData, talentsData, leadsData] = await Promise.all([
         safeJson(projectsRes),
+        safeJson(productsRes),
         safeJson(blogsRes),
         safeJson(promotionsRes),
         safeJson(talentsRes),
@@ -344,6 +388,7 @@ export default function AdminPage() {
       ])
 
       if (!projectsRes.ok) failures.push(`Projects (${projectsRes.status})`)
+      if (!productsRes.ok) failures.push(`Products (${productsRes.status})`)
       if (!blogsRes.ok) failures.push(`Blogs (${blogsRes.status})`)
       if (!promotionsRes.ok) failures.push(`Promotions (${promotionsRes.status})`)
       if (!talentsRes.ok) failures.push(`Talent (${talentsRes.status})`)
@@ -352,6 +397,9 @@ export default function AdminPage() {
       // Ensure we have arrays and sort by ID (newest first)
       const sortedProjects = Array.isArray(projectsData) 
         ? [...projectsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+        : []
+      const sortedProducts = Array.isArray(productsData)
+        ? [...productsData].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0))
         : []
       const sortedBlogs = Array.isArray(blogsData)
         ? [...blogsData].sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
@@ -374,6 +422,7 @@ export default function AdminPage() {
         : []
       
       setProjects(sortedProjects)
+      setProducts(sortedProducts)
       setBlogs(sortedBlogs)
       setPromotions(sortedPromotions)
       setTalents(sortedTalents)
@@ -670,7 +719,7 @@ export default function AdminPage() {
     }
   }
 
-  const handleOpenDialog = (type: 'project' | 'blog' | 'promotion' | 'talent', item?: any) => {
+  const handleOpenDialog = (type: 'project' | 'product' | 'blog' | 'promotion' | 'talent', item?: any) => {
     setDialogType(type)
     setEditingItem(item || null)
     if (item) {
@@ -680,6 +729,15 @@ export default function AdminPage() {
           tech: Array.isArray(item.tech) ? item.tech.join(', ') : item.tech || '',
         })
           setProjectImagePreview(item.image || '')
+      } else if (type === 'product') {
+        setProductForm({
+          ...item,
+          price: item.price?.toString() || '',
+          sortOrder: item.sortOrder?.toString() || '0',
+          features: Array.isArray(item.features) ? item.features.join(', ') : item.features || '',
+          benefits: Array.isArray(item.benefits) ? item.benefits.join(', ') : item.benefits || '',
+        })
+        setProductImagePreview(item.image || '')
       } else if (type === 'blog') {
         setBlogForm(item)
           setBlogImagePreview(item.image || '')
@@ -712,6 +770,27 @@ export default function AdminPage() {
           published: true,
         })
         setProjectImagePreview('')
+        setImageError(false)
+      } else if (type === 'product') {
+        setProductForm({
+          name: '',
+          slug: '',
+          shortDescription: '',
+          description: '',
+          image: '',
+          price: '',
+          currency: 'USD',
+          priceDisplay: '',
+          features: '',
+          benefits: '',
+          category: 'AI Software',
+          ctaText: 'Get Started',
+          ctaLink: '/contact',
+          demoLink: '',
+          sortOrder: '0',
+          published: true,
+        })
+        setProductImagePreview('')
         setImageError(false)
       } else if (type === 'blog') {
         setBlogForm({
@@ -841,6 +920,38 @@ export default function AdminPage() {
           await loadData()
         } else {
           setError(result.error || 'Failed to save project')
+        }
+      } else if (dialogType === 'product') {
+        const slug =
+          productForm.slug.trim() ||
+          productForm.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+
+        const productData = {
+          ...productForm,
+          slug,
+          price: parseFloat(productForm.price) || 0,
+          sortOrder: parseInt(productForm.sortOrder) || 0,
+          features: productForm.features.split(',').map((t) => t.trim()).filter(Boolean),
+          benefits: productForm.benefits.split(',').map((t) => t.trim()).filter(Boolean),
+        }
+
+        const url = editingItem ? `/api/products/${editingItem.id}` : '/api/products'
+        const method = editingItem ? 'PUT' : 'POST'
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(productData),
+        })
+        const result = await response.json()
+        if (response.ok) {
+          setSuccess('Product saved successfully!')
+          setOpenDialog(false)
+          await loadData()
+        } else {
+          setError(result.error || 'Failed to save product')
         }
       } else if (dialogType === 'blog') {
         const url = editingItem
@@ -990,7 +1101,7 @@ export default function AdminPage() {
     }
   }
 
-  const handleDelete = async (type: 'project' | 'blog' | 'promotion' | 'talent', id: number) => {
+  const handleDelete = async (type: 'project' | 'product' | 'blog' | 'promotion' | 'talent', id: number) => {
     if (!confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) return
     setLoading(true)
     setError('')
@@ -1033,7 +1144,7 @@ export default function AdminPage() {
   }
 
   const handleToggleStatus = async (
-    type: 'project' | 'blog' | 'promotion' | 'talent',
+    type: 'project' | 'product' | 'blog' | 'promotion' | 'talent',
     id: number,
     currentStatus: boolean
   ) => {
@@ -1051,6 +1162,8 @@ export default function AdminPage() {
         apiPath = `/api/talent/${id}`
       } else if (type === 'promotion') {
         apiPath = `/api/promotions/${id}`
+      } else if (type === 'product') {
+        apiPath = `/api/products/${id}`
       } else {
         apiPath = `/api/${type}s/${id}`
       }
@@ -1217,6 +1330,7 @@ export default function AdminPage() {
                 sx={{ borderBottom: 1, borderColor: 'divider', flex: 1 }}
               >
                 <Tab label="Projects" />
+                <Tab label="Products" />
                 <Tab label="Blogs" />
                 <Tab label="Promotions" />
                 <Tab label="Talent" />
@@ -1313,8 +1427,87 @@ export default function AdminPage() {
             </Paper>
           )}
 
-          {/* Blogs Tab */}
+          {/* Products Tab */}
           {tabValue === 1 && (
+            <Paper sx={{ borderRadius: 2 }}>
+              <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>Products ({products.length})</Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenDialog('product')}
+                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                >
+                  Add Product
+                </Button>
+              </Box>
+              {dataLoading ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress />
+                  <Typography sx={{ mt: 2 }}>Loading products...</Typography>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Published</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {products.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                            <Typography color="text.secondary">No products found. Click &quot;Add Product&quot; to create one.</Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        products.map((product) => (
+                          <TableRow key={product.id} hover>
+                            <TableCell>{product.name}</TableCell>
+                            <TableCell>
+                              <Chip label={product.category} size="small" color="primary" variant="outlined" />
+                            </TableCell>
+                            <TableCell>{product.priceDisplay || `$${product.price}`}</TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={product.published || false}
+                                onChange={() => handleToggleStatus('product', product.id, product.published || false)}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <IconButton
+                                onClick={() => handleOpenDialog('product', product)}
+                                size="small"
+                                sx={{ color: '#1E3A8A' }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                onClick={() => handleDelete('product', product.id)}
+                                size="small"
+                                sx={{ color: '#EF4444' }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Paper>
+          )}
+
+          {/* Blogs Tab */}
+          {tabValue === 2 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>Blogs ({blogs.length})</Typography>
@@ -1389,7 +1582,7 @@ export default function AdminPage() {
           )}
 
           {/* Promotions Tab */}
-          {tabValue === 2 && (
+          {tabValue === 3 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>Promotions ({promotions.length})</Typography>
@@ -1474,7 +1667,7 @@ export default function AdminPage() {
           )}
 
           {/* Talent Tab */}
-          {tabValue === 3 && (
+          {tabValue === 4 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>Talent Profiles ({talents.length})</Typography>
@@ -1563,7 +1756,7 @@ export default function AdminPage() {
           )}
 
           {/* Leads Tab */}
-          {tabValue === 4 && (
+          {tabValue === 5 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box
                 sx={{
@@ -1698,7 +1891,7 @@ export default function AdminPage() {
           {/* AI Automation (v1) removed from Admin UI */}
 
           {/* Google Search Console Tab */}
-          {tabValue === 5 && (
+          {tabValue === 6 && (
             <Paper sx={{ borderRadius: 2 }}>
               <Box
                 sx={{
@@ -1926,7 +2119,7 @@ export default function AdminPage() {
           {/* Dialog for Add/Edit */}
           <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
             <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
-              {editingItem ? 'Edit' : 'Add'} {dialogType === 'project' ? 'Project' : dialogType === 'blog' ? 'Blog' : dialogType === 'promotion' ? 'Promotion' : 'Talent'}
+              {editingItem ? 'Edit' : 'Add'} {dialogType === 'project' ? 'Project' : dialogType === 'product' ? 'Product' : dialogType === 'blog' ? 'Blog' : dialogType === 'promotion' ? 'Promotion' : 'Talent'}
             </DialogTitle>
             <DialogContent sx={{ mt: 2 }}>
               {dialogType === 'project' && (
@@ -2086,6 +2279,212 @@ export default function AdminPage() {
                         <Switch
                           checked={projectForm.published}
                           onChange={(e) => setProjectForm({ ...projectForm, published: e.target.checked })}
+                        />
+                      }
+                      label="Published"
+                    />
+                  </Grid>
+                </Grid>
+              )}
+
+              {dialogType === 'product' && (
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={8}>
+                    <TextField
+                      fullWidth
+                      label="Product Name *"
+                      value={productForm.name}
+                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Sort Order"
+                      type="number"
+                      value={productForm.sortOrder}
+                      onChange={(e) => setProductForm({ ...productForm, sortOrder: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Slug"
+                      value={productForm.slug}
+                      onChange={(e) => setProductForm({ ...productForm, slug: e.target.value })}
+                      placeholder="auto-generated-from-name"
+                      helperText="URL: /products/your-slug"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Category *"
+                      value={productForm.category}
+                      onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Price (number) *"
+                      type="number"
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Currency"
+                      value={productForm.currency}
+                      onChange={(e) => setProductForm({ ...productForm, currency: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Price Display"
+                      value={productForm.priceDisplay}
+                      onChange={(e) => setProductForm({ ...productForm, priceDisplay: e.target.value })}
+                      placeholder="$899 or From $499/mo"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: '#374151' }}>
+                      Product Image *
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <input
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id="product-image-upload"
+                        type="file"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          setUploadingImage(true)
+                          try {
+                            const formData = new FormData()
+                            formData.append('file', file)
+                            const response = await fetch('/api/upload', { method: 'POST', body: formData })
+                            const result = await response.json()
+                            if (response.ok && result.url) {
+                              setProductForm({ ...productForm, image: result.url })
+                              setProductImagePreview(result.url)
+                              setSuccess('Image uploaded successfully!')
+                            } else {
+                              setError(result.error || 'Failed to upload image.')
+                            }
+                          } catch {
+                            setError('Failed to upload image. Please use URL instead.')
+                          } finally {
+                            setUploadingImage(false)
+                          }
+                        }}
+                      />
+                      <label htmlFor="product-image-upload">
+                        <Button variant="outlined" component="span" disabled={uploadingImage} sx={{ mb: 1, mr: 1 }}>
+                          {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                        </Button>
+                      </label>
+                      {productImagePreview && (
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                          <Image
+                            src={productImagePreview}
+                            alt="Product preview"
+                            width={200}
+                            height={120}
+                            style={{ objectFit: 'contain', borderRadius: 8 }}
+                            unoptimized
+                          />
+                        </Box>
+                      )}
+                    </Box>
+                    <TextField
+                      fullWidth
+                      label="Image URL *"
+                      value={productForm.image}
+                      onChange={(e) => {
+                        setProductForm({ ...productForm, image: e.target.value })
+                        setProductImagePreview(e.target.value)
+                      }}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      label="Short Description *"
+                      value={productForm.shortDescription}
+                      onChange={(e) => setProductForm({ ...productForm, shortDescription: e.target.value })}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      label="Full Description *"
+                      value={productForm.description}
+                      onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Features (comma-separated) *"
+                      value={productForm.features}
+                      onChange={(e) => setProductForm({ ...productForm, features: e.target.value })}
+                      placeholder="Feature 1, Feature 2, Feature 3"
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Benefits (comma-separated)"
+                      value={productForm.benefits}
+                      onChange={(e) => setProductForm({ ...productForm, benefits: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="CTA Button Text"
+                      value={productForm.ctaText}
+                      onChange={(e) => setProductForm({ ...productForm, ctaText: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="CTA Link"
+                      value={productForm.ctaLink}
+                      onChange={(e) => setProductForm({ ...productForm, ctaLink: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Demo Link (optional)"
+                      value={productForm.demoLink}
+                      onChange={(e) => setProductForm({ ...productForm, demoLink: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={productForm.published}
+                          onChange={(e) => setProductForm({ ...productForm, published: e.target.checked })}
                         />
                       }
                       label="Published"

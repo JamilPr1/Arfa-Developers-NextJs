@@ -30,6 +30,7 @@ export const STATIC_SITEMAP_PATHS = [
   '/about',
   '/services',
   '/portfolio',
+  '/products',
   '/case-studies',
   '/case-studies/project-rescue-usa-saas',
   '/case-studies/ecommerce-rescue-usa',

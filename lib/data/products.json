@@ -1,0 +1,488 @@
+[
+  {
+    "id": 1,
+    "name": "Arfa Voice Agent",
+    "slug": "arfa-voice-agent",
+    "shortDescription": "Voice-first product sales website with a built-in conversational assistant, product catalog, checkout flow, and printable invoices for software businesses.",
+    "description": "Arfa Voice Agent is a complete Next.js sales website built for companies that sell software products online. Visitors can browse your catalog, ask questions by voice, compare offerings, and move to checkout without leaving the conversation. The platform includes a floating assistant on every page, a grounded knowledge base so answers stay accurate, cloud speech recognition and natural text-to-speech, and a full order flow with invoice generation. Deploy on your own domain or subdomain — ideal for product-led businesses that want a modern, hands-free buying experience.",
+    "image": "/images/products/arfa-voice-agent.webp",
+    "gallery": [
+      {
+        "src": "/images/products/arfa-voice-agent.webp",
+        "caption": "Arfa Voice Agent — ChatGPT/Gemini-style voice orb listening interface"
+      }
+    ],
+    "price": 2499,
+    "currency": "USD",
+    "priceDisplay": "From $2,499",
+    "features": [
+      "Voice-first homepage with speech recognition and natural text-to-speech",
+      "Floating conversational assistant on all non-home pages",
+      "Single source of truth product catalog with pricing and FAQs",
+      "Grounded response engine tied to your approved knowledge base",
+      "Checkout flow with in-memory orders and printable invoices",
+      "SEO metadata, Open Graph tags, and FAQ schema markup",
+      "Deploy-ready for Hostinger Node.js, Vercel, or custom hosting"
+    ],
+    "benefits": [
+      "Let customers explore products and purchase by speaking naturally",
+      "Reduce support load with accurate, catalog-grounded answers",
+      "Launch a branded product storefront without rebuilding from scratch",
+      "Keep voice sessions active as visitors navigate between pages"
+    ],
+    "category": "Voice Commerce",
+    "ctaText": "Request a Demo",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 1,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Ice Cream POS",
+    "slug": "ice-cream-pos",
+    "shortDescription": "Point-of-sale system for ice cream parlours — customer ordering, admin inventory, business purchases, invoicing, and sales reporting in PKR.",
+    "description": "Ice Cream POS is a full-stack point-of-sale application designed for ice cream shops and dessert parlours. Staff can take customer orders at the counter, track inventory in real time, record business purchases, generate invoices, and review daily and monthly sales reports. The React frontend uses Chakra UI and Redux for a fast checkout experience. The Node.js backend powers a reliable JSON API. Prices are handled in Pakistani Rupees (PKR), making it a practical fit for local retail operations. The project ships with separate frontend and backend folders, ready for deployment on Vercel and Render.",
+    "image": "/images/products/ice-cream-pos.webp",
+    "price": 1500,
+    "currency": "USD",
+    "priceDisplay": "From $1,500",
+    "features": [
+      "Customer-facing order screen for fast counter service",
+      "Admin dashboard for inventory and stock management",
+      "Business purchase tracking and supplier records",
+      "Invoice generation and sales history",
+      "Sales reporting with daily and period summaries",
+      "Role-based admin login with secure credentials",
+      "React + Chakra UI frontend with Node.js JSON API backend"
+    ],
+    "benefits": [
+      "Replace paper tickets and spreadsheets with one connected system",
+      "See what sold, what is low in stock, and what was purchased — in one place",
+      "Train new staff quickly with a simple, visual checkout interface",
+      "Deploy frontend and API separately for reliable production hosting"
+    ],
+    "category": "Retail & Hospitality",
+    "ctaText": "Get Ice Cream POS",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 2,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "Meta Automation CRM",
+    "slug": "meta-automation-crm",
+    "shortDescription": "CRM for managing Facebook Pages and Instagram Business accounts — connect once, assign team roles, and post, reply, and track engagement without sharing Meta passwords.",
+    "description": "Meta Automation CRM gives agencies and in-house marketing teams a secure way to manage Facebook and Instagram from one dashboard. An administrator connects Meta accounts through OAuth, then assigns role-based access so team members can view posts, publish content, reply to comments, and handle direct messages — without ever handing out account passwords. Permissions are granular: View, Post, Reply, and Manage. Page access tokens are encrypted at rest, and every team action is logged for accountability. Built with Next.js 15, TypeScript, Prisma, and the Meta Graph API.",
+    "image": "/images/products/meta-automation-crm-card.webp",
+    "gallery": [
+      {
+        "src": "/images/products/meta-automation-crm.webp",
+        "caption": "Social CRM admin dashboard with Meta and LinkedIn metrics"
+      }
+    ],
+    "price": 899,
+    "currency": "USD",
+    "priceDisplay": "From $899",
+    "features": [
+      "Meta OAuth integration for Facebook Pages and Instagram Business accounts",
+      "Role-based access: Admin, Manager, and Member with granular permissions",
+      "Account assignment — control which users access which Meta properties",
+      "Unified post publishing to Facebook and Instagram",
+      "Comment inbox with reply workflow across connected accounts",
+      "Facebook Page direct message inbox for team responses",
+      "Activity logging and encrypted token storage at rest"
+    ],
+    "benefits": [
+      "Stop sharing Meta login credentials across your team",
+      "Give freelancers and staff access only to the accounts they need",
+      "Publish and respond from one place instead of switching between apps",
+      "Maintain a clear audit trail of who posted, replied, or changed settings"
+    ],
+    "category": "Social Media CRM",
+    "ctaText": "Start with Meta CRM",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 3,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "name": "Procurement OS",
+    "slug": "procurement-os",
+    "shortDescription": "Sourcing and procurement platform for manufacturing deals — lead qualification, supplier research, RFQ generation, quote comparison, and human approval gates in one workflow.",
+    "description": "Procurement OS is a sourcing platform built for agencies and trading businesses that broker manufacturing deals. It combines a transaction-focused agency model with a licensable software core in a single codebase. The system runs a structured pipeline from buyer request through qualification, product research, supplier outreach, RFQ generation, and quote comparison — with defined human approval gates before contracts, payments, or supplier sign-off. Behavior is configured through YAML files for agents, prompts, workflows, and policies, so operations teams can adjust logic without redeploying code. Structured JSON logs track every entity change and agent run for full auditability.",
+    "image": "/images/products/procurement-os-card.webp",
+    "gallery": [
+      {
+        "src": "/images/products/procurement-os-overview.webp",
+        "caption": "Landing page with hero, workflow steps, and platform features"
+      },
+      {
+        "src": "/images/products/procurement-os-platform.webp",
+        "caption": "Full platform view with pilot signup, partner storefronts, and pricing"
+      }
+    ],
+    "price": 4999,
+    "currency": "USD",
+    "priceDisplay": "From $4,999",
+    "features": [
+      "End-to-end sourcing pipeline from buyer request to supplier quote",
+      "Configurable workflow stages via YAML — no code changes required",
+      "Lead discovery, qualification, personalization, and outreach stages",
+      "RFQ generation and side-by-side quote comparison",
+      "Human approval gates for contracts, payments, and supplier selection",
+      "Structured audit logs for entity changes and workflow execution history",
+      "Agency margin tracking today with multi-tenant SaaS architecture for tomorrow"
+    ],
+    "benefits": [
+      "Run sourcing operations with a small team instead of dozens of coordinators",
+      "Keep humans in control of money, contracts, and negotiations at defined checkpoints",
+      "Scale deal volume without rebuilding your process from scratch each time",
+      "Own the platform — use it for your agency and license it to others later"
+    ],
+    "category": "Supply Chain Software",
+    "ctaText": "Discuss Your Setup",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 4,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "name": "HRM",
+    "slug": "hrm",
+    "shortDescription": "Complete human resource management platform — payroll, attendance, leave, performance reviews, and employee self-service in one dashboard.",
+    "description": "HRM by Arfa Developers is an enterprise-grade human resource management platform designed for growing organizations. Streamline payroll processing, track attendance and leave, manage employee records, and run performance reviews from a single intuitive dashboard. Role-based access keeps sensitive HR data secure while giving managers and employees the tools they need. Built for teams scaling from 10 to 10,000 employees with compliance reporting and audit trails included.",
+    "image": "/images/products/hrm.webp",
+    "gallery": [
+      {
+        "src": "/images/products/hrm.webp",
+        "caption": "HR admin dashboard with employee records, payroll summary, and attendance overview"
+      }
+    ],
+    "price": 899,
+    "currency": "USD",
+    "priceDisplay": "From $899",
+    "features": [
+      "Employee database with role-based access control",
+      "Automated payroll processing and tax calculations",
+      "Attendance tracking with mobile and biometric check-in",
+      "Leave management with approval workflows",
+      "Performance review cycles and goal tracking",
+      "Document management and e-signatures",
+      "Compliance reporting and audit trails",
+      "Self-service employee portal"
+    ],
+    "benefits": [
+      "Reduce HR administrative workload by up to 60%",
+      "Eliminate payroll errors with automated calculations",
+      "Improve employee satisfaction with self-service tools",
+      "Stay compliant with built-in reporting and audit logs"
+    ],
+    "category": "Human Resources",
+    "ctaText": "Get HRM",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 5,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 6,
+    "name": "AI Sales Agents",
+    "slug": "ai-sales-agents",
+    "shortDescription": "AI-powered sales agents that qualify leads, answer product questions, and book meetings around the clock on your website and messaging channels.",
+    "description": "AI Sales Agents deploy intelligent virtual sales representatives on your website, email, and messaging channels. They qualify inbound leads, answer product questions using your approved knowledge base, handle objections, and schedule meetings with your human sales team — 24 hours a day, 7 days a week. Every response is grounded in your catalog so agents never invent features or prices. CRM integration hands qualified leads to your team with full conversation history.",
+    "image": "/images/products/ai-sales-agents.webp",
+    "gallery": [
+      {
+        "src": "/images/products/ai-sales-agents.webp",
+        "caption": "Lead qualification dashboard with conversation analytics and meeting scheduler"
+      }
+    ],
+    "price": 499,
+    "currency": "USD",
+    "priceDisplay": "From $499",
+    "features": [
+      "24/7 lead qualification and response",
+      "Knowledge-base-driven answers — no hallucinated product info",
+      "Multi-channel deployment: web chat, email, and SMS",
+      "CRM integration for lead handoff",
+      "Meeting scheduling with calendar sync",
+      "Conversation analytics and lead scoring",
+      "Customizable agent personality and tone",
+      "Escalation to human sales reps"
+    ],
+    "benefits": [
+      "Never miss a lead outside business hours",
+      "Reduce response time from hours to seconds",
+      "Free your sales team to focus on closing deals",
+      "Consistent, accurate product messaging every time"
+    ],
+    "category": "Sales Automation",
+    "ctaText": "Deploy AI Sales Agents",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 6,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 7,
+    "name": "WhatsApp Automation",
+    "slug": "whatsapp-automation",
+    "shortDescription": "Automate WhatsApp Business messaging — broadcasts, chatbots, order updates, and customer support at scale with approved templates.",
+    "description": "WhatsApp Automation empowers businesses to scale customer communication on WhatsApp Business. Send segmented broadcast campaigns, deploy rule-based chatbots, deliver order and shipping updates, and provide automated customer support — all while maintaining a personal, conversational experience. Built on the WhatsApp Business API with template approval workflows, delivery analytics, and a multi-agent inbox for human handoff when conversations need a real person.",
+    "image": "/images/products/whatsapp-automation.webp",
+    "gallery": [
+      {
+        "src": "/images/products/whatsapp-automation.webp",
+        "caption": "Campaign manager, chatbot flows, and multi-agent WhatsApp inbox"
+      }
+    ],
+    "price": 399,
+    "currency": "USD",
+    "priceDisplay": "From $399",
+    "features": [
+      "WhatsApp Business API integration",
+      "Broadcast messaging with audience segmentation",
+      "Rule-based chatbot flows",
+      "Order and shipping notification templates",
+      "Customer support ticket routing",
+      "Message templates with approval workflow",
+      "Analytics: delivery, read rates, and responses",
+      "Multi-agent inbox for human handoff"
+    ],
+    "benefits": [
+      "Reach customers on their preferred messaging channel",
+      "Automate repetitive support queries",
+      "Send timely order updates that reduce support tickets",
+      "Run targeted broadcast campaigns with high open rates"
+    ],
+    "category": "Messaging Automation",
+    "ctaText": "Automate WhatsApp",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 7,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 8,
+    "name": "Restaurant POS",
+    "slug": "restaurant-pos",
+    "shortDescription": "Full-service restaurant point-of-sale — table management, kitchen display, split bills, inventory, and daily sales reporting.",
+    "description": "Restaurant POS is a complete point-of-sale system built for dine-in, takeaway, and delivery operations. Staff manage table layouts, send orders to the kitchen display, split bills, apply discounts, and accept card and cash payments from one fast interface. The admin dashboard tracks menu items, ingredient inventory, supplier purchases, and daily revenue. Designed for single-location restaurants and small chains that need reliable counter and back-office tools without enterprise complexity.",
+    "image": "/images/products/restaurant-pos.webp",
+    "gallery": [
+      {
+        "src": "/images/products/restaurant-pos.webp",
+        "caption": "Table layout, order tickets, menu management, and daily sales summary"
+      }
+    ],
+    "price": 1800,
+    "currency": "USD",
+    "priceDisplay": "From $1,800",
+    "features": [
+      "Visual table layout with occupancy status",
+      "Kitchen display system for order tickets",
+      "Menu management with categories and modifiers",
+      "Split bills, discounts, and multi-payment methods",
+      "Inventory tracking linked to menu ingredients",
+      "Daily and monthly sales reports",
+      "Staff roles and shift management",
+      "Receipt printing and order history"
+    ],
+    "benefits": [
+      "Speed up table turnover with faster order entry",
+      "Reduce kitchen errors with clear ticket routing",
+      "Track food costs and inventory in real time",
+      "See daily revenue and top-selling items at a glance"
+    ],
+    "category": "Retail & Hospitality",
+    "ctaText": "Get Restaurant POS",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 8,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 9,
+    "name": "School Management System",
+    "slug": "school-management-system",
+    "shortDescription": "All-in-one school ERP — student enrollment, fee collection, attendance, exams, timetables, and parent portal.",
+    "description": "School Management System centralizes every administrative task for K-12 schools and training institutes. Register students, assign classes, record daily attendance, schedule exams, and collect fees with automated reminders. Teachers enter grades and upload report cards; parents access a portal to view attendance, fees, and results. Principals get dashboards for enrollment trends, fee collection rates, and staff workload — replacing spreadsheets and paper registers with one connected platform.",
+    "image": "/images/products/school-management.webp",
+    "gallery": [
+      {
+        "src": "/images/products/school-management.webp",
+        "caption": "Enrollment dashboard, fee collection stats, and class timetable overview"
+      }
+    ],
+    "price": 2200,
+    "currency": "USD",
+    "priceDisplay": "From $2,200",
+    "features": [
+      "Student enrollment and class assignment",
+      "Fee management with online and cash collection",
+      "Daily attendance for students and staff",
+      "Exam scheduling and grade entry",
+      "Automated report card generation",
+      "Parent portal for attendance and fee status",
+      "Timetable and teacher workload management",
+      "SMS and email fee and attendance alerts"
+    ],
+    "benefits": [
+      "Replace paper registers with digital attendance records",
+      "Improve fee collection with automated reminders",
+      "Give parents transparency through a self-service portal",
+      "Reduce admin workload during enrollment and exam seasons"
+    ],
+    "category": "Education",
+    "ctaText": "Request School Demo",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 9,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 10,
+    "name": "E-commerce Store Builder",
+    "slug": "ecommerce-store-builder",
+    "shortDescription": "Launch and manage an online store — product catalog, orders, inventory, payments, and storefront themes without coding.",
+    "description": "E-commerce Store Builder gives retailers and brands a production-ready online store with admin tools for catalog management, order fulfillment, inventory alerts, and payment gateway integration. Add products with variants, set shipping rules, run discount codes, and track revenue from a single dashboard. The storefront is mobile-responsive and SEO-ready out of the box. Ideal for businesses moving from social selling or marketplaces to their own branded shop.",
+    "image": "/images/products/ecommerce-store.webp",
+    "gallery": [
+      {
+        "src": "/images/products/ecommerce-store.webp",
+        "caption": "Product catalog, order management, and revenue analytics dashboard"
+      }
+    ],
+    "price": 1999,
+    "currency": "USD",
+    "priceDisplay": "From $1,999",
+    "features": [
+      "Product catalog with variants, images, and SEO fields",
+      "Order management with status workflow",
+      "Inventory tracking with low-stock alerts",
+      "Payment gateway integration (Stripe, PayPal, local gateways)",
+      "Discount codes and promotional pricing",
+      "Shipping zones and rate configuration",
+      "Customer accounts and order history",
+      "Mobile-responsive storefront themes"
+    ],
+    "benefits": [
+      "Launch a branded online store in days, not months",
+      "Manage products, orders, and payments from one admin panel",
+      "Reduce overselling with real-time inventory sync",
+      "Own your customer data instead of relying on marketplaces"
+    ],
+    "category": "E-commerce",
+    "ctaText": "Build Your Store",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 10,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 11,
+    "name": "Real Estate CRM",
+    "slug": "real-estate-crm",
+    "shortDescription": "Property sales CRM — manage listings, leads, site visits, agent assignments, and deal pipeline from one platform.",
+    "description": "Real Estate CRM helps agencies and developers track every property listing, buyer inquiry, and deal stage in one place. Agents see assigned leads, schedule site visits, log follow-ups, and move prospects through a visual pipeline from first contact to closed deal. Listings include photos, pricing, location maps, and availability status. Managers get team performance dashboards and commission tracking. Built for residential and commercial brokers who outgrow spreadsheets and WhatsApp groups.",
+    "image": "/images/products/real-estate-crm.webp",
+    "gallery": [
+      {
+        "src": "/images/products/real-estate-crm.webp",
+        "caption": "Property listings map, lead pipeline, and agent activity dashboard"
+      }
+    ],
+    "price": 1299,
+    "currency": "USD",
+    "priceDisplay": "From $1,299",
+    "features": [
+      "Property listing management with photos and maps",
+      "Lead capture from website forms and referrals",
+      "Visual deal pipeline (New → Viewing → Offer → Closed)",
+      "Agent assignment and follow-up reminders",
+      "Site visit scheduling and calendar sync",
+      "Commission and deal value tracking",
+      "Document storage for agreements and IDs",
+      "Team performance and conversion reports"
+    ],
+    "benefits": [
+      "Stop losing leads in WhatsApp chats and spreadsheets",
+      "Give every agent a clear view of their assigned pipeline",
+      "Track which listings and sources convert best",
+      "Close deals faster with structured follow-up workflows"
+    ],
+    "category": "Real Estate",
+    "ctaText": "Start with Real Estate CRM",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 11,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  },
+  {
+    "id": 12,
+    "name": "Clinic Management System",
+    "slug": "clinic-management-system",
+    "shortDescription": "Healthcare clinic software — patient records, appointments, doctor schedules, billing, and prescription management.",
+    "description": "Clinic Management System streamlines daily operations for medical clinics, dental practices, and specialty centers. Front desk staff book appointments, manage the patient queue, and generate bills. Doctors access patient history, write prescriptions, and review lab results from one secure interface. Administrators track revenue, doctor availability, and inventory for medicines and supplies. Role-based access keeps patient data protected while reducing wait times and paperwork.",
+    "image": "/images/products/clinic-management.webp",
+    "gallery": [
+      {
+        "src": "/images/products/clinic-management.webp",
+        "caption": "Appointment schedule, patient queue, and clinic billing overview"
+      }
+    ],
+    "price": 2499,
+    "currency": "USD",
+    "priceDisplay": "From $2,499",
+    "features": [
+      "Patient registration and electronic health records",
+      "Appointment booking with doctor availability",
+      "Waiting room queue and token management",
+      "Prescription and treatment history",
+      "Billing, invoices, and insurance tracking",
+      "Lab test orders and result uploads",
+      "Medicine inventory and expiry alerts",
+      "Role-based access for doctors, nurses, and admin"
+    ],
+    "benefits": [
+      "Reduce patient wait times with organized queue management",
+      "Give doctors instant access to complete patient history",
+      "Eliminate paper prescription pads and manual billing",
+      "Track clinic revenue and doctor utilization in real time"
+    ],
+    "category": "Healthcare",
+    "ctaText": "Request Clinic Demo",
+    "ctaLink": "/contact",
+    "demoLink": "",
+    "sortOrder": 12,
+    "published": true,
+    "createdAt": "2026-03-20T00:00:00.000Z",
+    "updatedAt": "2026-03-20T00:00:00.000Z"
+  }
+]

@@ -1,0 +1,182 @@
+'use client'
+
+import { useCallback, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { processArfaQuery } from '@/lib/arfa/engine'
+import { enrichResponseWithNavigation } from '@/lib/arfa/navigation'
+import { generateId } from '@/lib/arfa/utils'
+import type { ArfaResponse, TranscriptMessage } from '@/lib/arfa/types'
+import { useAudioAnalyzer } from './useAudioAnalyzer'
+import { useTurnBasedVoice } from './useTurnBasedVoice'
+import { useSpeechSynthesis } from './useSpeechSynthesis'
+
+export type ArfaVoiceState = 'idle' | 'ready' | 'listening' | 'processing' | 'speaking'
+
+const ARFA_GREETING =
+  "Hi! I'm Arfa, your AI assistant. Ask me about our web development services, pricing, project rescue, or how to get started."
+
+export function useArfa() {
+  const router = useRouter()
+  const [messages, setMessages] = useState<TranscriptMessage[]>([])
+  const [voiceState, setVoiceState] = useState<ArfaVoiceState>('ready')
+  const [liveCaption, setLiveCaption] = useState('')
+  const [isMuted, setIsMuted] = useState(false)
+  const hasGreeted = useRef(false)
+  const processingRef = useRef(false)
+  const messagesRef = useRef<TranscriptMessage[]>([])
+
+  messagesRef.current = messages
+
+  const { isSpeaking, speak, stop: stopSpeaking } = useSpeechSynthesis()
+  const {
+    audioLevel,
+    isUserSpeaking,
+    hasPermission,
+    error: micError,
+    stream,
+    start: startMic,
+    stop: stopMic,
+    setOnSpeechStart,
+    setOnSpeechEnd,
+  } = useAudioAnalyzer()
+
+  const isListeningMode = voiceState === 'listening' && !isMuted && hasPermission
+
+  const addMessage = useCallback((role: 'user' | 'assistant', content: string) => {
+    setMessages((prev) => {
+      const next = [...prev, { id: generateId(), role, content, timestamp: new Date() }]
+      messagesRef.current = next
+      return next
+    })
+  }, [])
+
+  const executeAction = useCallback(
+    (response: ArfaResponse) => {
+      switch (response.action.type) {
+        case 'navigate':
+          if (response.action.payload?.url) {
+            const url = response.action.payload.url
+            if (url.startsWith('http')) {
+              window.open(url, '_blank')
+            } else {
+              router.push(url)
+            }
+          }
+          break
+        case 'open_contact':
+          router.push('/contact')
+          break
+        default:
+          break
+      }
+    },
+    [router]
+  )
+
+  const processUtterance = useCallback(
+    async (transcript: string, audioBlob: Blob | null) => {
+      if (processingRef.current) return
+      if (!transcript.trim() && !audioBlob) return
+
+      processingRef.current = true
+      setVoiceState('processing')
+      setLiveCaption('')
+
+      let response: ArfaResponse
+
+      try {
+        const formData = new FormData()
+        formData.append('transcript', transcript.trim())
+        if (audioBlob) formData.append('audio', audioBlob, 'audio.webm')
+        formData.append(
+          'history',
+          JSON.stringify(messagesRef.current.slice(-8).map((m) => ({ role: m.role, content: m.content })))
+        )
+
+        const res = await fetch('/api/voice/process', { method: 'POST', body: formData })
+        if (res.ok) {
+          response = await res.json()
+        } else {
+          response = enrichResponseWithNavigation(transcript, processArfaQuery(transcript || 'hello'))
+        }
+      } catch {
+        response = enrichResponseWithNavigation(transcript, processArfaQuery(transcript || 'hello'))
+      }
+
+      if (transcript.trim()) addMessage('user', transcript.trim())
+      addMessage('assistant', response.text)
+      setVoiceState('speaking')
+      executeAction(response)
+
+      speak(response.text, () => {
+        processingRef.current = false
+        setVoiceState('listening')
+      })
+    },
+    [addMessage, speak, executeAction]
+  )
+
+  const { liveTranscript } = useTurnBasedVoice({
+    listening: isListeningMode,
+    stream,
+    onUtterance: processUtterance,
+    onInterim: setLiveCaption,
+    setOnSpeechStart,
+    setOnSpeechEnd,
+  })
+
+  const activate = useCallback(async () => {
+    try {
+      setIsMuted(false)
+      await startMic()
+      setVoiceState('listening')
+      if (!hasGreeted.current) {
+        hasGreeted.current = true
+        addMessage('assistant', ARFA_GREETING)
+      }
+    } catch {
+      setVoiceState('ready')
+    }
+  }, [startMic, addMessage])
+
+  const deactivate = useCallback(() => {
+    stopMic()
+    stopSpeaking()
+    setVoiceState('ready')
+    setLiveCaption('')
+    setIsMuted(false)
+    processingRef.current = false
+  }, [stopMic, stopSpeaking])
+
+  const toggleMute = useCallback(() => setIsMuted((m) => !m), [])
+
+  const handleOrbClick = useCallback(async () => {
+    if (!hasPermission || voiceState === 'ready') {
+      await activate()
+    } else if (isMuted) {
+      setIsMuted(false)
+      setVoiceState('listening')
+    } else if (voiceState === 'speaking') {
+      stopSpeaking()
+      processingRef.current = false
+      setVoiceState('listening')
+    }
+  }, [hasPermission, voiceState, isMuted, activate, stopSpeaking])
+
+  return {
+    messages,
+    voiceState,
+    isActive: hasPermission && voiceState !== 'ready',
+    isSpeaking,
+    isUserSpeaking: isUserSpeaking && isListeningMode,
+    isMuted,
+    audioLevel,
+    hasPermission,
+    micError,
+    liveCaption: voiceState === 'listening' ? liveCaption || liveTranscript : liveCaption,
+    activate,
+    deactivate,
+    toggleMute,
+    handleOrbClick,
+  }
+}

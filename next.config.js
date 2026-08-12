@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
+  experimental: {
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', 'framer-motion'],
+  },
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com', 'i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com'],
     remotePatterns: [
@@ -54,6 +59,16 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'Expires', value: '0' },
+        ],
+      },
+      {
+        // Cache optimized static assets
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
         ],
       },
       {

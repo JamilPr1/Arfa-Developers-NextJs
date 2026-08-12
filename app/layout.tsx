@@ -1,14 +1,17 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { Poppins, Roboto } from 'next/font/google'
 import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
 import AOSInit from '@/components/AOSInit'
-import LiveChat from '@/components/LiveChat'
 import StructuredData from '@/components/StructuredData'
-import WhatsAppButton from '@/components/WhatsAppButton'
-import SlackChatWidget from '@/components/SlackChatWidget'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import Script from 'next/script'
+
+const LiveChat = dynamic(() => import('@/components/LiveChat'), { ssr: false })
+const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'), { ssr: false })
+const SlackChatWidget = dynamic(() => import('@/components/SlackChatWidget'), { ssr: false })
+const ArfaVoiceWidget = dynamic(() => import('@/components/ArfaVoiceWidget'), { ssr: false })
 
 const poppins = Poppins({
   weight: ['400', '500', '600', '700'],
@@ -105,20 +108,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* CookieHub */}
+        {/* CookieHub — deferred to avoid blocking first paint */}
         <Script
           id="cookiehub-sdk"
           src="https://cdn.cookiehub.eu/c2/ac7679c2.js"
-          strategy="beforeInteractive"
+          strategy="lazyOnload"
         />
         <Script
           id="cookiehub-init"
-          strategy="beforeInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
 document.addEventListener("DOMContentLoaded", function(event) {
-var cpm = {};
-window.cookiehub.load(cpm);
+if (window.cookiehub) { var cpm = {}; window.cookiehub.load(cpm); }
 });
 `,
           }}
@@ -143,8 +145,6 @@ window.cookiehub.load(cpm);
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={`${poppins.variable} ${roboto.variable}`}>
-        {/* Prefetch promotions API for immediate loading */}
-        <link rel="prefetch" href="/api/promotions" as="fetch" crossOrigin="anonymous" />
         {/* Google Tag Manager */}
         <Script
           id="google-tag-manager"
@@ -175,6 +175,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <WhatsAppButton />
           {/* Real-time Chat Widget - sends messages to Slack */}
           <SlackChatWidget />
+          {/* AI Voice Assistant — Arfa */}
+          <ArfaVoiceWidget />
           {/* Live Chat - Configure via environment variables (optional) */}
           {process.env.NEXT_PUBLIC_TIDIO_ID && (
             <LiveChat provider="tidio" id={process.env.NEXT_PUBLIC_TIDIO_ID} />

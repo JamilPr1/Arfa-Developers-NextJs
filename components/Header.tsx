@@ -33,6 +33,7 @@ const navLinks: NavLink[] = [
   { label: 'Services', href: '/services', hasDropdown: true },
   { label: 'Project Rescue', href: '/project-rescue' },
   { label: 'Case Studies', href: '/case-studies' },
+  { label: 'Products', href: '/products' },
   { label: 'Blog', href: '/blog' },
   { label: 'Free Audit', href: '/free-audit' },
   { label: 'Contact', href: '/contact' },
@@ -165,6 +166,8 @@ export default function Header() {
     pathname === '/custom-software-development-usa' ||
     pathname.startsWith('/case-studies/') ||
     pathname === '/portfolio' || 
+    pathname === '/products' ||
+    pathname.startsWith('/products/') ||
     pathname === '/about' || 
     pathname === '/blog' || 
     pathname === '/contact'
