@@ -120,3 +120,76 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
 }
+
+/* Floating prompt next to the Arfa FAB */
+.arfa-fab-prompt {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  max-width: min(200px, 52vw);
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #1e3a8a;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  text-align: left;
+  position: relative;
+  animation: arfaPromptFloat 3s ease-in-out infinite;
+}
+
+.arfa-fab-prompt::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  box-shadow: 2px -2px 4px rgba(15, 23, 42, 0.06);
+}
+
+.arfa-fab-prompt-title {
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  color: #1e3a8a;
+}
+
+.arfa-fab-prompt-sub {
+  font-family: var(--font-roboto), system-ui, sans-serif;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: #64748b;
+}
+
+.arfa-fab-prompt:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.22);
+}
+
+@keyframes arfaPromptFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@media (max-width: 420px) {
+  .arfa-fab-prompt {
+    max-width: 140px;
+    padding: 8px 10px;
+  }
+
+  .arfa-fab-prompt-title {
+    font-size: 0.8rem;
+  }
+
+  .arfa-fab-prompt-sub {
+    font-size: 0.68rem;
+  }
+}
+
