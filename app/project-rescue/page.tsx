@@ -22,6 +22,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import PageHero from '@/components/PageHero'
 import Link from 'next/link'
 import Script from 'next/script'
 
@@ -59,7 +60,7 @@ const painPoints = [
     desc: 'You have partial code, no handover, and a deadline still looming.',
   },
   {
-    icon: <BuildIcon sx={{ fontSize: 50, color: '#F59E0B' }} />,
+    icon: <BuildIcon sx={{ fontSize: 50, color: 'hsl(210, 98%, 48%)' }} />,
     title: 'Broken features',
     desc: 'Checkout fails, auth breaks, integrations crash, or the app is unstable.',
   },
@@ -159,89 +160,25 @@ export default function ProjectRescuePage() {
 
       <Header />
       <Box component="main">
-        {/* Hero */}
-        <Box
-          sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
-            pt: { xs: 12, md: 16 },
-            pb: { xs: 8, md: 12 },
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography
-              variant="h1"
-              sx={{
-                fontWeight: 900,
-                mb: 2,
-                fontSize: { xs: '2.4rem', md: '3.6rem', lg: '4.1rem' },
-                lineHeight: 1.15,
-                color: 'white',
-              }}
-            >
-              Project <span style={{ color: '#F59E0B' }}>Rescue</span> for US Businesses
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                color: 'rgba(255,255,255,0.95)',
-                maxWidth: 920,
-                mx: 'auto',
-                mb: 4,
-                lineHeight: 1.65,
-                fontWeight: 400,
-                fontSize: { xs: '1.1rem', md: '1.45rem' },
-              }}
-            >
-              We take over failed freelancer/agency builds, fix what’s broken, and ship production-ready
-              software fast — with clear weekly progress and ongoing support.
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-              <Button
-                component={Link}
-                href="/contact"
-                variant="contained"
-                size="large"
-                sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
-                  px: 5,
-                  py: 2,
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  '&:hover': { backgroundColor: '#FBBF24', transform: 'translateY(-2px)' },
-                  transition: 'all 0.25s ease',
-                }}
-              >
-                Get a Rescue Assessment
-              </Button>
-              <Button
-                component={Link}
-                href="/case-studies"
-                variant="outlined"
-                size="large"
-                sx={{
-                  borderColor: 'rgba(255,255,255,0.7)',
-                  color: 'white',
-                  px: 5,
-                  py: 2,
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.08)' },
-                }}
-              >
-                See Case Studies
-              </Button>
-            </Box>
-          </Container>
-        </Box>
+        <PageHero
+          title={
+            <>
+              Project <Box component="span" sx={{ color: 'primary.main' }}>Rescue</Box> for US Businesses
+            </>
+          }
+          subtitle="We take over failed freelancer/agency builds, fix what’s broken, and ship production-ready software fast — with clear weekly progress and ongoing support."
+          ctaText="Get a Rescue Assessment"
+          ctaHref="/contact"
+          actions={
+            <Button component={Link} href="/case-studies" variant="outlined" size="large">
+              View case studies
+            </Button>
+          }
+        />
 
         {/* Pain points */}
         <Container maxWidth="lg" sx={{ py: 8 }}>
-          <Typography variant="h3" sx={{ fontWeight: 800, mb: 1, textAlign: 'center', color: '#1E3A8A' }}>
+          <Typography variant="h3" sx={{ fontWeight: 800, mb: 1, textAlign: 'center', color: '#0C1222' }}>
             If this feels familiar — we can fix it
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mb: 6, maxWidth: 900, mx: 'auto' }}>
@@ -263,7 +200,7 @@ export default function ProjectRescuePage() {
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{p.icon}</Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1E3A8A' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#0C1222' }}>
                     {p.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B7280' }}>
@@ -276,9 +213,9 @@ export default function ProjectRescuePage() {
         </Container>
 
         {/* Process */}
-        <Box sx={{ backgroundColor: '#F9FAFB', py: 8 }}>
+        <Box sx={{ backgroundColor: '#F7F8FA', py: 8 }}>
           <Container maxWidth="lg">
-            <Typography variant="h3" sx={{ fontWeight: 800, mb: 4, textAlign: 'center', color: '#1E3A8A' }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, mb: 4, textAlign: 'center', color: '#0C1222' }}>
               Our rescue process (built for speed + safety)
             </Typography>
             <Grid container spacing={4}>
@@ -309,14 +246,16 @@ export default function ProjectRescuePage() {
                     p: 4,
                     borderRadius: 3,
                     height: '100%',
-                    backgroundColor: '#0B2A6F',
-                    color: 'white',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E8ECF1',
+                    boxShadow: 'none',
+                    color: '#0C1222',
                   }}
                 >
-                  <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: 'white' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: '#0C1222' }}>
                     Typical outcomes
                   </Typography>
-                  <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 2 }} />
+                  <Divider sx={{ borderColor: '#E8ECF1', mb: 2 }} />
                   <List>
                     {[
                       'Stable builds + reliable deployments',
@@ -327,7 +266,7 @@ export default function ProjectRescuePage() {
                     ].map((item) => (
                       <ListItem key={item} sx={{ px: 0, py: 1 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <CheckIcon sx={{ color: '#F59E0B', fontSize: 22 }} />
+                          <CheckIcon sx={{ color: 'hsl(210, 98%, 48%)', fontSize: 22 }} />
                         </ListItemIcon>
                         <ListItemText primary={item} primaryTypographyProps={{ sx: { fontWeight: 600 } }} />
                       </ListItem>
@@ -341,7 +280,7 @@ export default function ProjectRescuePage() {
 
         {/* FAQ */}
         <Container maxWidth="lg" sx={{ py: 8 }}>
-          <Typography variant="h3" sx={{ fontWeight: 800, mb: 4, textAlign: 'center', color: '#1E3A8A' }}>
+          <Typography variant="h3" sx={{ fontWeight: 800, mb: 4, textAlign: 'center', color: '#0C1222' }}>
             Frequently asked questions
           </Typography>
           <Grid container spacing={3}>

@@ -48,7 +48,7 @@ const commonProblems = [
     description: 'Projects left incomplete by freelancers or agencies. We assess, fix, and complete them.',
   },
   {
-    icon: <SpeedIcon sx={{ fontSize: 50, color: '#F59E0B' }} />,
+    icon: <SpeedIcon sx={{ fontSize: 50, color: 'hsl(210, 98%, 48%)' }} />,
     title: 'Performance Issues',
     description: 'Slow loading times, crashes, and poor user experience. We optimize and fix performance problems.',
   },
@@ -105,8 +105,8 @@ export default function WebsiteRescuePage() {
         {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -122,15 +122,15 @@ export default function WebsiteRescuePage() {
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                 lineHeight: 1.2,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Website <span style={{ color: '#F59E0B' }}>Rescue</span>
+              Website <span style={{ color: 'hsl(210, 98%, 48%)' }}>Rescue</span>
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 800,
                 mx: 'auto',
                 mb: 4,
@@ -147,14 +147,14 @@ export default function WebsiteRescuePage() {
               variant="contained"
               size="large"
               sx={{
-                backgroundColor: '#F59E0B',
-                color: 'white',
+                backgroundColor: '#0C1222',
+                color: '#FFFFFF',
                 px: 5,
                 py: 2,
                 fontSize: '1.1rem',
                 fontWeight: 600,
                 '&:hover': {
-                  backgroundColor: '#FBBF24',
+                  backgroundColor: '#1E293B',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
                 },
@@ -174,7 +174,7 @@ export default function WebsiteRescuePage() {
               fontWeight: 700,
               mb: 6,
               textAlign: 'center',
-              color: '#1E3A8A',
+              color: '#0C1222',
             }}
           >
             Common Problems We Fix
@@ -197,7 +197,7 @@ export default function WebsiteRescuePage() {
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{problem.icon}</Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#1E3A8A' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#0C1222' }}>
                     {problem.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B7280' }}>
@@ -210,7 +210,7 @@ export default function WebsiteRescuePage() {
         </Container>
 
         {/* Rescue Process */}
-        <Box sx={{ backgroundColor: '#F9FAFB', py: 8 }}>
+        <Box sx={{ backgroundColor: '#F7F8FA', py: 8 }}>
           <Container maxWidth="lg">
             <Typography
               variant="h3"
@@ -218,7 +218,7 @@ export default function WebsiteRescuePage() {
                 fontWeight: 700,
                 mb: 6,
                 textAlign: 'center',
-                color: '#1E3A8A',
+                color: '#0C1222',
               }}
             >
               Our Rescue Process
@@ -226,7 +226,7 @@ export default function WebsiteRescuePage() {
             <Grid container spacing={4}>
               <Grid item xs={12} md={6}>
                 <Card elevation={2} sx={{ p: 4, borderRadius: 3, height: '100%' }}>
-                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: '#1E3A8A' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: '#0C1222' }}>
                     How We Rescue Your Project
                   </Typography>
                   <List>
@@ -248,8 +248,8 @@ export default function WebsiteRescuePage() {
                 </Card>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Card elevation={2} sx={{ p: 4, borderRadius: 3, height: '100%', backgroundColor: '#1E3A8A', color: 'white' }}>
-                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: 'white' }}>
+                <Card elevation={2} sx={{ p: 4, borderRadius: 3, height: '100%', backgroundColor: '#0C1222', color: '#0C1222' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: '#0C1222' }}>
                     Why Choose Us
                   </Typography>
                   <List>
@@ -261,7 +261,7 @@ export default function WebsiteRescuePage() {
                         primary="200+ Projects Rescued"
                         primaryTypographyProps={{
                           variant: 'body1',
-                          sx: { color: 'white', fontWeight: 500 },
+                          sx: { color: '#0C1222', fontWeight: 500 },
                         }}
                       />
                     </ListItem>
@@ -273,7 +273,7 @@ export default function WebsiteRescuePage() {
                         primary="Fast Recovery (Days, Not Months)"
                         primaryTypographyProps={{
                           variant: 'body1',
-                          sx: { color: 'white', fontWeight: 500 },
+                          sx: { color: '#0C1222', fontWeight: 500 },
                         }}
                       />
                     </ListItem>
@@ -285,7 +285,7 @@ export default function WebsiteRescuePage() {
                         primary="Ongoing Support & Maintenance"
                         primaryTypographyProps={{
                           variant: 'body1',
-                          sx: { color: 'white', fontWeight: 500 },
+                          sx: { color: '#0C1222', fontWeight: 500 },
                         }}
                       />
                     </ListItem>
@@ -297,7 +297,7 @@ export default function WebsiteRescuePage() {
                         primary="Transparent Communication"
                         primaryTypographyProps={{
                           variant: 'body1',
-                          sx: { color: 'white', fontWeight: 500 },
+                          sx: { color: '#0C1222', fontWeight: 500 },
                         }}
                       />
                     </ListItem>

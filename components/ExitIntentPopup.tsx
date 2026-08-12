@@ -193,7 +193,7 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
                   sx={{ 
                     fontWeight: 700, 
                     mb: 1, 
-                    color: '#1E3A8A',
+                    color: '#0C1222',
                     fontSize: { xs: '1.25rem', sm: '1.5rem' },
                   }}
                 >
@@ -292,8 +292,8 @@ export default function ExitIntentPopup({ onClose, onScheduleConsultation }: Exi
                       onClick={handleBookConsultation}
                       sx={{
                         backgroundColor: 'white',
-                        border: '1px solid #1E3A8A',
-                        color: '#1E3A8A',
+                        border: '1px solid #0C1222',
+                        color: '#0C1222',
                         py: { xs: 1.25, sm: 1.2 },
                         minHeight: { xs: '48px', sm: '56px' },
                         fontSize: { xs: '0.9375rem', sm: '1rem' },

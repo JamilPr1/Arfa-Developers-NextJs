@@ -19,7 +19,7 @@ export default function TermsOfServicePage() {
       <Header />
       <Box component="main" sx={{ pt: { xs: 8, md: 10 }, pb: 8 }}>
         <Container maxWidth="md">
-          <Typography variant="h3" sx={{ fontWeight: 700, mb: 4, color: '#1E3A8A' }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, mb: 4, color: '#0C1222' }}>
             Terms of Service
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B7280', mb: 4 }}>
@@ -27,7 +27,7 @@ export default function TermsOfServicePage() {
           </Typography>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               1. Acceptance of Terms
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -36,7 +36,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               2. Services
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -45,7 +45,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               3. Payment Terms
             </Typography>
             <Typography variant="body1" sx={{ mb: 2, color: '#374151', lineHeight: 1.8 }}>
@@ -60,7 +60,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               4. Intellectual Property
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -69,7 +69,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               5. Client Responsibilities
             </Typography>
             <Typography variant="body1" sx={{ mb: 2, color: '#374151', lineHeight: 1.8 }}>
@@ -84,7 +84,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               6. Limitation of Liability
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -93,7 +93,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               7. Warranty
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -102,7 +102,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               8. Termination
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -111,7 +111,7 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               9. Changes to Terms
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -120,14 +120,14 @@ export default function TermsOfServicePage() {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               10. Contact
             </Typography>
             <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
               For questions about these Terms of Service, please contact us at:
             </Typography>
             <Typography variant="body2" sx={{ color: '#6B7280', mt: 1, lineHeight: 1.8 }}>
-              Email: aarf.adevelopers@gmail.com<br />
+              Email: admin@arfadevelopers.com<br />
               Phone: +1 (516) 603-7838
             </Typography>
           </Box>

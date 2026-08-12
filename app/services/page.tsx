@@ -27,6 +27,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import PageHero from '@/components/PageHero'
 import Link from 'next/link'
 import Script from 'next/script'
 
@@ -346,11 +347,109 @@ export default function ServicesPage() {
       />
       <Header />
       <Box component="main">
-        {/* Hero Section with Pain Points */}
+        <PageHero
+          title={
+            <>
+              Tired of{' '}
+              <Box component="span" sx={{ color: 'primary.main' }}>Failed Projects</Box>
+              {' '}and{' '}
+              <Box component="span" sx={{ color: 'primary.main' }}>Broken Websites</Box>?
+            </>
+          }
+          subtitle="We've rescued 200+ failed projects from freelancers and inexperienced developers. Get enterprise-grade solutions that actually work."
+          ctaText="Get Free Consultation"
+          ctaHref="/contact"
+          actions={
+            <Button component={Link} href="/project-rescue" variant="outlined" size="large">
+              Project Rescue
+            </Button>
+          }
+        />
+
+        {/* Hero Section with Pain Points — kept content below */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            bgcolor: 'background.paper',
+            pb: { xs: 6, md: 8 },
+            pt: 2,
+            textAlign: 'center',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Container maxWidth="lg">
+            {/* Pain Points Grid */}
+            <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ maxWidth: 1000, mx: 'auto', px: { xs: 2, sm: 0 } }}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    bgcolor: 'background.default',
+                    borderRadius: 2,
+                    p: { xs: 2, sm: 3 },
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    height: '100%',
+                  }}
+                >
+                  <Typography 
+                    variant="h6" 
+                    sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}
+                  >
+                    Incomplete Projects
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Freelancers disappear mid-build — we finish what they started.
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    bgcolor: 'background.default',
+                    borderRadius: 2,
+                    p: { xs: 2, sm: 3 },
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    height: '100%',
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                    Poor Code Quality
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Security holes and unmaintainable code — we rebuild it right.
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    bgcolor: 'background.default',
+                    borderRadius: 2,
+                    p: { xs: 2, sm: 3 },
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    height: '100%',
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+                    No Ongoing Support
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Delivery without support — we stay for maintenance and growth.
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+
+        <Box sx={{ display: 'none' }}>
+        {/* OLD HERO PLACEHOLDER REMOVED CONTENT START */}
+        <Box
+          sx={{
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -366,7 +465,7 @@ export default function ServicesPage() {
               height: '100%',
               top: 0,
               left: 0,
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              background: 'radial-gradient(circle at 100% 0%, rgba(29,78,216,0.06) 0%, transparent 50%)',
               opacity: 0.5,
             }}
           />
@@ -374,7 +473,7 @@ export default function ServicesPage() {
             <Typography
               variant="h1"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 fontWeight: 800,
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
@@ -382,11 +481,11 @@ export default function ServicesPage() {
               }}
             >
               Tired of{' '}
-              <Box component="span" sx={{ color: '#ffd700' }}>
+              <Box component="span" sx={{ color: '#1D4ED8' }}>
                 Failed Projects
               </Box>
               {' '}and{' '}
-              <Box component="span" sx={{ color: '#ffd700' }}>
+              <Box component="span" sx={{ color: '#1D4ED8' }}>
                 Broken Websites
               </Box>
               ?
@@ -394,7 +493,7 @@ export default function ServicesPage() {
             <Typography
               variant="h4"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 900,
                 mx: 'auto',
                 mb: 4,
@@ -423,7 +522,7 @@ export default function ServicesPage() {
                   <Typography 
                     variant="h6" 
                     sx={{ 
-                      color: 'white',
+                      color: '#0C1222',
                       fontWeight: 700, 
                       mb: 1,
                       fontSize: { xs: '1rem', md: '1.1rem' },
@@ -434,7 +533,7 @@ export default function ServicesPage() {
                   <Typography 
                     variant="body2" 
                     sx={{ 
-                      color: 'rgba(255, 255, 255, 0.95)',
+                      color: 'text.secondary',
                       lineHeight: 1.6,
                       fontSize: { xs: '0.875rem', md: '0.9375rem' },
                     }}
@@ -457,7 +556,7 @@ export default function ServicesPage() {
                   <Typography 
                     variant="h6" 
                     sx={{ 
-                      color: 'white',
+                      color: '#0C1222',
                       fontWeight: 700, 
                       mb: 1,
                       fontSize: { xs: '1rem', md: '1.1rem' },
@@ -468,7 +567,7 @@ export default function ServicesPage() {
                   <Typography 
                     variant="body2" 
                     sx={{ 
-                      color: 'rgba(255, 255, 255, 0.95)',
+                      color: 'text.secondary',
                       lineHeight: 1.6,
                       fontSize: { xs: '0.875rem', md: '0.9375rem' },
                     }}
@@ -491,7 +590,7 @@ export default function ServicesPage() {
                   <Typography 
                     variant="h6" 
                     sx={{ 
-                      color: 'white',
+                      color: '#0C1222',
                       fontWeight: 700, 
                       mb: 1,
                       fontSize: { xs: '1rem', md: '1.1rem' },
@@ -502,7 +601,7 @@ export default function ServicesPage() {
                   <Typography 
                     variant="body2" 
                     sx={{ 
-                      color: 'rgba(255, 255, 255, 0.95)',
+                      color: 'text.secondary',
                       lineHeight: 1.6,
                       fontSize: { xs: '0.875rem', md: '0.9375rem' },
                     }}
@@ -520,14 +619,14 @@ export default function ServicesPage() {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
+                  backgroundColor: '#0C1222',
+                  color: '#FFFFFF',
                   px: 5,
                   py: 2,
                   fontSize: '1.1rem',
                   fontWeight: 600,
                   '&:hover': {
-                    backgroundColor: '#FBBF24',
+                    backgroundColor: '#1E293B',
                     transform: 'translateY(-2px)',
                     boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
                   },
@@ -539,6 +638,7 @@ export default function ServicesPage() {
             </Box>
           </Container>
         </Box>
+        </Box>
 
         {/* Services Grid */}
         <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -546,21 +646,22 @@ export default function ServicesPage() {
             {services.map((service, index) => (
               <Grid item xs={12} key={service.id}>
                 <Paper
-                  elevation={3}
+                  elevation={0}
+                  variant="outlined"
                   sx={{
                     p: 4,
                     borderRadius: 3,
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      boxShadow: 6,
-                      transform: 'translateY(-4px)',
+                      boxShadow: 1,
+                      borderColor: 'primary.main',
                     },
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Box
                       sx={{
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         mr: 3,
                         display: 'flex',
                         alignItems: 'center',
@@ -580,7 +681,7 @@ export default function ServicesPage() {
                         sx={{
                           fontWeight: 700,
                           mb: 1,
-                          color: '#1E3A8A',
+                          color: '#0C1222',
                         }}
                       >
                         <Link
@@ -604,7 +705,7 @@ export default function ServicesPage() {
 
                   <Grid container spacing={{ xs: 3, sm: 4 }}>
                     <Grid item xs={12} md={6}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
                         Key Features
                       </Typography>
                       <List>
@@ -626,7 +727,7 @@ export default function ServicesPage() {
                     </Grid>
 
                     <Grid item xs={12} md={6}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
                         Technologies & Tools
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
@@ -636,7 +737,7 @@ export default function ServicesPage() {
                             label={tech}
                             sx={{
                               backgroundColor: '#EFF6FF',
-                              color: '#1E3A8A',
+                              color: '#0C1222',
                               fontWeight: 500,
                               '&:hover': {
                                 backgroundColor: '#DBEAFE',
@@ -646,7 +747,7 @@ export default function ServicesPage() {
                         ))}
                       </Box>
 
-                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, mt: 3, color: '#1E3A8A' }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, mt: 3, color: '#0C1222' }}>
                         Common Use Cases
                       </Typography>
                       <List dense>
@@ -674,7 +775,7 @@ export default function ServicesPage() {
         </Container>
 
         {/* Why Choose Us Section */}
-        <Box sx={{ bgcolor: '#F9FAFB', py: 8 }}>
+        <Box sx={{ bgcolor: '#F7F8FA', py: 8 }}>
           <Container maxWidth="lg">
             <Typography
               variant="h2"
@@ -683,7 +784,7 @@ export default function ServicesPage() {
                 fontWeight: 700,
                 mb: 4,
                 textAlign: 'center',
-                color: '#1E3A8A',
+                color: '#0C1222',
               }}
             >
               Why Choose Arfa Developers?
@@ -691,7 +792,7 @@ export default function ServicesPage() {
             <Grid container spacing={{ xs: 3, sm: 4 }}>
               <Grid item xs={12} md={4}>
                 <Card sx={{ height: '100%', p: 3, textAlign: 'center' }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 2 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#0C1222', mb: 2 }}>
                     200+
                   </Typography>
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
@@ -704,7 +805,7 @@ export default function ServicesPage() {
               </Grid>
               <Grid item xs={12} md={4}>
                 <Card sx={{ height: '100%', p: 3, textAlign: 'center' }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 2 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#0C1222', mb: 2 }}>
                     50+
                   </Typography>
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
@@ -717,7 +818,7 @@ export default function ServicesPage() {
               </Grid>
               <Grid item xs={12} md={4}>
                 <Card sx={{ height: '100%', p: 3, textAlign: 'center' }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 2 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#0C1222', mb: 2 }}>
                     24/7
                   </Typography>
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>

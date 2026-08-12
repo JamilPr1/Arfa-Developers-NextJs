@@ -637,8 +637,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -654,7 +654,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               height: '100%',
               top: 0,
               left: 0,
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              background: 'radial-gradient(circle at 100% 0%, rgba(29,78,216,0.06) 0%, transparent 50%)',
               opacity: 0.5,
             }}
           />
@@ -662,7 +662,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
               <Box
                 sx={{
-                  color: 'white',
+                  color: '#0C1222',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -679,7 +679,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             <Typography
               variant="h1"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 fontWeight: 800,
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
@@ -691,7 +691,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             <Typography
               variant="h4"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 900,
                 mx: 'auto',
                 mb: 4,
@@ -709,14 +709,14 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
+                  backgroundColor: '#0C1222',
+                  color: '#FFFFFF',
                   px: 5,
                   py: 2,
                   fontSize: '1.1rem',
                   fontWeight: 600,
                   '&:hover': {
-                    backgroundColor: '#FBBF24',
+                    backgroundColor: '#1E293B',
                     transform: 'translateY(-2px)',
                     boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
                   },
@@ -743,7 +743,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               sx={{ 
                 fontWeight: 700, 
                 mb: 3, 
-                color: '#1E3A8A',
+                color: '#0C1222',
                 fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
               }}
             >
@@ -762,7 +762,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                   sx={{ 
                     fontWeight: 600, 
                     mb: 2, 
-                    color: '#1E3A8A',
+                    color: '#0C1222',
                     fontSize: { xs: '1.25rem', sm: '1.5rem' },
                   }}
                 >
@@ -787,7 +787,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
                   Technologies & Tools
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
@@ -797,7 +797,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                       label={tech}
                       sx={{
                         backgroundColor: '#EFF6FF',
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontWeight: 500,
                         '&:hover': {
                           backgroundColor: '#DBEAFE',
@@ -807,7 +807,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                   ))}
                 </Box>
 
-                <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, mt: 3, color: '#1E3A8A' }}>
+                <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, mt: 3, color: '#0C1222' }}>
                   Common Use Cases
                 </Typography>
                 <List dense>

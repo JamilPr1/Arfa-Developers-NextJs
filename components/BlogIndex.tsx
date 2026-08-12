@@ -67,7 +67,7 @@ export default function BlogIndex({
 
   if (loading) {
     return (
-      <Box id={variant === 'home' ? 'blog' : undefined} sx={{ py: 10, bgcolor: '#F9FAFB', textAlign: 'center' }}>
+      <Box id={variant === 'home' ? 'blog' : undefined} sx={{ py: 10, bgcolor: '#F7F8FA', textAlign: 'center' }}>
         <Container maxWidth="lg">
           <CircularProgress />
           <Typography sx={{ mt: 2 }}>Loading blogs...</Typography>
@@ -78,7 +78,7 @@ export default function BlogIndex({
 
   if (error) {
     return (
-      <Box id={variant === 'home' ? 'blog' : undefined} sx={{ py: 10, bgcolor: '#F9FAFB' }}>
+      <Box id={variant === 'home' ? 'blog' : undefined} sx={{ py: 10, bgcolor: '#F7F8FA' }}>
         <Container maxWidth="lg">
           <Alert severity="error">{error}</Alert>
         </Container>
@@ -91,7 +91,7 @@ export default function BlogIndex({
   }
 
   return (
-    <Box id={variant === 'home' ? 'blog' : undefined} sx={{ py: 10, bgcolor: '#F9FAFB' }}>
+    <Box id={variant === 'home' ? 'blog' : undefined} sx={{ py: 10, bgcolor: '#F7F8FA' }}>
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up">
           <Typography
@@ -99,7 +99,7 @@ export default function BlogIndex({
             sx={{
               fontWeight: 800,
               mb: 2,
-              color: '#1E3A8A',
+              color: '#0C1222',
             }}
           >
             Insights & Articles
@@ -159,7 +159,7 @@ export default function BlogIndex({
                         component="span"
                         sx={{
                           textTransform: 'none',
-                          color: '#1E3A8A',
+                          color: '#0C1222',
                           fontWeight: 700,
                           p: 0,
                           '&:hover': {

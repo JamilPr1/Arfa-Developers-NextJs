@@ -106,7 +106,7 @@ export default function HireTalentFormPage() {
   return (
     <>
       <Header />
-      <Box sx={{ pt: { xs: 10, sm: 12 }, pb: 8, bgcolor: '#F9FAFB', minHeight: '100vh' }}>
+      <Box sx={{ pt: { xs: 10, sm: 12 }, pb: 8, bgcolor: '#F7F8FA', minHeight: '100vh' }}>
         <Container maxWidth="md">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography
@@ -114,7 +114,7 @@ export default function HireTalentFormPage() {
               component="h1"
               sx={{
                 fontWeight: 700,
-                color: '#1E3A8A',
+                color: '#0C1222',
                 mb: 2,
                 fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
               }}
@@ -290,7 +290,7 @@ export default function HireTalentFormPage() {
                     size="large"
                     disabled={loading}
                     sx={{
-                      bgcolor: '#1E3A8A',
+                      bgcolor: '#0C1222',
                       '&:hover': { bgcolor: '#1E40AF' },
                       py: 1.5,
                     }}

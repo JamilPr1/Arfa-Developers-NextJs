@@ -28,7 +28,7 @@ export default function Error({
           textAlign: 'center',
         }}
       >
-        <Typography variant="h1" sx={{ fontWeight: 700, mb: 2, color: '#1E3A8A' }}>
+        <Typography variant="h1" sx={{ fontWeight: 700, mb: 2, color: '#0C1222' }}>
           Something went wrong!
         </Typography>
         <Typography variant="h6" sx={{ mb: 4, color: 'text.secondary' }}>

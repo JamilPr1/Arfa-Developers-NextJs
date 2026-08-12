@@ -9,6 +9,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import PageHero from '@/components/PageHero'
 import Link from 'next/link'
 import Script from 'next/script'
 
@@ -155,11 +156,23 @@ export default function CaseStudiesPage() {
       />
       <Header />
       <Box component="main">
-        {/* Hero Section */}
+        <PageHero
+          title={
+            <>
+              Case <Box component="span" sx={{ color: 'primary.main' }}>Studies</Box>
+            </>
+          }
+          subtitle="Real results, budgets, and outcomes. See how we've helped businesses achieve their goals."
+          ctaText="Start a Project"
+          ctaHref="/contact"
+        />
+
+        {/* Hero Section removed — PageHero above */}
+        <Box sx={{ display: 'none' }}>
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -175,15 +188,15 @@ export default function CaseStudiesPage() {
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                 lineHeight: 1.2,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Case <span style={{ color: '#F59E0B' }}>Studies</span>
+              Case <span style={{ color: 'hsl(210, 98%, 48%)' }}>Studies</span>
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 800,
                 mx: 'auto',
                 mb: 4,
@@ -195,6 +208,7 @@ export default function CaseStudiesPage() {
               Real results, budgets, and outcomes. See how we&apos;ve helped businesses achieve their goals.
             </Typography>
           </Container>
+        </Box>
         </Box>
 
         {/* Case Studies */}
@@ -227,14 +241,14 @@ export default function CaseStudiesPage() {
                     borderRadius: 3,
                     p: 3,
                     height: '100%',
-                    background: 'linear-gradient(135deg, #0B2A6F 0%, #2563EB 100%)',
-                    color: 'white',
+                    background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+                    color: '#0C1222',
                   }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5, color: 'white' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5, color: '#0C1222' }}>
                     {item.title}
                   </Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.92)', mb: 2, lineHeight: 1.8 }}>
+                  <Typography sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.8 }}>
                     {item.description}
                   </Typography>
                   <Button
@@ -242,10 +256,10 @@ export default function CaseStudiesPage() {
                     href={item.href}
                     variant="contained"
                     sx={{
-                      backgroundColor: '#F59E0B',
-                      color: 'white',
+                      backgroundColor: '#0C1222',
+                      color: '#FFFFFF',
                       fontWeight: 700,
-                      '&:hover': { backgroundColor: '#FBBF24' },
+                      '&:hover': { backgroundColor: '#1E293B' },
                     }}
                   >
                     Read Full Case Study
@@ -273,10 +287,10 @@ export default function CaseStudiesPage() {
                   <CardContent sx={{ p: 4 }}>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
                       {study.technologies.map((tech, idx) => (
-                        <Chip key={idx} label={tech} size="small" sx={{ backgroundColor: '#EFF6FF', color: '#1E3A8A' }} />
+                        <Chip key={idx} label={tech} size="small" sx={{ backgroundColor: '#EFF6FF', color: '#0C1222' }} />
                       ))}
                     </Box>
-                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: '#1E3A8A' }}>
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: '#0C1222' }}>
                       {study.title}
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#6B7280', mb: 3 }}>
@@ -287,13 +301,13 @@ export default function CaseStudiesPage() {
 
                     <Grid container spacing={3}>
                       <Grid item xs={12} md={6}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#1E3A8A' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#0C1222' }}>
                           Challenge
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#6B7280', mb: 3, lineHeight: 1.8 }}>
                           {study.challenge}
                         </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#1E3A8A' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#0C1222' }}>
                           Solution
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#6B7280', lineHeight: 1.8 }}>
@@ -301,7 +315,7 @@ export default function CaseStudiesPage() {
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
                           Results
                         </Typography>
                         {study.results.map((result, idx) => (
@@ -314,13 +328,13 @@ export default function CaseStudiesPage() {
                         ))}
                         <Box sx={{ mt: 3, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <BudgetIcon sx={{ color: '#1E3A8A' }} />
+                            <BudgetIcon sx={{ color: '#0C1222' }} />
                             <Typography variant="body2" sx={{ color: '#6B7280' }}>
                               <strong>Budget:</strong> {study.budget}
                             </Typography>
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <TimelineIcon sx={{ color: '#1E3A8A' }} />
+                            <TimelineIcon sx={{ color: '#0C1222' }} />
                             <Typography variant="body2" sx={{ color: '#6B7280' }}>
                               <strong>Timeline:</strong> {study.timeline}
                             </Typography>

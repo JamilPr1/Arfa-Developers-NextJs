@@ -146,7 +146,7 @@ export default function HireTalentPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+          background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
           position: 'relative',
           overflow: 'hidden',
           pt: 10,
@@ -160,7 +160,7 @@ export default function HireTalentPage() {
             height: '100%',
             top: 0,
             left: 0,
-            background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            background: 'radial-gradient(circle at 100% 0%, rgba(29,78,216,0.06) 0%, transparent 50%)',
             animation: 'pulse 4s ease-in-out infinite',
             '@keyframes pulse': {
               '0%, 100%': { opacity: 0.5 },
@@ -178,7 +178,7 @@ export default function HireTalentPage() {
             <Typography
               variant="h1"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 mb: 3,
                 fontWeight: 800,
                 fontSize: { xs: '2.5rem', md: '3.5rem' },
@@ -188,7 +188,7 @@ export default function HireTalentPage() {
               data-aos="fade-up"
             >
               Hire Our{' '}
-              <Box component="span" sx={{ color: '#ffd700' }}>
+              <Box component="span" sx={{ color: '#1D4ED8' }}>
                 Top Talent
               </Box>
             </Typography>
@@ -202,7 +202,7 @@ export default function HireTalentPage() {
             <Typography
               variant="h5"
               sx={{
-                color: 'rgba(255, 255, 255, 0.9)',
+                color: '#64748B',
                 mb: 6,
                 fontWeight: 400,
                 fontSize: { xs: '1.1rem', md: '1.5rem' },
@@ -220,13 +220,13 @@ export default function HireTalentPage() {
       </Box>
 
       {/* Profile Cards Section */}
-      <Box sx={{ py: 10, bgcolor: '#F9FAFB' }}>
+      <Box sx={{ py: 10, bgcolor: '#F7F8FA' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
             sx={{
               fontWeight: 700,
-              color: '#1E3A8A',
+              color: '#0C1222',
               mb: 6,
               textAlign: 'center',
               fontSize: { xs: '2rem', md: '2.5rem' },
@@ -247,7 +247,7 @@ export default function HireTalentPage() {
                 sx={{
                   mb: 4,
                   p: 2,
-                  bgcolor: 'white',
+                  bgcolor: '#0C1222',
                   borderRadius: 2,
                   border: '1px solid #E5E7EB',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
@@ -292,7 +292,7 @@ export default function HireTalentPage() {
                     />
                   </Grid>
                   <Grid item xs={12} md={3}>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0C1222', mb: 0.5 }}>
                       Hourly rate (${rateRange[0]}–${rateRange[1]})
                     </Typography>
                     <Slider
@@ -392,7 +392,7 @@ export default function HireTalentPage() {
                                 <Typography
                                   variant="h6"
                                   sx={{
-                                    color: 'white',
+                                    color: '#0C1222',
                                     fontWeight: 600,
                                     textAlign: 'center',
                                     px: 2,
@@ -409,8 +409,8 @@ export default function HireTalentPage() {
                                   position: 'absolute',
                                   top: 8,
                                   left: 8,
-                                  bgcolor: '#F59E0B',
-                                  color: 'white',
+                                  bgcolor: 'hsl(210, 98%, 48%)',
+                                  color: '#0C1222',
                                   borderRadius: 1,
                                   px: 1.5,
                                   py: 0.5,
@@ -433,7 +433,7 @@ export default function HireTalentPage() {
                                 position: 'absolute',
                                 top: 8,
                                 right: 8,
-                                bgcolor: 'rgba(255, 255, 255, 0.9)',
+                                bgcolor: '#64748B',
                                 borderRadius: 1,
                                 px: 1,
                                 py: 0.5,
@@ -453,7 +453,7 @@ export default function HireTalentPage() {
                               variant="h6"
                               sx={{
                                 fontWeight: 600,
-                                color: '#1E3A8A',
+                                color: '#0C1222',
                                 mb: 1,
                               }}
                             >
@@ -483,7 +483,7 @@ export default function HireTalentPage() {
                                 <Typography variant="body2" sx={{ color: '#6B7280', mb: 0.5 }}>
                                   Hourly Rate
                                 </Typography>
-                                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1E3A8A' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: '#0C1222' }}>
                                   ${talent.hourlyRate}/hr
                                 </Typography>
                               </Box>
@@ -563,8 +563,8 @@ export default function HireTalentPage() {
                     size="large"
                     onClick={() => setShowAll(!showAll)}
                     sx={{
-                      borderColor: '#1E3A8A',
-                      color: '#1E3A8A',
+                      borderColor: '#0C1222',
+                      color: '#0C1222',
                       '&:hover': { borderColor: '#1E40AF', bgcolor: 'rgba(30, 58, 138, 0.1)' },
                       px: 4,
                     }}
@@ -579,7 +579,7 @@ export default function HireTalentPage() {
       </Box>
 
       {/* Buttons Section */}
-      <Box sx={{ py: 8, bgcolor: 'white' }}>
+      <Box sx={{ py: 8, bgcolor: '#0C1222' }}>
         <Container maxWidth="md">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -592,7 +592,7 @@ export default function HireTalentPage() {
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  color: '#1E3A8A',
+                  color: '#0C1222',
                   mb: 3,
                   fontSize: { xs: '1.75rem', md: '2rem' },
                 }}
@@ -606,7 +606,7 @@ export default function HireTalentPage() {
                   variant="contained"
                   size="large"
                   sx={{
-                    bgcolor: '#1E3A8A',
+                    bgcolor: '#0C1222',
                     '&:hover': { bgcolor: '#1E40AF' },
                     px: 4,
                     py: 1.5,
@@ -621,8 +621,8 @@ export default function HireTalentPage() {
                   variant="outlined"
                   size="large"
                   sx={{
-                    borderColor: '#1E3A8A',
-                    color: '#1E3A8A',
+                    borderColor: '#0C1222',
+                    color: '#0C1222',
                     '&:hover': { borderColor: '#1E40AF', bgcolor: 'rgba(30, 58, 138, 0.1)' },
                     px: 4,
                     py: 1.5,
@@ -641,7 +641,7 @@ export default function HireTalentPage() {
       <Box
         sx={{
           py: 8,
-          background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+          background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -658,7 +658,7 @@ export default function HireTalentPage() {
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  color: 'white',
+                  color: '#0C1222',
                   mb: 2,
                   fontSize: { xs: '1.75rem', md: '2rem' },
                 }}
@@ -668,7 +668,7 @@ export default function HireTalentPage() {
               <Typography
                 variant="h6"
                 sx={{
-                  color: 'rgba(255, 255, 255, 0.9)',
+                  color: '#64748B',
                   mb: 4,
                   fontSize: { xs: '1rem', md: '1.25rem' },
                 }}
@@ -689,13 +689,13 @@ export default function HireTalentPage() {
                       variant="h3"
                       sx={{
                         fontWeight: 700,
-                        color: 'white',
+                        color: '#0C1222',
                         mb: 1,
                       }}
                     >
                       {countdown.days}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    <Typography variant="body2" sx={{ color: '#64748B' }}>
                       Days
                     </Typography>
                   </Box>
@@ -713,13 +713,13 @@ export default function HireTalentPage() {
                       variant="h3"
                       sx={{
                         fontWeight: 700,
-                        color: 'white',
+                        color: '#0C1222',
                         mb: 1,
                       }}
                     >
                       {countdown.hours}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    <Typography variant="body2" sx={{ color: '#64748B' }}>
                       Hours
                     </Typography>
                   </Box>
@@ -737,13 +737,13 @@ export default function HireTalentPage() {
                       variant="h3"
                       sx={{
                         fontWeight: 700,
-                        color: 'white',
+                        color: '#0C1222',
                         mb: 1,
                       }}
                     >
                       {countdown.minutes}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    <Typography variant="body2" sx={{ color: '#64748B' }}>
                       Minutes
                     </Typography>
                   </Box>
@@ -761,13 +761,13 @@ export default function HireTalentPage() {
                       variant="h3"
                       sx={{
                         fontWeight: 700,
-                        color: 'white',
+                        color: '#0C1222',
                         mb: 1,
                       }}
                     >
                       {countdown.seconds}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    <Typography variant="body2" sx={{ color: '#64748B' }}>
                       Seconds
                     </Typography>
                   </Box>
@@ -779,12 +779,12 @@ export default function HireTalentPage() {
       </Box>
 
       {/* Stats Section */}
-      <Box sx={{ py: 8, bgcolor: '#F9FAFB' }}>
+      <Box sx={{ py: 8, bgcolor: '#F7F8FA' }}>
         <Container maxWidth="lg">
           <Grid container spacing={4}>
             <Grid item xs={12} sm={4}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 700, color: '#0C1222', mb: 1 }}>
                   {talents.length}+
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#6B7280' }}>
@@ -794,7 +794,7 @@ export default function HireTalentPage() {
             </Grid>
             <Grid item xs={12} sm={4}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 700, color: '#0C1222', mb: 1 }}>
                   {talents.reduce((sum, t) => sum + (t.projectsCompleted || 0), 0)}+
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#6B7280' }}>
@@ -804,7 +804,7 @@ export default function HireTalentPage() {
             </Grid>
             <Grid item xs={12} sm={4}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 700, color: '#0C1222', mb: 1 }}>
                   {talents.length > 0 ? (talents.reduce((sum, t) => sum + (t.rating || 0), 0) / talents.length).toFixed(1) : '0.0'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#6B7280' }}>
@@ -839,7 +839,7 @@ export default function HireTalentPage() {
                     sx={{ width: 80, height: 80 }}
                   />
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#1E3A8A', mb: 0.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#0C1222', mb: 0.5 }}>
                       {selectedTalent.name}
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#6B7280', mb: 1 }}>
@@ -860,7 +860,7 @@ export default function HireTalentPage() {
             </DialogTitle>
             <DialogContent>
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1E3A8A', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#0C1222', mb: 2 }}>
                   Skills
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -870,7 +870,7 @@ export default function HireTalentPage() {
                       label={skill}
                       sx={{
                         bgcolor: '#EFF6FF',
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontWeight: 500,
                       }}
                     />
@@ -879,7 +879,7 @@ export default function HireTalentPage() {
               </Box>
 
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1E3A8A', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#0C1222', mb: 2 }}>
                   About
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -889,7 +889,7 @@ export default function HireTalentPage() {
 
               {selectedTalent.experience && (
                 <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#1E3A8A', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#0C1222', mb: 2 }}>
                     Experience
                   </Typography>
                   <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.8 }}>
@@ -903,16 +903,16 @@ export default function HireTalentPage() {
                   <Box
                     sx={{
                       p: 2,
-                      bgcolor: '#F9FAFB',
+                      bgcolor: '#F7F8FA',
                       borderRadius: 2,
                       textAlign: 'center',
                     }}
                   >
-                    <MoneyIcon sx={{ fontSize: 32, color: '#1E3A8A', mb: 1 }} />
+                    <MoneyIcon sx={{ fontSize: 32, color: '#0C1222', mb: 1 }} />
                     <Typography variant="body2" sx={{ color: '#6B7280', mb: 0.5 }}>
                       Hourly Rate
                     </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#1E3A8A' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#0C1222' }}>
                       ${selectedTalent.hourlyRate}/hr
                     </Typography>
                   </Box>
@@ -921,16 +921,16 @@ export default function HireTalentPage() {
                   <Box
                     sx={{
                       p: 2,
-                      bgcolor: '#F9FAFB',
+                      bgcolor: '#F7F8FA',
                       borderRadius: 2,
                       textAlign: 'center',
                     }}
                   >
-                    <WorkIcon sx={{ fontSize: 32, color: '#1E3A8A', mb: 1 }} />
+                    <WorkIcon sx={{ fontSize: 32, color: '#0C1222', mb: 1 }} />
                     <Typography variant="body2" sx={{ color: '#6B7280', mb: 0.5 }}>
                       Projects Completed
                     </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#1E3A8A' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#0C1222' }}>
                       {selectedTalent.projectsCompleted || 0}
                     </Typography>
                   </Box>
@@ -945,7 +945,7 @@ export default function HireTalentPage() {
                 component={Link}
                 href="/hire-talent-form"
                 variant="contained"
-                sx={{ bgcolor: '#1E3A8A', '&:hover': { bgcolor: '#1E40AF' } }}
+                sx={{ bgcolor: '#0C1222', '&:hover': { bgcolor: '#1E40AF' } }}
               >
                 Hire This Talent
               </Button>

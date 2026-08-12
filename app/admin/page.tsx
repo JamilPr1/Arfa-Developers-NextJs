@@ -532,7 +532,7 @@ export default function AdminPage() {
     return (
       <Box sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
-          <Chip label="Clicks" size="small" sx={{ bgcolor: 'rgba(37, 99, 235, 0.12)', color: '#1E3A8A', fontWeight: 700 }} />
+          <Chip label="Clicks" size="small" sx={{ bgcolor: 'rgba(37, 99, 235, 0.12)', color: 'hsl(210, 100%, 35%)', fontWeight: 700 }} />
           <Chip label="Impressions" size="small" sx={{ bgcolor: 'rgba(16, 185, 129, 0.12)', color: '#065F46', fontWeight: 700 }} />
           <Typography variant="body2" color="text.secondary">
             {gscData?.dateRange?.startDate} → {gscData?.dateRange?.endDate}
@@ -545,7 +545,7 @@ export default function AdminPage() {
             <line x1={pad} y1={height - pad} x2={width - pad} y2={height - pad} stroke="#E5E7EB" />
             <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#E5E7EB" />
 
-            <polyline fill="none" stroke="#2563EB" strokeWidth="3" points={clicksPath} />
+            <polyline fill="none" stroke="hsl(210, 98%, 48%)" strokeWidth="3" points={clicksPath} />
             <polyline fill="none" stroke="#10B981" strokeWidth="3" points={imprPath} />
           </svg>
         </Box>
@@ -1201,12 +1201,12 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#1E3A8A', background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -20%, hsl(210,100%,92%), transparent)' }}>
         <Container maxWidth="sm">
           <Paper sx={{ p: 4, borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
-              <DashboardIcon sx={{ fontSize: 60, color: '#1E3A8A', mb: 2 }} />
-              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E3A8A' }}>
+              <DashboardIcon sx={{ fontSize: 60, color: 'hsl(210, 100%, 35%)', mb: 2 }} />
+              <Typography variant="h4" sx={{ fontWeight: 700, color: 'hsl(210, 100%, 35%)' }}>
                 Admin CRM Login
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -1227,9 +1227,10 @@ export default function AdminPage() {
             <Button
               fullWidth
               variant="contained"
+              color="primary"
               onClick={handleLogin}
               disabled={loading}
-              sx={{ py: 1.5, backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+              sx={{ py: 1.5 }}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
             </Button>
@@ -1254,7 +1255,7 @@ export default function AdminPage() {
               variant="outlined"
               onClick={handleForgotPassword}
               disabled={resetLoading}
-              sx={{ py: 1.2, borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB' } }}
+              sx={{ py: 1.2, borderColor: 'hsl(210, 100%, 35%)', color: 'hsl(210, 100%, 35%)', '&:hover': { borderColor: 'hsl(210, 98%, 48%)' } }}
             >
               {resetLoading ? <CircularProgress size={22} color="inherit" /> : 'Send reset email'}
             </Button>
@@ -1267,7 +1268,7 @@ export default function AdminPage() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#F5F7FA' }}>
       {/* CRM Header */}
-      <AppBar position="fixed" sx={{ bgcolor: '#1E3A8A', zIndex: 1300 }}>
+      <AppBar position="fixed" sx={{ bgcolor: 'hsl(220, 30%, 6%)', zIndex: 1300 }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <DashboardIcon />
@@ -1289,7 +1290,7 @@ export default function AdminPage() {
               onClick={(e) => setAnchorEl(e.currentTarget)}
               sx={{ color: 'white' }}
             >
-              <Avatar sx={{ width: 32, height: 32, bgcolor: '#2563EB' }}>A</Avatar>
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'hsl(210, 98%, 48%)' }}>A</Avatar>
             </IconButton>
             <Menu
               anchorEl={anchorEl}
@@ -1307,7 +1308,7 @@ export default function AdminPage() {
 
       <Box sx={{ pt: 8, pb: 4 }}>
         <Container maxWidth="xl">
-          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700, color: '#1E3A8A' }}>
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700, color: 'hsl(210, 100%, 35%)' }}>
             Content Management
           </Typography>
 
@@ -1359,7 +1360,7 @@ export default function AdminPage() {
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenDialog('project')}
-                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                  sx={{ backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
                 >
                   Add Project
                 </Button>
@@ -1405,7 +1406,7 @@ export default function AdminPage() {
                               <IconButton 
                                 onClick={() => handleOpenDialog('project', project)}
                                 size="small"
-                                sx={{ color: '#1E3A8A' }}
+                                sx={{ color: 'hsl(210, 100%, 35%)' }}
                               >
                                 <EditIcon fontSize="small" />
                               </IconButton>
@@ -1436,7 +1437,7 @@ export default function AdminPage() {
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenDialog('product')}
-                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                  sx={{ backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
                 >
                   Add Product
                 </Button>
@@ -1484,7 +1485,7 @@ export default function AdminPage() {
                               <IconButton
                                 onClick={() => handleOpenDialog('product', product)}
                                 size="small"
-                                sx={{ color: '#1E3A8A' }}
+                                sx={{ color: 'hsl(210, 100%, 35%)' }}
                               >
                                 <EditIcon fontSize="small" />
                               </IconButton>
@@ -1515,7 +1516,7 @@ export default function AdminPage() {
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenDialog('blog')}
-                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                  sx={{ backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
                 >
                   Add Blog
                 </Button>
@@ -1559,7 +1560,7 @@ export default function AdminPage() {
                               <IconButton 
                                 onClick={() => handleOpenDialog('blog', blog)}
                                 size="small"
-                                sx={{ color: '#1E3A8A' }}
+                                sx={{ color: 'hsl(210, 100%, 35%)' }}
                               >
                                 <EditIcon fontSize="small" />
                               </IconButton>
@@ -1590,7 +1591,7 @@ export default function AdminPage() {
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenDialog('promotion')}
-                  sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                  sx={{ backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
                 >
                   Add Promotion
                 </Button>
@@ -1644,7 +1645,7 @@ export default function AdminPage() {
                               <IconButton 
                                 onClick={() => handleOpenDialog('promotion', promotion)}
                                 size="small"
-                                sx={{ color: '#1E3A8A' }}
+                                sx={{ color: 'hsl(210, 100%, 35%)' }}
                               >
                                 <EditIcon fontSize="small" />
                               </IconButton>
@@ -1675,7 +1676,7 @@ export default function AdminPage() {
                   <Button
                     variant="outlined"
                     onClick={() => setBulkTalentOpen(true)}
-                    sx={{ borderColor: '#1E3A8A', color: '#1E3A8A', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}
+                    sx={{ borderColor: 'hsl(210, 100%, 35%)', color: 'hsl(210, 100%, 35%)', '&:hover': { borderColor: 'hsl(210, 98%, 48%)', color: 'hsl(210, 98%, 48%)' } }}
                   >
                     Bulk Add
                   </Button>
@@ -1683,7 +1684,7 @@ export default function AdminPage() {
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={() => handleOpenDialog('talent')}
-                    sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                    sx={{ backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
                   >
                     Add Talent
                   </Button>
@@ -1733,7 +1734,7 @@ export default function AdminPage() {
                               <IconButton 
                                 onClick={() => handleOpenDialog('talent', talent)}
                                 size="small"
-                                sx={{ color: '#1E3A8A' }}
+                                sx={{ color: 'hsl(210, 100%, 35%)' }}
                               >
                                 <EditIcon />
                               </IconButton>
@@ -1821,7 +1822,7 @@ export default function AdminPage() {
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <Typography sx={{ color: '#1E3A8A', fontWeight: 600 }}>{lead.email}</Typography>
+                              <Typography sx={{ color: 'hsl(210, 100%, 35%)', fontWeight: 600 }}>{lead.email}</Typography>
                               <Typography variant="body2" color="text.secondary">
                                 {lead.region || '—'} • {lead.source || 'website-form'}
                               </Typography>
@@ -1859,7 +1860,7 @@ export default function AdminPage() {
                                   openLeadDetails(lead)
                                 }}
                                 size="small"
-                                sx={{ color: '#1E3A8A' }}
+                                sx={{ color: 'hsl(210, 100%, 35%)' }}
                                 disabled={loading}
                                 title="View lead"
                               >
@@ -2000,7 +2001,7 @@ export default function AdminPage() {
                           <Typography variant="body2" color="text.secondary">
                             Total Clicks ({gscDays} days)
                           </Typography>
-                          <Typography variant="h4" sx={{ fontWeight: 800, color: '#1E3A8A' }}>
+                          <Typography variant="h4" sx={{ fontWeight: 800, color: 'hsl(210, 100%, 35%)' }}>
                             {gscData?.totals?.clicks ?? '—'}
                           </Typography>
                         </Paper>
@@ -2118,7 +2119,7 @@ export default function AdminPage() {
 
           {/* Dialog for Add/Edit */}
           <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
+            <DialogTitle sx={{ bgcolor: 'hsl(220, 30%, 6%)', color: 'white' }}>
               {editingItem ? 'Edit' : 'Add'} {dialogType === 'project' ? 'Project' : dialogType === 'product' ? 'Product' : dialogType === 'blog' ? 'Blog' : dialogType === 'promotion' ? 'Promotion' : 'Talent'}
             </DialogTitle>
             <DialogContent sx={{ mt: 2 }}>
@@ -2508,7 +2509,7 @@ export default function AdminPage() {
 
                       {blogEditorMode === 'html' && (
                         <Box sx={{ p: 2, bgcolor: '#F9FAFB' }}>
-                          <Typography sx={{ fontWeight: 800, color: '#1E3A8A', mb: 1 }}>
+                          <Typography sx={{ fontWeight: 800, color: 'hsl(210, 100%, 35%)', mb: 1 }}>
                             Paste HTML to auto-generate
                           </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
@@ -2523,7 +2524,7 @@ export default function AdminPage() {
                             onChange={(e) => setBlogHtmlInput(e.target.value)}
                           />
                           <Box sx={{ mt: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                            <Button variant="contained" onClick={generateBlogFromHtml} sx={{ bgcolor: '#1E3A8A', '&:hover': { bgcolor: '#2563EB' } }}>
+                            <Button variant="contained" onClick={generateBlogFromHtml} sx={{ bgcolor: 'hsl(210, 100%, 35%)', '&:hover': { bgcolor: 'hsl(210, 98%, 48%)' } }}>
                               Generate
                             </Button>
                             <Button
@@ -2532,7 +2533,7 @@ export default function AdminPage() {
                                 setBlogHtmlInput('')
                                 setSuccess('HTML cleared.')
                               }}
-                              sx={{ borderColor: 'rgba(30, 58, 138, 0.35)', color: '#1E3A8A' }}
+                              sx={{ borderColor: 'rgba(30, 58, 138, 0.35)', color: 'hsl(210, 100%, 35%)' }}
                             >
                               Clear
                             </Button>
@@ -3003,7 +3004,7 @@ export default function AdminPage() {
                 onClick={handleSave}
                 disabled={loading}
                 startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                sx={{ backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
               >
                 Save
               </Button>
@@ -3012,7 +3013,7 @@ export default function AdminPage() {
 
           {/* Bulk Add Talent Dialog */}
           <Dialog open={bulkTalentOpen} onClose={() => setBulkTalentOpen(false)} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ bgcolor: '#1E3A8A', color: 'white' }}>
+            <DialogTitle sx={{ bgcolor: 'hsl(220, 30%, 6%)', color: 'white' }}>
               Bulk Add Talent Profiles
             </DialogTitle>
             <DialogContent sx={{ mt: 2 }}>
@@ -3084,7 +3085,7 @@ export default function AdminPage() {
                         sx={{
                           width: `${bulkTalentProgress.total ? (bulkTalentProgress.done / bulkTalentProgress.total) * 100 : 0}%`,
                           height: '100%',
-                          bgcolor: '#2563EB',
+                          bgcolor: 'hsl(210, 98%, 48%)',
                         }}
                       />
                     </Box>
@@ -3099,7 +3100,7 @@ export default function AdminPage() {
                 onClick={runBulkTalentCreate}
                 disabled={bulkTalentRunning}
                 startIcon={bulkTalentRunning ? <CircularProgress size={20} /> : <AddIcon />}
-                sx={{ backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+                sx={{ backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
               >
                 {bulkTalentRunning ? 'Creating...' : 'Create'}
               </Button>
@@ -3157,7 +3158,7 @@ export default function AdminPage() {
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body2" color="text.secondary">Email</Typography>
-                      <Typography sx={{ fontWeight: 700, color: '#1E3A8A' }}>{selectedLead.email}</Typography>
+                      <Typography sx={{ fontWeight: 700, color: 'hsl(210, 100%, 35%)' }}>{selectedLead.email}</Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body2" color="text.secondary">Submitted</Typography>

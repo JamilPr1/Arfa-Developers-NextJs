@@ -58,14 +58,14 @@ export default function AdminResetPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: '#1E3A8A',
-        background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+        bgcolor: 'hsl(210, 100%, 35%)',
+        background: 'linear-gradient(135deg, hsl(210, 100%, 35%) 0%, hsl(210, 98%, 48%) 100%)',
         py: 6,
       }}
     >
       <Container maxWidth="sm">
         <Paper sx={{ p: 4, borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: '#1E3A8A', mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: 'hsl(210, 100%, 35%)', mb: 1 }}>
             Reset Admin Password
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -105,7 +105,7 @@ export default function AdminResetPage() {
             variant="contained"
             onClick={handleSubmit}
             disabled={loading}
-            sx={{ py: 1.5, backgroundColor: '#1E3A8A', '&:hover': { backgroundColor: '#2563EB' } }}
+            sx={{ py: 1.5, backgroundColor: 'hsl(210, 100%, 35%)', '&:hover': { backgroundColor: 'hsl(210, 98%, 48%)' } }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Update Password'}
           </Button>

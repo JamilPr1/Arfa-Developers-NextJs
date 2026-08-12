@@ -68,7 +68,7 @@ export default function ProductsGrid({ initialProducts }: ProductsGridProps) {
   if (loading) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
-        <CircularProgress sx={{ color: '#1E3A8A' }} />
+        <CircularProgress sx={{ color: '#0C1222' }} />
         <Typography sx={{ mt: 2, color: 'text.secondary' }}>Loading products...</Typography>
       </Box>
     )
@@ -108,11 +108,11 @@ export default function ProductsGrid({ initialProducts }: ProductsGridProps) {
                 textDecoration: 'none',
                 color: 'inherit',
                 border: '1px solid #E5E7EB',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                boxShadow: '0 4px 20px rgba(15,39,79,0.06)',
                 transition: 'all 0.3s ease-in-out',
                 '&:hover': {
                   transform: 'translateY(-6px)',
-                  boxShadow: '0 16px 40px rgba(30, 58, 138, 0.12)',
+                  boxShadow: '0 16px 40px rgba(15, 39, 79, 0.12)',
                   borderColor: '#BFDBFE',
                 },
               }}
@@ -146,7 +146,7 @@ export default function ProductsGrid({ initialProducts }: ProductsGridProps) {
                     variant="h6"
                     sx={{
                       fontWeight: 700,
-                      color: '#1E3A8A',
+                      color: '#0C1222',
                       lineHeight: 1.3,
                       flex: 1,
                     }}
@@ -158,7 +158,7 @@ export default function ProductsGrid({ initialProducts }: ProductsGridProps) {
                     size="small"
                     sx={{
                       bgcolor: '#EFF6FF',
-                      color: '#1E3A8A',
+                      color: '#0C1222',
                       fontWeight: 600,
                       fontSize: '0.7rem',
                       height: 24,
@@ -217,7 +217,7 @@ export default function ProductsGrid({ initialProducts }: ProductsGridProps) {
                   fullWidth
                   sx={{
                     mt: 'auto',
-                    backgroundColor: '#1E3A8A',
+                    backgroundColor: '#0C1222',
                     py: 1.35,
                     fontWeight: 600,
                     fontSize: '0.9375rem',

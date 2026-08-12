@@ -8,27 +8,30 @@ import Script from 'next/script'
 import PortfolioProjects from '@/components/PortfolioProjects'
 
 export const metadata: Metadata = {
-  title: 'Our Portfolio - Web Development Projects & Case Studies | Arfa Developers',
-  description: 'Explore our portfolio of successful web development projects including e-commerce platforms, healthcare systems, mobile apps, and enterprise solutions. See how we rescue and rebuild failed projects.',
+  title: 'Portfolio | AI Apps, Web Platforms & Project Rescue | Arfa Developers',
+  description:
+    'Portfolio of Arfa Developers work: Next.js commerce, clinic systems, AI voice agents, Meta CRM automation, school LMS, real estate CRM, and US SaaS project rescue.',
   keywords: [
-    'web development portfolio',
-    'web app projects',
-    'mobile app development portfolio',
-    'enterprise software projects',
-    'ecommerce development',
-    'healthcare software',
-    'fintech applications',
-    'SaaS platforms',
-    'project case studies',
+    'web development portfolio USA',
+    'AI voice agent portfolio',
+    'Next.js project case studies',
+    'project rescue case studies',
+    'ecommerce development portfolio',
+    'clinic management software',
+    'WhatsApp automation projects',
+    'Meta CRM development',
+    'school management system',
+    'real estate CRM development',
+    'OpenAI integration projects',
   ],
   openGraph: {
-    title: 'Our Portfolio - Web Development Projects & Case Studies | Arfa Developers',
-    description: 'Explore our successful web development projects and see how we rescue and rebuild failed projects.',
+    title: 'Portfolio | AI Apps, Web Platforms & Project Rescue | Arfa Developers',
+    description: 'See production web apps, AI agents, automation, and rescue case studies from Arfa Developers.',
     type: 'website',
-    url: 'https://arfadevelopers.com/portfolio',
+    url: 'https://www.arfadevelopers.com/portfolio',
   },
   alternates: {
-    canonical: 'https://arfadevelopers.com/portfolio',
+    canonical: 'https://www.arfadevelopers.com/portfolio',
   },
 }
 
@@ -78,8 +81,8 @@ export default function PortfolioPage() {
         {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -95,7 +98,7 @@ export default function PortfolioPage() {
               height: '100%',
               top: 0,
               left: 0,
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              background: 'radial-gradient(circle at 100% 0%, rgba(29,78,216,0.06) 0%, transparent 50%)',
               opacity: 0.5,
             }}
           />
@@ -103,7 +106,7 @@ export default function PortfolioPage() {
             <Typography
               variant="h1"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 fontWeight: 800,
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
@@ -111,14 +114,14 @@ export default function PortfolioPage() {
               }}
             >
               Our{' '}
-              <Box component="span" sx={{ color: '#ffd700' }}>
+              <Box component="span" sx={{ color: '#1D4ED8' }}>
                 Portfolio
               </Box>
             </Typography>
             <Typography
               variant="h4"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 900,
                 mx: 'auto',
                 mb: 4,
@@ -137,14 +140,14 @@ export default function PortfolioPage() {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
+                  backgroundColor: '#0C1222',
+                  color: '#FFFFFF',
                   px: 5,
                   py: 2,
                   fontSize: '1.1rem',
                   fontWeight: 600,
                   '&:hover': {
-                    backgroundColor: '#FBBF24',
+                    backgroundColor: '#1E293B',
                     transform: 'translateY(-2px)',
                     boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
                   },

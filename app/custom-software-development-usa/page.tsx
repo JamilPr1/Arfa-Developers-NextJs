@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 
 const useCases = [
   {
-    icon: <EngineeringIcon sx={{ fontSize: 46, color: '#1E3A8A' }} />,
+    icon: <EngineeringIcon sx={{ fontSize: 46, color: '#0C1222' }} />,
     title: 'SaaS & subscription platforms',
     desc: 'Multi-tenant apps, billing, onboarding, roles, and analytics.',
   },
@@ -59,7 +59,7 @@ const useCases = [
     desc: 'Postgres, Supabase, Node.js services, and scalable architecture.',
   },
   {
-    icon: <AnalyticsIcon sx={{ fontSize: 46, color: '#F59E0B' }} />,
+    icon: <AnalyticsIcon sx={{ fontSize: 46, color: 'hsl(210, 98%, 48%)' }} />,
     title: 'Dashboards & internal tools',
     desc: 'Operations tooling, reporting, workflows, and admin panels.',
   },
@@ -117,36 +117,38 @@ export default function CustomSoftwareDevelopmentUsaPage() {
       <Box component="main">
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #0B2A6F 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
-            pb: { xs: 8, md: 12 },
+            pb: { xs: 8, md: 10 },
             textAlign: 'center',
+            borderBottom: '1px solid #E8ECF1',
           }}
         >
           <Container maxWidth="lg">
             <Typography
               variant="h1"
               sx={{
-                fontWeight: 900,
+                fontWeight: 700,
                 mb: 2,
-                fontSize: { xs: '2.4rem', md: '3.6rem', lg: '4.1rem' },
+                fontSize: { xs: '2.25rem', md: '3.25rem' },
                 lineHeight: 1.15,
-                color: 'white',
+                color: '#0C1222',
+                letterSpacing: '-0.03em',
               }}
             >
-              Custom Software Development <span style={{ color: '#F59E0B' }}>USA</span>
+              Custom Software Development <span style={{ color: '#1D4ED8' }}>USA</span>
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'rgba(255,255,255,0.95)',
-                maxWidth: 980,
+                color: '#64748B',
+                maxWidth: 900,
                 mx: 'auto',
                 mb: 4,
                 lineHeight: 1.65,
                 fontWeight: 400,
-                fontSize: { xs: '1.1rem', md: '1.45rem' },
+                fontSize: { xs: '1.05rem', md: '1.2rem' },
               }}
             >
               SaaS platforms, portals, internal tools, and scalable backends — delivered with clean architecture,
@@ -159,14 +161,15 @@ export default function CustomSoftwareDevelopmentUsaPage() {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
-                  px: 5,
-                  py: 2,
-                  fontSize: '1.05rem',
-                  fontWeight: 800,
-                  '&:hover': { backgroundColor: '#FBBF24', transform: 'translateY(-2px)' },
-                  transition: 'all 0.25s ease',
+                  backgroundColor: '#0C1222',
+                  color: '#FFFFFF',
+                  px: 4.5,
+                  py: 1.5,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  boxShadow: 'none',
+                  '&:hover': { backgroundColor: '#1E293B', transform: 'translateY(-1px)', boxShadow: 'none' },
+                  transition: 'all 0.2s ease',
                 }}
               >
                 Request a Quote
@@ -177,13 +180,13 @@ export default function CustomSoftwareDevelopmentUsaPage() {
                 variant="outlined"
                 size="large"
                 sx={{
-                  borderColor: 'rgba(255,255,255,0.7)',
-                  color: 'white',
-                  px: 5,
-                  py: 2,
-                  fontSize: '1.05rem',
-                  fontWeight: 800,
-                  '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.08)' },
+                  borderColor: '#E8ECF1',
+                  color: '#0C1222',
+                  px: 4.5,
+                  py: 1.5,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  '&:hover': { borderColor: '#0C1222', backgroundColor: 'rgba(12,18,34,0.03)' },
                 }}
               >
                 View portfolio
@@ -193,7 +196,7 @@ export default function CustomSoftwareDevelopmentUsaPage() {
         </Box>
 
         <Container maxWidth="lg" sx={{ py: 8 }}>
-          <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, textAlign: 'center', color: '#1E3A8A' }}>
+          <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, textAlign: 'center', color: '#0C1222' }}>
             Built for serious delivery
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mb: 6, maxWidth: 950, mx: 'auto' }}>
@@ -216,7 +219,7 @@ export default function CustomSoftwareDevelopmentUsaPage() {
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{u.icon}</Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: '#1E3A8A' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: '#0C1222' }}>
                     {u.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B7280' }}>
@@ -228,7 +231,7 @@ export default function CustomSoftwareDevelopmentUsaPage() {
           </Grid>
         </Container>
 
-        <Box sx={{ backgroundColor: '#F9FAFB', py: 8 }}>
+        <Box sx={{ backgroundColor: '#F7F8FA', py: 8 }}>
           <Container maxWidth="lg">
             <Grid container spacing={4}>
               <Grid item xs={12} md={7}>
@@ -249,24 +252,24 @@ export default function CustomSoftwareDevelopmentUsaPage() {
                 </Card>
               </Grid>
               <Grid item xs={12} md={5}>
-                <Card elevation={2} sx={{ p: 4, borderRadius: 3, height: '100%', backgroundColor: '#0B2A6F', color: 'white' }}>
-                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: 'white' }}>
+                <Card elevation={2} sx={{ p: 4, borderRadius: 3, height: '100%', backgroundColor: '#FFFFFF', color: '#0C1222' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: '#0C1222' }}>
                     Already have a broken build?
                   </Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.9)', lineHeight: 1.8 }}>
+                  <Typography sx={{ color: '#64748B', lineHeight: 1.8 }}>
                     If a freelancer/agency left you with unfinished code, we can take over and rescue it.
                     We’ll stabilize first, then ship improvements safely.
                   </Typography>
-                  <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.2)' }} />
+                  <Divider sx={{ my: 2, borderColor: '#E8ECF1' }} />
                   <Button
                     component={Link}
                     href="/project-rescue"
                     variant="contained"
                     sx={{
-                      backgroundColor: '#F59E0B',
-                      color: 'white',
+                      backgroundColor: '#0C1222',
+                      color: '#FFFFFF',
                       fontWeight: 800,
-                      '&:hover': { backgroundColor: '#FBBF24' },
+                      '&:hover': { backgroundColor: '#1E293B' },
                     }}
                   >
                     Project rescue

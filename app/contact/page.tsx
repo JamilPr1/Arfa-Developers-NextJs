@@ -8,6 +8,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import PageHero from '@/components/PageHero'
 import dynamic from 'next/dynamic'
 import Script from 'next/script'
 import { siteConfig } from '@/lib/siteConfig'
@@ -83,63 +84,17 @@ export default function ContactPage() {
       />
       <Header />
       <Box component="main">
-        {/* Hero Section */}
-        <Box
-          sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
-            pt: { xs: 12, md: 16 },
-            pb: { xs: 8, md: 12 },
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Background Pattern */}
-          <Box
-            sx={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              top: 0,
-              left: 0,
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-              opacity: 0.5,
-            }}
-          />
-          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography
-              variant="h1"
-              sx={{
-                color: 'white',
-                fontWeight: 800,
-                mb: 3,
-                fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
-                lineHeight: 1.2,
-              }}
-            >
+        <PageHero
+          title={
+            <>
               Get in{' '}
-              <Box component="span" sx={{ color: '#ffd700' }}>
+              <Box component="span" sx={{ color: '#F5D76E' }}>
                 Touch
               </Box>
-            </Typography>
-            <Typography
-              variant="h4"
-              sx={{
-                color: 'white',
-                maxWidth: 900,
-                mx: 'auto',
-                mb: 4,
-                lineHeight: 1.6,
-                fontWeight: 500,
-                fontSize: { xs: '1.25rem', md: '1.75rem' },
-              }}
-            >
-              Ready to start your project or rescue a failed one? 
-              Contact us for a free consultation today.
-            </Typography>
-          </Container>
-        </Box>
+            </>
+          }
+          subtitle="Ready to start your project or rescue a failed one? Contact us for a free consultation today."
+        />
 
         {/* Contact Information & Form */}
         <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6, md: 8 } }}>
@@ -151,7 +106,7 @@ export default function ContactPage() {
                 sx={{ 
                   fontWeight: 700, 
                   mb: 4, 
-                  color: '#1E3A8A',
+                  color: '#0C1222',
                   fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
                 }}
               >
@@ -159,14 +114,14 @@ export default function ContactPage() {
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, sm: 3 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
-                  <EmailIcon sx={{ color: '#1E3A8A', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
+                  <EmailIcon sx={{ color: '#0C1222', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
                   <Box>
                     <Typography 
                       variant="h6" 
                       sx={{ 
                         fontWeight: 600, 
                         mb: 0.5, 
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontSize: { xs: '1rem', sm: '1.125rem' },
                       }}
                     >
@@ -182,14 +137,14 @@ export default function ContactPage() {
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
-                  <PhoneIcon sx={{ color: '#1E3A8A', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
+                  <PhoneIcon sx={{ color: '#0C1222', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
                   <Box>
                     <Typography 
                       variant="h6" 
                       sx={{ 
                         fontWeight: 600, 
                         mb: 0.5, 
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontSize: { xs: '1rem', sm: '1.125rem' },
                       }}
                     >
@@ -205,14 +160,14 @@ export default function ContactPage() {
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
-                  <LocationIcon sx={{ color: '#1E3A8A', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
+                  <LocationIcon sx={{ color: '#0C1222', mr: { xs: 1.5, sm: 2 }, mt: 0.5, fontSize: { xs: 24, sm: 28 }, flexShrink: 0 }} />
                   <Box sx={{ flex: 1 }}>
                     <Typography 
                       variant="h6" 
                       sx={{ 
                         fontWeight: 600, 
                         mb: 0.5, 
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontSize: { xs: '1rem', sm: '1.125rem' },
                       }}
                     >

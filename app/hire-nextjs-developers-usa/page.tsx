@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 
 const highlights = [
   {
-    icon: <EngineeringIcon sx={{ fontSize: 46, color: '#1E3A8A' }} />,
+    icon: <EngineeringIcon sx={{ fontSize: 46, color: '#0C1222' }} />,
     title: 'Senior Next.js delivery',
     desc: 'Production-grade React/Next.js apps with clean architecture, review discipline, and predictable shipping.',
   },
@@ -125,8 +125,8 @@ export default function HireNextJsDevelopersUsaPage() {
       <Box component="main">
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #0B2A6F 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -140,15 +140,15 @@ export default function HireNextJsDevelopersUsaPage() {
                 mb: 2,
                 fontSize: { xs: '2.35rem', md: '3.6rem', lg: '4.1rem' },
                 lineHeight: 1.15,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Hire <span style={{ color: '#F59E0B' }}>Next.js Developers</span> in the USA
+              Hire <span style={{ color: 'hsl(210, 98%, 48%)' }}>Next.js Developers</span> in the USA
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'rgba(255,255,255,0.95)',
+                color: 'text.secondary',
                 maxWidth: 980,
                 mx: 'auto',
                 mb: 4,
@@ -168,13 +168,13 @@ export default function HireNextJsDevelopersUsaPage() {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
+                  backgroundColor: '#0C1222',
+                  color: '#FFFFFF',
                   px: 5,
                   py: 2,
                   fontSize: '1.05rem',
                   fontWeight: 800,
-                  '&:hover': { backgroundColor: '#FBBF24', transform: 'translateY(-2px)' },
+                  '&:hover': { backgroundColor: '#1E293B', transform: 'translateY(-2px)' },
                   transition: 'all 0.25s ease',
                 }}
               >
@@ -187,7 +187,7 @@ export default function HireNextJsDevelopersUsaPage() {
                 size="large"
                 sx={{
                   borderColor: 'rgba(255,255,255,0.7)',
-                  color: 'white',
+                  color: '#0C1222',
                   px: 5,
                   py: 2,
                   fontSize: '1.05rem',
@@ -217,7 +217,7 @@ export default function HireNextJsDevelopersUsaPage() {
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{h.icon}</Box>
-                  <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, color: '#1E3A8A' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, color: '#0C1222' }}>
                     {h.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B7280' }}>
@@ -229,7 +229,7 @@ export default function HireNextJsDevelopersUsaPage() {
           </Grid>
 
           <Box sx={{ mt: 7 }}>
-            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#1E3A8A' }}>
+            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#0C1222' }}>
               Engagement options
             </Typography>
             <Typography
@@ -264,19 +264,21 @@ export default function HireNextJsDevelopersUsaPage() {
                     p: 4,
                     borderRadius: 3,
                     height: '100%',
-                    backgroundColor: '#0B2A6F',
-                    color: 'white',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E8ECF1',
+                    boxShadow: 'none',
+                    color: '#0C1222',
                   }}
                 >
-                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: 'white' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: '#0C1222' }}>
                     Outcomes you should expect
                   </Typography>
-                  <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 2 }} />
+                  <Divider sx={{ borderColor: '#E8ECF1', mb: 2 }} />
                   <List>
                     {outcomes.map((d) => (
                       <ListItem key={d} sx={{ px: 0, py: 1 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <CheckIcon sx={{ color: '#F59E0B', fontSize: 22 }} />
+                          <CheckIcon sx={{ color: 'hsl(210, 98%, 48%)', fontSize: 22 }} />
                         </ListItemIcon>
                         <ListItemText primary={d} primaryTypographyProps={{ sx: { fontWeight: 700 } }} />
                       </ListItem>
@@ -288,7 +290,7 @@ export default function HireNextJsDevelopersUsaPage() {
           </Box>
 
           <Box sx={{ mt: 7 }}>
-            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#1E3A8A' }}>
+            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#0C1222' }}>
               Tech stack we ship with
             </Typography>
             <Typography
@@ -305,7 +307,7 @@ export default function HireNextJsDevelopersUsaPage() {
                   label={s}
                   sx={{
                     bgcolor: '#F3F4F6',
-                    color: '#1E3A8A',
+                    color: '#0C1222',
                     fontWeight: 800,
                     '&:hover': { bgcolor: '#E5E7EB' },
                   }}

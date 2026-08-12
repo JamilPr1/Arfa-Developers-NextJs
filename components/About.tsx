@@ -11,17 +11,17 @@ import { motion } from 'framer-motion'
 
 const rescueStories = [
   {
-    icon: <SecurityIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <SecurityIcon sx={{ fontSize: 28, color: '#1D4ED8' }} />,
     title: 'Rescued Projects',
     description: 'We&apos;ve successfully rescued and rebuilt over 200+ projects that were abandoned or poorly executed by freelancers and inexperienced developers.',
   },
   {
-    icon: <SpeedIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <SpeedIcon sx={{ fontSize: 28, color: '#1D4ED8' }} />,
     title: 'Fast Recovery',
     description: 'Our experienced team can quickly assess, fix, and rebuild your project, often delivering working solutions in days instead of months.',
   },
   {
-    icon: <SupportIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <SupportIcon sx={{ fontSize: 28, color: '#1D4ED8' }} />,
     title: 'Ongoing Support',
     description: 'Unlike freelancers who disappear after delivery, we provide long-term support, maintenance, and continuous improvements to your project.',
   },
@@ -38,52 +38,59 @@ const commonIssues = [
 
 export default function About() {
   return (
-    <Box id="about" sx={{ py: 10, bgcolor: '#F9FAFB' }}>
+    <Box id="about" sx={{ py: { xs: 8, md: 10 }, bgcolor: '#F5F7FA', borderTop: '1px solid #E8ECF1' }}>
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up" suppressHydrationWarning>
+          <Typography component="p" className="section-label" sx={{ mb: 1.5 }}>
+            About
+          </Typography>
           <Typography
             variant="h2"
             sx={{
               fontWeight: 700,
               mb: 2,
-              color: '#1E3A8A',
+              color: '#0C1222',
+              letterSpacing: '-0.03em',
             }}
           >
             We Rescue Projects from Failed Freelancers
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
+          <Typography variant="h6" sx={{ color: '#64748B', maxWidth: 700, mx: 'auto', fontWeight: 400 }}>
             Our experienced team specializes in taking over and fixing projects that were abandoned, poorly executed, or left incomplete by freelancers and less experienced developers.
           </Typography>
         </Box>
 
-        <Grid container spacing={4} sx={{ mb: 6 }}>
+        <Grid container spacing={3} sx={{ mb: 6 }}>
           {rescueStories.map((story, index) => (
             <Grid item xs={12} md={4} key={story.title}>
               <motion.div
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
               >
                 <Card
                   sx={{
                     height: '100%',
-                    p: 4,
-                    textAlign: 'center',
-                    transition: 'all 0.3s ease-in-out',
+                    p: 3.5,
+                    textAlign: 'left',
+                    border: '1px solid #E8ECF1',
+                    boxShadow: 'none',
+                    borderRadius: '12px',
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 8px 24px rgba(12,18,34,0.06)',
+                      borderColor: '#D5DBE3',
                     },
                   }}
                   data-aos="fade-up"
-                  data-aos-delay={index * 100}
+                  data-aos-delay={index * 80}
                   suppressHydrationWarning
                 >
                   <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
                     {story.icon}
                   </Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
                     {story.title}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
@@ -97,11 +104,12 @@ export default function About() {
 
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            borderRadius: 4,
-            p: { xs: 4, md: 6 },
-            color: 'white',
+            background: '#FFFFFF',
+            borderRadius: '12px',
+            p: { xs: 3.5, md: 5 },
+            color: '#0C1222',
             mb: 6,
+            border: '1px solid #E8ECF1',
           }}
           data-aos="fade-up"
         >
@@ -111,8 +119,9 @@ export default function About() {
               fontWeight: 700, 
               mb: 4, 
               textAlign: 'center',
-              color: 'white',
-              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+              color: '#0C1222',
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.25rem' },
+              letterSpacing: '-0.02em',
             }}
           >
             Common Issues We Fix
@@ -121,8 +130,8 @@ export default function About() {
             {commonIssues.map((issue, index) => (
               <Grid item xs={12} sm={6} key={index}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <CheckCircleIcon sx={{ color: '#ffd700', mr: 2, fontSize: 28 }} />
-                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
+                  <CheckCircleIcon sx={{ color: '#1D4ED8', mr: 2, fontSize: 24 }} />
+                  <Typography variant="h6" sx={{ color: '#0C1222', fontWeight: 500, fontSize: '1rem' }}>
                     {issue}
                   </Typography>
                 </Box>
@@ -133,7 +142,7 @@ export default function About() {
 
         <Box
           sx={{
-            bgcolor: '#F9FAFB',
+            bgcolor: '#F7F8FA',
             borderRadius: 4,
             p: 5,
             border: '2px solid #E5E7EB',
@@ -141,7 +150,7 @@ export default function About() {
           data-aos="fade-up"
           suppressHydrationWarning
         >
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1E3A8A', textAlign: 'center' }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#0C1222', textAlign: 'center' }}>
             Why Choose Us Over Freelancers?
           </Typography>
           <Grid container spacing={3}>

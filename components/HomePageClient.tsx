@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import Header from '@/components/Header'
-import Hero from '@/components/Hero'
-import Services from '@/components/Services'
-import Portfolio from '@/components/Portfolio'
-import About from '@/components/About'
-import Testimonials from '@/components/Testimonials'
-import Blog from '@/components/Blog'
+import MarketingAppBar from '@/components/marketing/MarketingAppBar'
+import MarketingHero from '@/components/marketing/MarketingHero'
+import LogoCollection from '@/components/marketing/LogoCollection'
+import MarketingHighlights from '@/components/marketing/MarketingHighlights'
+import MarketingFeatures from '@/components/marketing/MarketingFeatures'
+import MarketingPortfolioSection from '@/components/marketing/MarketingPortfolioSection'
+import MarketingProductsStrip from '@/components/marketing/MarketingProductsStrip'
+import MarketingTestimonials from '@/components/marketing/MarketingTestimonials'
+import MarketingFAQ from '@/components/marketing/MarketingFAQ'
+import MarketingFooter from '@/components/marketing/MarketingFooter'
 import CTA from '@/components/CTA'
-import Footer from '@/components/Footer'
 import ExitIntentPopup from '@/components/ExitIntentPopup'
 
 export default function HomePageClient() {
@@ -24,15 +26,17 @@ export default function HomePageClient() {
 
   return (
     <main>
-      <Header />
-      <Hero />
-      <Services />
-      <Portfolio />
-      <About />
-      <Testimonials />
-      <Blog />
+      <MarketingAppBar />
+      <MarketingHero />
+      <LogoCollection />
+      <MarketingHighlights />
+      <MarketingFeatures />
+      <MarketingPortfolioSection />
+      <MarketingProductsStrip />
+      <MarketingTestimonials />
+      <MarketingFAQ />
       <CTA />
-      <Footer />
+      <MarketingFooter />
       <ExitIntentPopup
         onClose={() => setShowExitPopup(false)}
         onScheduleConsultation={handleScheduleConsultation}

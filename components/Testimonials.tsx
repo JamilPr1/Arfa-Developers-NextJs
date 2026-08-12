@@ -71,15 +71,19 @@ export default function Testimonials() {
   }
 
   return (
-    <Box id="testimonials" sx={{ py: 10, bgcolor: 'background.paper' }}>
+    <Box id="testimonials" sx={{ py: { xs: 8, md: 10 }, bgcolor: '#FFFFFF', borderTop: '1px solid #E8ECF1' }}>
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up">
+          <Typography component="p" className="section-label" sx={{ mb: 1.5 }}>
+            Testimonials
+          </Typography>
           <Typography
             variant="h2"
             sx={{
               fontWeight: 700,
               mb: 2,
-              color: '#1E3A8A',
+              color: '#0C1222',
+              letterSpacing: '-0.03em',
             }}
           >
             Client Reviews

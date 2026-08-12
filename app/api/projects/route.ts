@@ -8,7 +8,20 @@ export const revalidate = 0
 
 export async function GET() {
   try {
-    // Try Supabase first (only if env vars are set and not during build)
+    // Prefer local projects.json for marketing accuracy (images + copy)
+    try {
+      const projects = await readDataFile('projects.json')
+      const publishedProjects = (projects || []).filter((p: any) => p.published)
+      if (publishedProjects.length > 0) {
+        const response = NextResponse.json(publishedProjects)
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+        return response
+      }
+    } catch {
+      // continue to Supabase
+    }
+
+    // Try Supabase if local file empty
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
         process.env.NEXT_PHASE !== 'phase-production-build' &&
@@ -22,7 +35,7 @@ export async function GET() {
             .eq('published', true)
             .order('id', { ascending: false })
           
-          if (!error && projects) {
+          if (!error && projects && projects.length > 0) {
             const response = NextResponse.json(projects)
             response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
             return response
@@ -30,19 +43,11 @@ export async function GET() {
         }
       } catch (supabaseError: any) {
         // Silently fail - never throw
-        // Continue to fallback
       }
     }
     
-    // Fallback to file-based system
-    const projects = await readDataFile('projects.json')
-    const publishedProjects = projects.filter((p: any) => p.published)
-    
-    const response = NextResponse.json(publishedProjects)
+    const response = NextResponse.json([])
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-    response.headers.set('Pragma', 'no-cache')
-    response.headers.set('Expires', '0')
-    
     return response
   } catch (error) {
     return NextResponse.json(

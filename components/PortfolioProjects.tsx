@@ -142,7 +142,7 @@ export default function PortfolioProjects() {
                 />
                 <CardContent sx={{ flexGrow: 1, p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#0C1222', mb: 1 }}>
                       {project.title}
                     </Typography>
                     <Chip
@@ -150,7 +150,7 @@ export default function PortfolioProjects() {
                       size="small"
                       sx={{
                         backgroundColor: '#EFF6FF',
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontWeight: 600,
                       }}
                     />
@@ -165,7 +165,7 @@ export default function PortfolioProjects() {
                         label={tech}
                         size="small"
                         sx={{
-                          backgroundColor: '#F9FAFB',
+                          backgroundColor: '#F7F8FA',
                           color: '#6B7280',
                           fontSize: '0.75rem',
                         }}
@@ -201,7 +201,7 @@ export default function PortfolioProjects() {
             borderBottom: '1px solid #E5E7EB',
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E3A8A' }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#0C1222' }}>
             {selectedProject?.title}
           </Typography>
           <IconButton
@@ -237,8 +237,8 @@ export default function PortfolioProjects() {
                       rel="noopener noreferrer"
                       startIcon={<LaunchIcon />}
                       sx={{
-                        borderColor: '#1E3A8A',
-                        color: '#1E3A8A',
+                        borderColor: '#0C1222',
+                        color: '#0C1222',
                         '&:hover': {
                           borderColor: '#2563EB',
                           backgroundColor: 'rgba(30, 58, 138, 0.04)',
@@ -326,7 +326,7 @@ export default function PortfolioProjects() {
                       label={tech}
                       sx={{
                         backgroundColor: '#F3F4F6',
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontWeight: 500,
                         '&:hover': {
                           backgroundColor: '#E5E7EB',

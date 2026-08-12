@@ -46,7 +46,7 @@ const processSteps = [
       'Budget and timeline planning',
       'Technical requirements assessment',
     ],
-    icon: <DiscoveryIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <DiscoveryIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
   },
   {
     title: 'Design & Prototyping',
@@ -59,7 +59,7 @@ const processSteps = [
       'Responsive design planning',
       'Brand consistency and style guide',
     ],
-    icon: <DesignIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <DesignIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
   },
   {
     title: 'Development & Testing',
@@ -72,7 +72,7 @@ const processSteps = [
       'Performance optimization',
       'Security implementation',
     ],
-    icon: <DevelopmentIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <DevelopmentIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
   },
   {
     title: 'Launch & Support',
@@ -85,7 +85,7 @@ const processSteps = [
       'Training and support',
       'Ongoing maintenance and updates',
     ],
-    icon: <LaunchIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <LaunchIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
   },
 ]
 
@@ -121,8 +121,8 @@ export default function OurProcessPage() {
         {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -138,15 +138,15 @@ export default function OurProcessPage() {
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                 lineHeight: 1.2,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Our <span style={{ color: '#F59E0B' }}>Process</span>
+              Our <span style={{ color: 'hsl(210, 98%, 48%)' }}>Process</span>
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 800,
                 mx: 'auto',
                 mb: 4,
@@ -198,7 +198,7 @@ export default function OurProcessPage() {
                         sx={{
                           fontWeight: 700,
                           mb: 2,
-                          color: '#1E3A8A',
+                          color: '#0C1222',
                         }}
                       >
                         {index + 1}. {step.title}
@@ -252,7 +252,7 @@ export default function OurProcessPage() {
           </Grid>
 
           <Box sx={{ mt: 8, textAlign: 'center' }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               Ready to Start Your Project?
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, color: '#6B7280', maxWidth: 600, mx: 'auto' }}>

@@ -20,6 +20,7 @@ import {
 } from '@mui/material'
 import { Close as CloseIcon, Launch as LaunchIcon } from '@mui/icons-material'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import SimpleCarousel from './SimpleCarousel'
 
 interface Project {
@@ -74,25 +75,45 @@ export default function Portfolio() {
   }
 
   if (projects.length === 0) {
-    return null
+    return (
+      <Box id="portfolio" sx={{ py: { xs: 6, sm: 10 }, bgcolor: 'background.default' }}>
+        <Container maxWidth="lg">
+          <Typography component="h2" variant="h4" sx={{ fontWeight: 600, mb: 2, textAlign: 'center' }}>
+            Portfolio & case studies
+          </Typography>
+          <Typography color="text.secondary" sx={{ textAlign: 'center', mb: 3 }}>
+            Explore our products and rescue case studies while we load the latest project gallery.
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Button component={Link} href="/products" variant="contained">
+              View products
+            </Button>
+            <Button component={Link} href="/case-studies" variant="outlined">
+              Case studies
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+    )
   }
 
   return (
-    <Box id="portfolio" sx={{ py: 10, bgcolor: '#FFFFFF', overflow: 'visible', position: 'relative' }}>
+    <Box id="portfolio" sx={{ py: { xs: 6, sm: 10 }, bgcolor: 'background.default', overflow: 'visible', position: 'relative' }}>
       <Container maxWidth="lg" sx={{ overflow: 'visible', position: 'relative' }}>
-        <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up">
+        <Box sx={{ textAlign: 'center', mb: 5 }} data-aos="fade-up">
           <Typography
-            variant="h2"
+            component="h2"
+            variant="h4"
             sx={{
-              fontWeight: 700,
+              fontWeight: 600,
               mb: 2,
-              color: '#1E3A8A',
+              color: 'text.primary',
             }}
           >
-            Our Work
+            Portfolio & case studies
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-            Showcasing innovative solutions that drive business success
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+            Recent work across web apps, rescues, and product builds for US businesses.
           </Typography>
         </Box>
 
@@ -206,7 +227,7 @@ export default function Portfolio() {
                         variant="body2" 
                         sx={{ 
                           mb: 2,
-                          color: 'rgba(255,255,255,0.95)',
+                          color: 'text.secondary',
                           textShadow: '0 1px 2px rgba(0,0,0,0.5)',
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
@@ -335,7 +356,7 @@ export default function Portfolio() {
             borderBottom: '1px solid #E5E7EB',
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E3A8A' }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#0C1222' }}>
             {selectedProject?.title}
           </Typography>
           <IconButton
@@ -371,8 +392,8 @@ export default function Portfolio() {
                       rel="noopener noreferrer"
                       startIcon={<LaunchIcon />}
                       sx={{
-                        borderColor: '#1E3A8A',
-                        color: '#1E3A8A',
+                        borderColor: '#0C1222',
+                        color: '#0C1222',
                         '&:hover': {
                           borderColor: '#2563EB',
                           backgroundColor: 'rgba(30, 58, 138, 0.04)',
@@ -460,7 +481,7 @@ export default function Portfolio() {
                       label={tech}
                       sx={{
                         backgroundColor: '#F3F4F6',
-                        color: '#1E3A8A',
+                        color: '#0C1222',
                         fontWeight: 500,
                         '&:hover': {
                           backgroundColor: '#E5E7EB',

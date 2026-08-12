@@ -104,18 +104,29 @@ export default async function ProductDetailPage({
       <Box component="main">
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 14 },
             pb: { xs: 6, md: 8 },
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <Container maxWidth="lg">
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'radial-gradient(circle at 18% 40%, rgba(255,255,255,0.12) 0%, transparent 48%), radial-gradient(circle at 85% 20%, rgba(245,158,11,0.12) 0%, transparent 40%)',
+              pointerEvents: 'none',
+            }}
+          />
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
             <Button
               component={Link}
               href="/products"
               startIcon={<BackIcon />}
-              sx={{ color: 'rgba(255,255,255,0.8)', mb: 3, '&:hover': { color: 'white' } }}
+              sx={{ color: 'text.secondary', mb: 3, '&:hover': { color: '#0C1222' } }}
             >
               All Products
             </Button>
@@ -123,7 +134,7 @@ export default async function ProductDetailPage({
               <Grid item xs={12} md={6} order={{ xs: 1, md: 1 }}>
                 <Chip
                   label={product.category}
-                  sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', mb: 2, fontWeight: 600 }}
+                  sx={{ bgcolor: 'primary.50', color: 'primary.dark', mb: 2, fontWeight: 600 }}
                 />
                 <Typography
                   variant="h1"
@@ -136,10 +147,10 @@ export default async function ProductDetailPage({
                 >
                   {product.name}
                 </Typography>
-                <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.9)', mb: 3, fontWeight: 400, lineHeight: 1.6 }}>
+                <Typography variant="h5" sx={{ color: '#64748B', mb: 3, fontWeight: 400, lineHeight: 1.6 }}>
                   {product.shortDescription}
                 </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: '#ffd700', mb: 3 }}>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: '#1D4ED8', mb: 3 }}>
                   {formatProductPrice(product)}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -149,10 +160,10 @@ export default async function ProductDetailPage({
                     variant="contained"
                     size="large"
                     sx={{
-                      backgroundColor: '#F59E0B',
+                      backgroundColor: '#0C1222',
                       fontWeight: 600,
                       px: 4,
-                      '&:hover': { backgroundColor: '#FBBF24' },
+                      '&:hover': { backgroundColor: '#1E293B' },
                     }}
                   >
                     {product.ctaText || 'Get Started'}
@@ -165,7 +176,7 @@ export default async function ProductDetailPage({
                       size="large"
                       sx={{
                         borderColor: 'white',
-                        color: 'white',
+                        color: '#0C1222',
                         fontWeight: 600,
                         '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' },
                       }}
@@ -182,11 +193,11 @@ export default async function ProductDetailPage({
           </Container>
         </Box>
 
-        <Box sx={{ py: 10, bgcolor: '#F9FAFB' }}>
+        <Box sx={{ py: 10, bgcolor: '#F7F8FA' }}>
           <Container maxWidth="lg">
             <Grid container spacing={6}>
               <Grid item xs={12} md={7}>
-                <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 3 }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#0C1222', mb: 3 }}>
                   About {product.name}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.9, fontSize: '1.05rem' }}>
@@ -196,7 +207,7 @@ export default async function ProductDetailPage({
               <Grid item xs={12} md={5}>
                 {product.features?.length > 0 && (
                   <Card sx={{ p: 4, borderRadius: 3, height: '100%' }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 3 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#0C1222', mb: 3 }}>
                       Key Features
                     </Typography>
                     <List>
@@ -217,7 +228,7 @@ export default async function ProductDetailPage({
             {product.benefits && product.benefits.length > 0 && (
               <>
                 <Divider sx={{ my: 6 }} />
-                <Typography variant="h4" sx={{ fontWeight: 700, color: '#1E3A8A', mb: 4, textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#0C1222', mb: 4, textAlign: 'center' }}>
                   Why Choose {product.name}?
                 </Typography>
                 <Grid container spacing={3}>

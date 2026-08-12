@@ -689,7 +689,7 @@ export default function SlackChatWidget() {
           sx={{
             width: 60,
             height: 60,
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
             boxShadow: '0 4px 12px rgba(30, 58, 138, 0.4)',
             '&:hover': {
               boxShadow: '0 6px 16px rgba(30, 58, 138, 0.6)',
@@ -698,7 +698,7 @@ export default function SlackChatWidget() {
             transition: 'all 0.3s ease',
           }}
         >
-          <ChatIcon sx={{ fontSize: 30, color: 'white' }} />
+          <ChatIcon sx={{ fontSize: 30, color: '#0C1222' }} />
         </Fab>
       </motion.div>
 
@@ -747,8 +747,8 @@ export default function SlackChatWidget() {
                 <Box
                   sx={{
                     p: 2,
-                    background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-                    color: 'white',
+                    background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+                    color: '#0C1222',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -760,7 +760,7 @@ export default function SlackChatWidget() {
                   <IconButton
                     size="small"
                     onClick={() => setIsOpen(false)}
-                    sx={{ color: 'white' }}
+                    sx={{ color: '#0C1222' }}
                   >
                     <CloseIcon />
                   </IconButton>
@@ -800,7 +800,7 @@ export default function SlackChatWidget() {
                         sx={{
                           p: 1.5,
                           maxWidth: '75%',
-                          backgroundColor: msg.sender === 'user' ? '#1E3A8A' : msg.sender === 'agent' ? '#ffffff' : 'white',
+                          backgroundColor: msg.sender === 'user' ? '#0C1222' : msg.sender === 'agent' ? '#ffffff' : 'white',
                           color: msg.sender === 'user' ? 'white' : 'text.primary',
                           borderRadius: '12px',
                         }}
@@ -852,10 +852,10 @@ export default function SlackChatWidget() {
                             sx={{
                               p: 1.5,
                               borderRadius: '8px',
-                              border: '1px solid #1E3A8A',
+                              border: '1px solid #0C1222',
                               cursor: 'pointer',
-                              backgroundColor: '#1E3A8A',
-                              color: 'white',
+                              backgroundColor: '#0C1222',
+                              color: '#FFFFFF',
                               textAlign: 'center',
                               transition: 'all 0.2s',
                               '&:hover': {
@@ -897,7 +897,7 @@ export default function SlackChatWidget() {
                                 transition: 'all 0.2s',
                                 '&:hover': {
                                   backgroundColor: '#f0f0f0',
-                                  borderColor: '#1E3A8A',
+                                  borderColor: '#0C1222',
                                   transform: 'translateX(2px)',
                                 },
                               }}
@@ -960,8 +960,8 @@ export default function SlackChatWidget() {
                         isCollectingContactInfo
                       }
                       sx={{
-                        backgroundColor: '#1E3A8A',
-                        color: 'white',
+                        backgroundColor: '#0C1222',
+                        color: '#FFFFFF',
                         '&:hover': {
                           backgroundColor: '#2563EB',
                         },

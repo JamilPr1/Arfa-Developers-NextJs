@@ -47,67 +47,86 @@ const services = [
 
 export default function Services() {
   return (
-    <Box id="services" sx={{ py: 10, bgcolor: '#F9FAFB' }}>
+    <Box id="services" sx={{ py: { xs: 8, md: 10 }, bgcolor: '#FFFFFF', borderTop: '1px solid #E8ECF1' }}>
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up" suppressHydrationWarning>
+          <Typography component="p" className="section-label" sx={{ mb: 1.5 }}>
+            Services
+          </Typography>
           <Typography
             variant="h2"
             sx={{
               fontWeight: 700,
               mb: 2,
-              color: '#1E3A8A',
+              color: '#0C1222',
+              letterSpacing: '-0.03em',
             }}
           >
             What We Do
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+          <Typography variant="h6" sx={{ color: '#64748B', maxWidth: 560, mx: 'auto', fontWeight: 400 }}>
             Comprehensive web solutions tailored to your business needs
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={3}>
           {services.map((service, index) => (
             <Grid item xs={12} sm={6} md={4} key={service.title}>
               <motion.div
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.06 }}
               >
                 <Card
+                  className="clean-card"
                   sx={{
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    transition: 'all 0.3s ease-in-out',
+                    boxShadow: 'none',
+                    border: '1px solid #E8ECF1',
+                    borderRadius: '12px',
                     '&:hover': {
-                      transform: 'translateY(-8px) scale(1.05)',
-                      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 8px 24px rgba(12,18,34,0.06)',
+                      borderColor: '#D5DBE3',
                     },
                   }}
                   data-aos="fade-up"
-                  data-aos-delay={index * 100}
+                  data-aos-delay={index * 80}
                   suppressHydrationWarning
                 >
-                  <CardContent sx={{ flexGrow: 1, p: 4 }}>
+                  <CardContent sx={{ flexGrow: 1, p: 3.5 }}>
                     <Box
                       sx={{
-                        color: '#1E3A8A',
+                        color: '#1D4ED8',
                         mb: 2,
+                        width: 48,
+                        height: 48,
+                        borderRadius: '10px',
+                        bgcolor: '#EFF4FF',
                         display: 'flex',
+                        alignItems: 'center',
                         justifyContent: 'center',
-                        '&:hover': {
-                          color: '#2563EB',
-                        },
-                        transition: 'color 0.3s ease',
+                        '& .MuiSvgIcon-root': { fontSize: 26 },
                       }}
                     >
                       {service.icon}
                     </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, textAlign: 'center' }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 650,
+                        mb: 1.25,
+                        color: '#0C1222',
+                        fontSize: '1.15rem',
+                        letterSpacing: '-0.02em',
+                      }}
+                    >
                       {service.title}
                     </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
+                    <Typography variant="body1" sx={{ color: '#64748B', lineHeight: 1.65 }}>
                       {service.description}
                     </Typography>
                   </CardContent>
@@ -118,7 +137,7 @@ export default function Services() {
         </Grid>
 
         <Box sx={{ mt: 6, textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#1E3A8A' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0C1222' }}>
             Explore high-intent service pages
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -127,10 +146,11 @@ export default function Services() {
                 clickable
                 label="Project Rescue"
                 sx={{
-                  backgroundColor: '#EFF6FF',
-                  color: '#1E3A8A',
+                  backgroundColor: '#F5F7FA',
+                  color: '#0C1222',
+                  border: '1px solid #E8ECF1',
                   fontWeight: 600,
-                  '&:hover': { backgroundColor: '#DBEAFE' },
+                  '&:hover': { backgroundColor: '#EFF4FF', borderColor: '#1D4ED8' },
                 }}
               />
             </Link>
@@ -139,10 +159,11 @@ export default function Services() {
                 clickable
                 label="Web Development Agency USA"
                 sx={{
-                  backgroundColor: '#EFF6FF',
-                  color: '#1E3A8A',
+                  backgroundColor: '#F5F7FA',
+                  color: '#0C1222',
+                  border: '1px solid #E8ECF1',
                   fontWeight: 600,
-                  '&:hover': { backgroundColor: '#DBEAFE' },
+                  '&:hover': { backgroundColor: '#EFF4FF', borderColor: '#1D4ED8' },
                 }}
               />
             </Link>
@@ -151,10 +172,11 @@ export default function Services() {
                 clickable
                 label="Hire Next.js Developers USA"
                 sx={{
-                  backgroundColor: '#EFF6FF',
-                  color: '#1E3A8A',
+                  backgroundColor: '#F5F7FA',
+                  color: '#0C1222',
+                  border: '1px solid #E8ECF1',
                   fontWeight: 600,
-                  '&:hover': { backgroundColor: '#DBEAFE' },
+                  '&:hover': { backgroundColor: '#EFF4FF', borderColor: '#1D4ED8' },
                 }}
               />
             </Link>
@@ -163,10 +185,11 @@ export default function Services() {
                 clickable
                 label="Website Maintenance USA"
                 sx={{
-                  backgroundColor: '#EFF6FF',
-                  color: '#1E3A8A',
+                  backgroundColor: '#F5F7FA',
+                  color: '#0C1222',
+                  border: '1px solid #E8ECF1',
                   fontWeight: 600,
-                  '&:hover': { backgroundColor: '#DBEAFE' },
+                  '&:hover': { backgroundColor: '#EFF4FF', borderColor: '#1D4ED8' },
                 }}
               />
             </Link>
@@ -175,10 +198,11 @@ export default function Services() {
                 clickable
                 label="Custom Software Development USA"
                 sx={{
-                  backgroundColor: '#EFF6FF',
-                  color: '#1E3A8A',
+                  backgroundColor: '#F5F7FA',
+                  color: '#0C1222',
+                  border: '1px solid #E8ECF1',
                   fontWeight: 600,
-                  '&:hover': { backgroundColor: '#DBEAFE' },
+                  '&:hover': { backgroundColor: '#EFF4FF', borderColor: '#1D4ED8' },
                 }}
               />
             </Link>

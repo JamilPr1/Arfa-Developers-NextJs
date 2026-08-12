@@ -53,7 +53,7 @@ export const metadata: Metadata = {
 
 const capabilities = [
   {
-    icon: <CodeIcon sx={{ fontSize: 46, color: '#1E3A8A' }} />,
+    icon: <CodeIcon sx={{ fontSize: 46, color: '#0C1222' }} />,
     title: 'Custom web apps',
     desc: 'Dashboards, portals, marketplaces, internal tools, and SaaS apps.',
   },
@@ -128,8 +128,8 @@ export default function WebDevelopmentAgencyUsaPage() {
       <Box component="main">
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #0B2A6F 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -143,15 +143,15 @@ export default function WebDevelopmentAgencyUsaPage() {
                 mb: 2,
                 fontSize: { xs: '2.4rem', md: '3.6rem', lg: '4.1rem' },
                 lineHeight: 1.15,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Web Development Agency <span style={{ color: '#F59E0B' }}>USA</span>
+              Web Development Agency <span style={{ color: 'hsl(210, 98%, 48%)' }}>USA</span>
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'rgba(255,255,255,0.95)',
+                color: 'text.secondary',
                 maxWidth: 950,
                 mx: 'auto',
                 mb: 4,
@@ -170,13 +170,13 @@ export default function WebDevelopmentAgencyUsaPage() {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
+                  backgroundColor: '#0C1222',
+                  color: '#FFFFFF',
                   px: 5,
                   py: 2,
                   fontSize: '1.05rem',
                   fontWeight: 800,
-                  '&:hover': { backgroundColor: '#FBBF24', transform: 'translateY(-2px)' },
+                  '&:hover': { backgroundColor: '#1E293B', transform: 'translateY(-2px)' },
                   transition: 'all 0.25s ease',
                 }}
               >
@@ -189,7 +189,7 @@ export default function WebDevelopmentAgencyUsaPage() {
                 size="large"
                 sx={{
                   borderColor: 'rgba(255,255,255,0.7)',
-                  color: 'white',
+                  color: '#0C1222',
                   px: 5,
                   py: 2,
                   fontSize: '1.05rem',
@@ -219,7 +219,7 @@ export default function WebDevelopmentAgencyUsaPage() {
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{c.icon}</Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: '#1E3A8A' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: '#0C1222' }}>
                     {c.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B7280' }}>
@@ -231,7 +231,7 @@ export default function WebDevelopmentAgencyUsaPage() {
           </Grid>
 
           <Box sx={{ mt: 7 }}>
-            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#1E3A8A' }}>
+            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#0C1222' }}>
               Modern stack, enterprise discipline
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mb: 3, maxWidth: 950, mx: 'auto' }}>
@@ -244,7 +244,7 @@ export default function WebDevelopmentAgencyUsaPage() {
                   label={s}
                   sx={{
                     bgcolor: '#F3F4F6',
-                    color: '#1E3A8A',
+                    color: '#0C1222',
                     fontWeight: 700,
                     '&:hover': { bgcolor: '#E5E7EB' },
                   }}
@@ -254,7 +254,7 @@ export default function WebDevelopmentAgencyUsaPage() {
           </Box>
         </Container>
 
-        <Box sx={{ backgroundColor: '#F9FAFB', py: 8 }}>
+        <Box sx={{ backgroundColor: '#F7F8FA', py: 8 }}>
           <Container maxWidth="lg">
             <Grid container spacing={4} alignItems="stretch">
               <Grid item xs={12} md={6}>
@@ -281,14 +281,16 @@ export default function WebDevelopmentAgencyUsaPage() {
                     p: 4,
                     borderRadius: 3,
                     height: '100%',
-                    backgroundColor: '#0B2A6F',
-                    color: 'white',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E8ECF1',
+                    boxShadow: 'none',
+                    color: '#0C1222',
                   }}
                 >
-                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: 'white' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: '#0C1222' }}>
                     Prefer fixed scope? Or ongoing delivery?
                   </Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.9)', lineHeight: 1.8 }}>
+                  <Typography sx={{ color: '#64748B', lineHeight: 1.8 }}>
                     We can deliver a fixed-scope build, or act as your product engineering partner with a monthly
                     cadence. Either way: clear milestones, quality standards, and predictable communication.
                   </Typography>
@@ -298,10 +300,10 @@ export default function WebDevelopmentAgencyUsaPage() {
                       href="/contact"
                       variant="contained"
                       sx={{
-                        backgroundColor: '#F59E0B',
-                        color: 'white',
+                        backgroundColor: '#0C1222',
+                        color: '#FFFFFF',
                         fontWeight: 800,
-                        '&:hover': { backgroundColor: '#FBBF24' },
+                        '&:hover': { backgroundColor: '#1E293B' },
                       }}
                     >
                       Talk to an expert
@@ -312,7 +314,7 @@ export default function WebDevelopmentAgencyUsaPage() {
                       variant="outlined"
                       sx={{
                         borderColor: 'rgba(255,255,255,0.6)',
-                        color: 'white',
+                        color: '#0C1222',
                         fontWeight: 800,
                         '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.08)' },
                       }}

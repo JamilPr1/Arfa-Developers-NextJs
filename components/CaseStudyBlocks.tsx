@@ -12,7 +12,7 @@ export function ResultsSummary({
 }) {
   return (
     <Card sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-      <Typography variant="h6" sx={{ fontWeight: 900, mb: 1.5, color: '#1E3A8A' }}>
+      <Typography variant="h6" sx={{ fontWeight: 900, mb: 1.5, color: '#0C1222' }}>
         {title}
       </Typography>
       <Divider sx={{ mb: 2 }} />
@@ -58,7 +58,7 @@ export function TestimonialBlock({
       }}
     >
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', mb: 1.5 }}>
-        <QuoteIcon sx={{ color: '#1E3A8A', mt: 0.2 }} />
+        <QuoteIcon sx={{ color: '#0C1222', mt: 0.2 }} />
         <Typography sx={{ color: '#111827', fontWeight: 700, lineHeight: 1.85 }}>
           {quote}
         </Typography>
@@ -72,7 +72,7 @@ export function TestimonialBlock({
             size="small"
             sx={{
               bgcolor: '#EFF6FF',
-              color: '#1E3A8A',
+              color: '#0C1222',
               fontWeight: 700,
             }}
           />

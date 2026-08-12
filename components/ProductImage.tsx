@@ -171,7 +171,7 @@ export function ProductGallery({ items, title = 'Product Screenshots' }: Product
                 objectFit: 'cover',
               }}
             />
-            <Box sx={{ px: 2, py: 1.5, bgcolor: '#F9FAFB', borderTop: '1px solid #e5e7eb', lineHeight: 1.5 }}>
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#F7F8FA', borderTop: '1px solid #e5e7eb', lineHeight: 1.5 }}>
               <Box component="p" sx={{ m: 0, fontSize: '0.875rem', color: '#6B7280', lineHeight: 1.5 }}>
                 {item.caption}
               </Box>
@@ -189,7 +189,7 @@ function TypographySection({ title }: { title: string }) {
       component="h2"
       sx={{
         fontWeight: 700,
-        color: '#1E3A8A',
+        color: '#0C1222',
         fontSize: { xs: '1.5rem', md: '2rem' },
         mb: 3,
         textAlign: 'center',

@@ -78,6 +78,7 @@ export default function PromotionsBanner() {
   return (
     <Box
       ref={bannerRef}
+      data-promotions-banner
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       sx={{
@@ -87,7 +88,7 @@ export default function PromotionsBanner() {
         right: 0,
         width: '100%',
         overflow: 'hidden',
-        bgcolor: '#1E3A8A',
+        bgcolor: 'hsl(220, 30%, 6%)',
         color: 'white',
         py: { xs: 1, sm: 1.5 },
         zIndex: 1300,

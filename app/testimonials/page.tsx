@@ -106,8 +106,8 @@ export default function TestimonialsPage() {
         {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -123,15 +123,15 @@ export default function TestimonialsPage() {
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                 lineHeight: 1.2,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Client <span style={{ color: '#F59E0B' }}>Testimonials</span>
+              Client <span style={{ color: 'hsl(210, 98%, 48%)' }}>Testimonials</span>
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 800,
                 mx: 'auto',
                 mb: 4,
@@ -189,7 +189,7 @@ export default function TestimonialsPage() {
                       &quot;{testimonial.text}&quot;
                     </Typography>
                     <Box sx={{ borderTop: '1px solid #E5E7EB', pt: 2 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#1E3A8A' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#0C1222' }}>
                         {testimonial.name}
                       </Typography>
                       <Typography variant="body2" sx={{ color: '#6B7280' }}>

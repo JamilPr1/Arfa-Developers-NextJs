@@ -236,11 +236,11 @@ export default function SimpleCarousel({
                 width: currentIndex === index ? 24 : 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: currentIndex === index ? '#1E3A8A' : 'rgba(30, 58, 138, 0.3)',
+                backgroundColor: currentIndex === index ? '#0C1222' : 'rgba(30, 58, 138, 0.3)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: currentIndex === index ? '#1E3A8A' : 'rgba(30, 58, 138, 0.6)',
+                  backgroundColor: currentIndex === index ? '#0C1222' : 'rgba(30, 58, 138, 0.6)',
                 },
               }}
             />

@@ -7,6 +7,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import PageHero from '@/components/PageHero'
 import Link from 'next/link'
 import Script from 'next/script'
 
@@ -143,47 +144,19 @@ export default function PricingPage() {
       />
       <Header />
       <Box component="main">
-        {/* Hero Section */}
-        <Box
-          sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
-            pt: { xs: 12, md: 16 },
-            pb: { xs: 8, md: 12 },
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography
-              variant="h1"
-              sx={{
-                fontWeight: 800,
-                mb: 3,
-                fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
-                lineHeight: 1.2,
-                color: 'white',
-              }}
-            >
-              Transparent <span style={{ color: '#F59E0B' }}>Pricing</span>
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                color: 'white',
-                maxWidth: 800,
-                mx: 'auto',
-                mb: 4,
-                lineHeight: 1.6,
-                fontWeight: 400,
-                fontSize: { xs: '1.1rem', md: '1.5rem' },
-              }}
-            >
-              No hidden costs. Clear pricing ranges for all our services. Get a custom quote based on your specific needs.
-            </Typography>
-          </Container>
-        </Box>
+        <PageHero
+          title={
+            <>
+              Transparent{' '}
+              <Box component="span" sx={{ color: '#F5D76E' }}>
+                Pricing
+              </Box>
+            </>
+          }
+          subtitle="No hidden costs. Clear pricing ranges for all our services. Get a custom quote based on your specific needs."
+          ctaText="Get a Custom Quote"
+          ctaHref="/contact"
+        />
 
         {/* Pricing Packages */}
         <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -193,7 +166,7 @@ export default function PricingPage() {
               fontWeight: 700,
               mb: 6,
               textAlign: 'center',
-              color: '#1E3A8A',
+              color: '#0C1222',
             }}
           >
             Service Pricing
@@ -217,8 +190,8 @@ export default function PricingPage() {
                 >
                   <CardContent sx={{ flexGrow: 1, p: 4 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <PriceIcon sx={{ fontSize: 40, color: '#1E3A8A', mr: 2 }} />
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1E3A8A' }}>
+                      <PriceIcon sx={{ fontSize: 40, color: '#0C1222', mr: 2 }} />
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#0C1222' }}>
                         {pkg.name}
                       </Typography>
                     </Box>
@@ -259,7 +232,7 @@ export default function PricingPage() {
                       fullWidth
                       sx={{
                         mt: 3,
-                        backgroundColor: '#1E3A8A',
+                        backgroundColor: '#0C1222',
                         py: 1.5,
                         '&:hover': {
                           backgroundColor: '#2563EB',
@@ -275,7 +248,7 @@ export default function PricingPage() {
           </Grid>
 
           <Box sx={{ mt: 8, textAlign: 'center' }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
               Need a Custom Solution?
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, color: '#6B7280', maxWidth: 600, mx: 'auto' }}>
@@ -287,7 +260,7 @@ export default function PricingPage() {
               variant="contained"
               size="large"
               sx={{
-                backgroundColor: '#1E3A8A',
+                backgroundColor: '#0C1222',
                 px: 5,
                 py: 2,
                 fontSize: '1.1rem',

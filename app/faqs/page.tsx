@@ -7,6 +7,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import PageHero from '@/components/PageHero'
 import Script from 'next/script'
 import { SITE_URL } from '@/lib/seoKeywords'
 
@@ -127,48 +128,18 @@ export default function FAQsPage() {
       />
       <Header />
       <Box component="main">
-        {/* Hero Section */}
-        <Box
-          sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
-            pt: { xs: 12, md: 16 },
-            pb: { xs: 8, md: 12 },
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-            <HelpIcon sx={{ fontSize: 80, mb: 3, opacity: 0.9 }} />
-            <Typography
-              variant="h1"
-              sx={{
-                fontWeight: 800,
-                mb: 3,
-                fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
-                lineHeight: 1.2,
-                color: 'white',
-              }}
-            >
-              Frequently Asked <span style={{ color: '#F59E0B' }}>Questions</span>
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                color: 'white',
-                maxWidth: 800,
-                mx: 'auto',
-                mb: 4,
-                lineHeight: 1.6,
-                fontWeight: 400,
-                fontSize: { xs: '1.1rem', md: '1.5rem' },
-              }}
-            >
-              Straight answers to common questions about cost, timeline, trust, and our services.
-            </Typography>
-          </Container>
-        </Box>
+        <PageHero
+          eyebrow={<HelpIcon sx={{ fontSize: 64, mb: 2, opacity: 0.9 }} />}
+          title={
+            <>
+              Frequently Asked{' '}
+              <Box component="span" sx={{ color: '#F5D76E' }}>
+                Questions
+              </Box>
+            </>
+          }
+          subtitle="Straight answers to common questions about cost, timeline, trust, and our services."
+        />
 
         {/* FAQs */}
         <Container maxWidth="md" sx={{ py: 8 }}>
@@ -185,16 +156,16 @@ export default function FAQsPage() {
               }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: '#1E3A8A' }} />}
+                expandIcon={<ExpandMoreIcon sx={{ color: '#0C1222' }} />}
                 sx={{
-                  backgroundColor: '#F9FAFB',
+                  backgroundColor: '#F7F8FA',
                   borderRadius: 2,
                   '&:hover': {
                     backgroundColor: '#F3F4F6',
                   },
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1E3A8A' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#0C1222' }}>
                   {faq.question}
                 </Typography>
               </AccordionSummary>
@@ -208,7 +179,7 @@ export default function FAQsPage() {
         </Container>
 
         <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
             Still have questions?
           </Typography>
           <Typography variant="body1" sx={{ mb: 4, color: '#6B7280' }}>

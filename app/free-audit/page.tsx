@@ -10,6 +10,7 @@ import {
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CTA from '@/components/CTA'
+import PageHero from '@/components/PageHero'
 import Link from 'next/link'
 import Script from 'next/script'
 
@@ -38,22 +39,22 @@ export const metadata: Metadata = {
 
 const auditAreas = [
   {
-    icon: <SpeedIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <SpeedIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
     title: 'Performance Audit',
     description: 'Identify speed issues, optimization opportunities, and performance bottlenecks.',
   },
   {
-    icon: <SecurityIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <SecurityIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
     title: 'Security Audit',
     description: 'Check for vulnerabilities, outdated software, and security best practices.',
   },
   {
-    icon: <SeoIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <SeoIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
     title: 'SEO Audit',
     description: 'Analyze SEO issues, ranking opportunities, and technical SEO problems.',
   },
   {
-    icon: <AuditIcon sx={{ fontSize: 50, color: '#1E3A8A' }} />,
+    icon: <AuditIcon sx={{ fontSize: 50, color: '#0C1222' }} />,
     title: 'Comprehensive Audit',
     description: 'Full website analysis covering performance, security, SEO, UX, and more.',
   },
@@ -97,11 +98,23 @@ export default function FreeAuditPage() {
       />
       <Header />
       <Box component="main">
+        <PageHero
+          title={
+            <>
+              Free <Box component="span" sx={{ color: 'primary.main' }}>Audit</Box>
+            </>
+          }
+          subtitle="Get a free website audit or consultation. Low-risk entry point to identify issues and opportunities for improvement."
+          ctaText="Request Free Audit"
+          ctaHref="/contact"
+        />
+
+        <Box sx={{ display: 'none' }}>
         {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -118,15 +131,15 @@ export default function FreeAuditPage() {
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                 lineHeight: 1.2,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Free <span style={{ color: '#F59E0B' }}>Audit</span>
+              Free <span style={{ color: 'hsl(210, 98%, 48%)' }}>Audit</span>
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'white',
+                color: '#0C1222',
                 maxWidth: 800,
                 mx: 'auto',
                 mb: 4,
@@ -143,14 +156,14 @@ export default function FreeAuditPage() {
               variant="contained"
               size="large"
               sx={{
-                backgroundColor: '#F59E0B',
-                color: 'white',
+                backgroundColor: '#0C1222',
+                color: '#FFFFFF',
                 px: 5,
                 py: 2,
                 fontSize: '1.1rem',
                 fontWeight: 600,
                 '&:hover': {
-                  backgroundColor: '#FBBF24',
+                  backgroundColor: '#1E293B',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
                 },
@@ -161,6 +174,7 @@ export default function FreeAuditPage() {
             </Button>
           </Container>
         </Box>
+        </Box>
 
         {/* Audit Areas */}
         <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -170,7 +184,7 @@ export default function FreeAuditPage() {
               fontWeight: 700,
               mb: 6,
               textAlign: 'center',
-              color: '#1E3A8A',
+              color: '#0C1222',
             }}
           >
             What We Audit
@@ -193,7 +207,7 @@ export default function FreeAuditPage() {
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{area.icon}</Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#1E3A8A' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#0C1222' }}>
                     {area.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B7280' }}>
@@ -206,7 +220,7 @@ export default function FreeAuditPage() {
         </Container>
 
         {/* What's Included */}
-        <Box sx={{ backgroundColor: '#F9FAFB', py: 8 }}>
+        <Box sx={{ backgroundColor: '#F7F8FA', py: 8 }}>
           <Container maxWidth="md">
             <Typography
               variant="h3"
@@ -214,7 +228,7 @@ export default function FreeAuditPage() {
                 fontWeight: 700,
                 mb: 6,
                 textAlign: 'center',
-                color: '#1E3A8A',
+                color: '#0C1222',
               }}
             >
               What&apos;s Included
@@ -238,7 +252,7 @@ export default function FreeAuditPage() {
               </List>
             </Card>
             <Box sx={{ textAlign: 'center', mt: 6 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#1E3A8A' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#0C1222' }}>
                 Ready to Get Started?
               </Typography>
               <Typography variant="body1" sx={{ mb: 4, color: '#6B7280' }}>
@@ -250,7 +264,7 @@ export default function FreeAuditPage() {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#1E3A8A',
+                  backgroundColor: '#0C1222',
                   px: 5,
                   py: 2,
                   fontSize: '1.1rem',

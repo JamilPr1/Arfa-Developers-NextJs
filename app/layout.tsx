@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
-import { Poppins, Roboto } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
 import AOSInit from '@/components/AOSInit'
@@ -13,45 +13,37 @@ const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'), { ss
 const SlackChatWidget = dynamic(() => import('@/components/SlackChatWidget'), { ssr: false })
 const ArfaVoiceWidget = dynamic(() => import('@/components/ArfaVoiceWidget'), { ssr: false })
 
-const poppins = Poppins({
-  weight: ['400', '500', '600', '700'],
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-poppins',
-  display: 'swap',
-})
-
-const roboto = Roboto({
-  weight: ['400', '500'],
-  subsets: ['latin'],
-  variable: '--font-roboto',
+  variable: '--font-inter',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'Arfa Developers | Web Development Agency USA | Project Rescue & Custom Web Apps',
-  description: 'US-focused web development agency. We build custom web applications and rescue failed projects (takeover + recovery). Fast turnaround, clean code, and ongoing support. Free consultation.',
+  title: 'Arfa Developers | Web Development Agency USA | Project Rescue, AI & Custom Web Apps',
+  description:
+    'US web development agency for Next.js/React apps, project rescue, AI voice agents, LLM integrations, and business automation. Free consultation.',
   keywords: [
     'web development agency USA',
-    'custom web apps US',
-    'enterprise software developers UK',
-    'web solutions Qatar',
-    'custom web apps Saudi Arabia',
-    'web development company',
-    'mobile app development',
-    'enterprise software solutions',
+    'project rescue USA',
+    'custom software development USA',
+    'hire next.js developers USA',
+    'AI software development USA',
+    'AI voice agents',
+    'OpenAI integration services',
+    'LLM application development',
+    'RAG chatbot development',
+    'AI automation agency',
+    'WhatsApp AI automation',
+    'React development agency',
+    'TypeScript web development',
+    'full stack Next.js agency',
+    'machine learning consulting USA',
     'rescue failed projects',
     'fix broken websites',
-    'web app development',
-    'custom software development',
-    'full stack development',
-    'react development',
-    'next.js development',
-    'node.js development',
-    'web development services',
-    'software development company',
-    'app development agency',
     'ecommerce development',
     'SaaS development',
+    'mobile app development',
   ],
   authors: [{ name: 'Arfa Developers' }],
   creator: 'Arfa Developers',
@@ -140,11 +132,11 @@ if (window.cookiehub) { var cpm = {}; window.cookiehub.load(cpm); }
         </Script>
         <StructuredData />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#1E3A8A" />
+        <meta name="theme-color" content="#0A7CFF" />
         <meta name="format-detection" content="telephone=no" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className={`${poppins.variable} ${roboto.variable}`}>
+      <body className={inter.variable}>
         {/* Google Tag Manager */}
         <Script
           id="google-tag-manager"

@@ -75,8 +75,8 @@ export default function CaseStudyRescueUsaSaasPage() {
       <Box component="main">
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 10 },
           }}
@@ -87,17 +87,17 @@ export default function CaseStudyRescueUsaSaasPage() {
               href="/case-studies"
               startIcon={<BackIcon />}
               sx={{
-                color: 'rgba(255,255,255,0.9)',
+                color: '#64748B',
                 mb: 2,
                 '&:hover': { color: '#fff', backgroundColor: 'rgba(255,255,255,0.08)' },
               }}
             >
               Back to Case Studies
             </Button>
-            <Typography variant="h1" sx={{ fontWeight: 900, fontSize: { xs: '2rem', md: '3.2rem' }, mb: 2, color: 'white' }}>
+            <Typography variant="h1" sx={{ fontWeight: 900, fontSize: { xs: '2rem', md: '3.2rem' }, mb: 2, color: '#0C1222' }}>
               US SaaS Project Rescue in 5 Weeks
             </Typography>
-            <Typography variant="h5" sx={{ maxWidth: 980, color: 'rgba(255,255,255,0.95)', lineHeight: 1.6 }}>
+            <Typography variant="h5" sx={{ maxWidth: 980, color: 'text.secondary', lineHeight: 1.6 }}>
               A US startup came to us after a failed agency engagement. Their onboarding was broken, deployments
               were unstable, and trial users were churning. We took over, stabilized, and shipped measurable wins.
             </Typography>
@@ -108,7 +108,7 @@ export default function CaseStudyRescueUsaSaasPage() {
           <Grid container spacing={4}>
             <Grid item xs={12} md={8}>
               <Card sx={{ p: 4, borderRadius: 3 }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, mb: 2, color: '#1E3A8A' }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mb: 2, color: '#0C1222' }}>
                   Challenge
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.9, mb: 3 }}>
@@ -120,7 +120,7 @@ export default function CaseStudyRescueUsaSaasPage() {
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h4" sx={{ fontWeight: 800, mb: 2, color: '#1E3A8A' }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mb: 2, color: '#0C1222' }}>
                   Solution
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.9, mb: 2 }}>
@@ -143,7 +143,7 @@ export default function CaseStudyRescueUsaSaasPage() {
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h4" sx={{ fontWeight: 800, mb: 2, color: '#1E3A8A' }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mb: 2, color: '#0C1222' }}>
                   Results
                 </Typography>
                 {metrics.map((m) => (
@@ -170,7 +170,7 @@ export default function CaseStudyRescueUsaSaasPage() {
               />
 
               <Card sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#1E3A8A' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#0C1222' }}>
                   Engagement Snapshot
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#6B7280', mb: 1 }}>
@@ -188,12 +188,12 @@ export default function CaseStudyRescueUsaSaasPage() {
               </Card>
 
               <Card sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#1E3A8A' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#0C1222' }}>
                   Tech Stack
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {techStack.map((t) => (
-                    <Chip key={t} label={t} size="small" sx={{ bgcolor: '#EFF6FF', color: '#1E3A8A', fontWeight: 600 }} />
+                    <Chip key={t} label={t} size="small" sx={{ bgcolor: '#EFF6FF', color: '#0C1222', fontWeight: 600 }} />
                   ))}
                 </Box>
                 <Button
@@ -203,7 +203,7 @@ export default function CaseStudyRescueUsaSaasPage() {
                   fullWidth
                   sx={{
                     mt: 3,
-                    backgroundColor: '#1E3A8A',
+                    backgroundColor: '#0C1222',
                     '&:hover': { backgroundColor: '#2563EB' },
                   }}
                 >

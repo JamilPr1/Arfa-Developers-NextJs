@@ -129,8 +129,8 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
       <Box component="main">
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 14 },
             pb: { xs: 6, md: 8 },
           }}
@@ -143,7 +143,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
                 mb: 2,
                 fontSize: { xs: '2rem', md: '3rem', lg: '3.4rem' },
                 lineHeight: 1.15,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
               {blog.title}
@@ -152,15 +152,15 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
               <Chip
                 label={blog.date}
                 size="small"
-                sx={{ bgcolor: 'rgba(255,255,255,0.18)', color: 'white', fontWeight: 700 }}
+                sx={{ bgcolor: 'rgba(255,255,255,0.18)', color: '#0C1222', fontWeight: 700 }}
               />
               <Chip
                 label={blog.readTime}
                 size="small"
-                sx={{ bgcolor: 'rgba(255,255,255,0.18)', color: 'white', fontWeight: 700 }}
+                sx={{ bgcolor: 'rgba(255,255,255,0.18)', color: '#0C1222', fontWeight: 700 }}
               />
             </Box>
-            <Typography sx={{ mt: 2, color: 'rgba(255,255,255,0.92)', maxWidth: 980, lineHeight: 1.8 }}>
+            <Typography sx={{ mt: 2, color: 'text.secondary', maxWidth: 980, lineHeight: 1.8 }}>
               {blog.excerpt}
             </Typography>
           </Container>
@@ -179,7 +179,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
                 borderRadius: 3,
                 border: '1px solid rgba(0,0,0,0.08)',
                 mb: 4,
-                bgcolor: '#F9FAFB',
+                bgcolor: '#F7F8FA',
               }}
             />
           )}
@@ -211,7 +211,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
                 pl: 2,
                 ml: 0,
                 color: '#374151',
-                bgcolor: '#F9FAFB',
+                bgcolor: '#F7F8FA',
                 py: 1.5,
                 borderRadius: 2,
               },

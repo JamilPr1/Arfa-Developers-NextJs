@@ -196,36 +196,40 @@ export default function CTA() {
     <Box
       id="contact"
       sx={{
-        py: 10,
-        background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+        py: { xs: 8, md: 10 },
+        bgcolor: 'grey.50',
+        borderTop: '1px solid',
+        borderColor: 'divider',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 6 }} data-aos="fade-up">
+      <Container maxWidth="md">
+        <Box sx={{ textAlign: 'center', mb: 5 }} data-aos="fade-up">
           <Typography
-            variant="h2"
+            component="h2"
+            variant="h4"
             sx={{
-              fontWeight: 700,
+              fontWeight: 600,
               mb: 2,
-              color: 'white',
+              color: 'text.primary',
             }}
           >
             Ready to Start Your Project?
           </Typography>
-          <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)', maxWidth: 600, mx: 'auto' }}>
+          <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 560, mx: 'auto' }}>
             Schedule a free consultation with our experts today
           </Typography>
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ mt: 2.5, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
             <Link href="/project-rescue" style={{ textDecoration: 'none' }}>
               <MuiLink
                 component="span"
                 sx={{
-                  color: '#FDE68A',
+                  color: '#1D4ED8',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  fontSize: '0.9rem',
+                  '&:hover': { color: '#0C1222', textDecoration: 'underline' },
                 }}
               >
                 Need a project rescue?
@@ -235,10 +239,11 @@ export default function CTA() {
               <MuiLink
                 component="span"
                 sx={{
-                  color: '#FDE68A',
+                  color: '#1D4ED8',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  fontSize: '0.9rem',
+                  '&:hover': { color: '#0C1222', textDecoration: 'underline' },
                 }}
               >
                 Web development agency USA
@@ -248,10 +253,11 @@ export default function CTA() {
               <MuiLink
                 component="span"
                 sx={{
-                  color: '#FDE68A',
+                  color: '#1D4ED8',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  fontSize: '0.9rem',
+                  '&:hover': { color: '#0C1222', textDecoration: 'underline' },
                 }}
               >
                 Hire Next.js developers USA
@@ -261,10 +267,11 @@ export default function CTA() {
               <MuiLink
                 component="span"
                 sx={{
-                  color: '#FDE68A',
+                  color: '#1D4ED8',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  fontSize: '0.9rem',
+                  '&:hover': { color: '#0C1222', textDecoration: 'underline' },
                 }}
               >
                 Website maintenance & support USA
@@ -274,10 +281,11 @@ export default function CTA() {
               <MuiLink
                 component="span"
                 sx={{
-                  color: '#FDE68A',
+                  color: '#1D4ED8',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  '&:hover': { color: '#FFFFFF', textDecoration: 'underline' },
+                  fontSize: '0.9rem',
+                  '&:hover': { color: '#0C1222', textDecoration: 'underline' },
                 }}
               >
                 Custom software development USA
@@ -287,10 +295,10 @@ export default function CTA() {
         </Box>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.5 }}
         >
           <Box
             component="form"
@@ -298,10 +306,12 @@ export default function CTA() {
             sx={{
               maxWidth: 800,
               mx: 'auto',
-              background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: { xs: 2, sm: 4 },
+              background: '#FFFFFF',
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: 'divider',
               p: { xs: 2.5, sm: 4 },
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              boxShadow: 1,
             }}
             data-aos="fade-up"
           >
@@ -397,6 +407,7 @@ export default function CTA() {
                 <Button
                   type="submit"
                   variant="contained"
+                  color="primary"
                   size="large"
                   fullWidth
                   disabled={loading}
@@ -404,15 +415,7 @@ export default function CTA() {
                   sx={{
                     py: { xs: 1.25, sm: 1.5 },
                     minHeight: { xs: '48px', sm: '56px' },
-                    backgroundColor: '#F59E0B',
-                    fontSize: { xs: '0.9375rem', sm: '1.1rem' },
-                    fontWeight: 600,
-                    '&:hover': {
-                      backgroundColor: '#FBBF24',
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
-                    },
-                    transition: 'all 0.3s ease',
+                    fontSize: { xs: '0.9375rem', sm: '1.05rem' },
                   }}
                 >
                   {loading ? 'Submitting...' : 'Get Free Consultation'}
@@ -428,14 +431,6 @@ export default function CTA() {
                     size="large"
                     startIcon={<CalendarTodayIcon />}
                     onClick={handleScheduleConsultation}
-                    sx={{
-                      borderColor: '#1E3A8A',
-                      color: '#1E3A8A',
-                      '&:hover': {
-                        borderColor: '#2563EB',
-                        backgroundColor: 'rgba(30, 58, 138, 0.1)',
-                      },
-                    }}
                   >
                     Book a Free Consultation
                   </Button>

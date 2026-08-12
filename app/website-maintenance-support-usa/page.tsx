@@ -59,7 +59,7 @@ const pillars = [
     desc: 'Core Web Vitals improvements, caching strategy, image optimization, and database tuning.',
   },
   {
-    icon: <BuildIcon sx={{ fontSize: 46, color: '#1E3A8A' }} />,
+    icon: <BuildIcon sx={{ fontSize: 46, color: '#0C1222' }} />,
     title: 'Stability',
     desc: 'Bug fixes, regression prevention, release discipline, and safer deployments.',
   },
@@ -123,8 +123,8 @@ export default function WebsiteMaintenanceSupportUsaPage() {
       <Box component="main">
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-            color: 'white',
+            background: 'linear-gradient(180deg, #F5F7FA 0%, #FFFFFF 100%)',
+            color: '#0C1222',
             pt: { xs: 12, md: 16 },
             pb: { xs: 8, md: 12 },
             textAlign: 'center',
@@ -138,15 +138,15 @@ export default function WebsiteMaintenanceSupportUsaPage() {
                 mb: 2,
                 fontSize: { xs: '2.35rem', md: '3.6rem', lg: '4.1rem' },
                 lineHeight: 1.15,
-                color: 'white',
+                color: '#0C1222',
               }}
             >
-              Website <span style={{ color: '#F59E0B' }}>Maintenance</span> & Support (USA)
+              Website <span style={{ color: 'hsl(210, 98%, 48%)' }}>Maintenance</span> & Support (USA)
             </Typography>
             <Typography
               variant="h5"
               sx={{
-                color: 'rgba(255,255,255,0.95)',
+                color: 'text.secondary',
                 maxWidth: 980,
                 mx: 'auto',
                 mb: 4,
@@ -166,13 +166,13 @@ export default function WebsiteMaintenanceSupportUsaPage() {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: '#F59E0B',
-                  color: 'white',
+                  backgroundColor: '#0C1222',
+                  color: '#FFFFFF',
                   px: 5,
                   py: 2,
                   fontSize: '1.05rem',
                   fontWeight: 800,
-                  '&:hover': { backgroundColor: '#FBBF24', transform: 'translateY(-2px)' },
+                  '&:hover': { backgroundColor: '#1E293B', transform: 'translateY(-2px)' },
                   transition: 'all 0.25s ease',
                 }}
               >
@@ -185,7 +185,7 @@ export default function WebsiteMaintenanceSupportUsaPage() {
                 size="large"
                 sx={{
                   borderColor: 'rgba(255,255,255,0.7)',
-                  color: 'white',
+                  color: '#0C1222',
                   px: 5,
                   py: 2,
                   fontSize: '1.05rem',
@@ -215,7 +215,7 @@ export default function WebsiteMaintenanceSupportUsaPage() {
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{p.icon}</Box>
-                  <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, color: '#1E3A8A' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, color: '#0C1222' }}>
                     {p.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B7280' }}>
@@ -227,7 +227,7 @@ export default function WebsiteMaintenanceSupportUsaPage() {
           </Grid>
 
           <Box sx={{ mt: 7 }}>
-            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#1E3A8A' }}>
+            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, textAlign: 'center', color: '#0C1222' }}>
               What we maintain
             </Typography>
             <Typography
@@ -263,19 +263,21 @@ export default function WebsiteMaintenanceSupportUsaPage() {
                     p: 4,
                     borderRadius: 3,
                     height: '100%',
-                    backgroundColor: '#0B2A6F',
-                    color: 'white',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E8ECF1',
+                    boxShadow: 'none',
+                    color: '#0C1222',
                   }}
                 >
-                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: 'white' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: '#0C1222' }}>
                     Good fit if…
                   </Typography>
-                  <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 2 }} />
+                  <Divider sx={{ borderColor: '#E8ECF1', mb: 2 }} />
                   <List>
                     {planNotes.map((d) => (
                       <ListItem key={d} sx={{ px: 0, py: 1 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <CheckIcon sx={{ color: '#F59E0B', fontSize: 22 }} />
+                          <CheckIcon sx={{ color: 'hsl(210, 98%, 48%)', fontSize: 22 }} />
                         </ListItemIcon>
                         <ListItemText primary={d} primaryTypographyProps={{ sx: { fontWeight: 700 } }} />
                       </ListItem>
