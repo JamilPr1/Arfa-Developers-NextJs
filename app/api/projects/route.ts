@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readDataFile, writeDataFile } from '@/lib/dataUtils'
-import { getSupabaseClient } from '@/lib/supabase'
 import { insertDataToSupabase } from '@/lib/supabaseDataUtils'
+import { getPublishedProjects } from '@/lib/projectsData'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET() {
   try {
-    // Prefer local projects.json for marketing accuracy (images + copy)
+    // Always serve bundled projects.json first so portfolio never hangs on Redis/Supabase
+    const bundled = getPublishedProjects()
+    if (bundled.length > 0) {
+      const response = NextResponse.json(bundled)
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+      return response
+    }
+
+    // Fallback for empty bundled file (admin/local overrides)
     try {
       const projects = await readDataFile('projects.json')
       const publishedProjects = (projects || []).filter((p: any) => p.published)
@@ -18,77 +26,47 @@ export async function GET() {
         return response
       }
     } catch {
-      // continue to Supabase
+      // ignore
     }
 
-    // Try Supabase if local file empty
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-        process.env.NEXT_PHASE !== 'phase-production-build' &&
-        process.env.NEXT_PHASE !== 'phase-development-build') {
-      try {
-        const supabase = await getSupabaseClient()
-        if (supabase) {
-          const { data: projects, error } = await supabase
-            .from('projects')
-            .select('*')
-            .eq('published', true)
-            .order('id', { ascending: false })
-          
-          if (!error && projects && projects.length > 0) {
-            const response = NextResponse.json(projects)
-            response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-            return response
-          }
-        }
-      } catch (supabaseError: any) {
-        // Silently fail - never throw
-      }
-    }
-    
     const response = NextResponse.json([])
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     return response
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch projects' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const project = await request.json()
-    
+
     const newProject = {
       ...project,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    
-    // Try Supabase first (only if env vars are set and not during build)
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && 
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-        process.env.NEXT_PHASE !== 'phase-production-build' &&
-        process.env.NEXT_PHASE !== 'phase-development-build') {
+
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+      process.env.NEXT_PHASE !== 'phase-production-build' &&
+      process.env.NEXT_PHASE !== 'phase-development-build'
+    ) {
       try {
         const created = await insertDataToSupabase('projects', newProject)
         console.log(`✅ Project created successfully in Supabase: ${created.id}`)
         return NextResponse.json(created, { status: 201 })
       } catch (supabaseError: any) {
-        // Silently fail - never throw
         // Continue to fallback
       }
     }
-    
-    // Fallback to file-based system
+
     const projects = await readDataFile('projects.json')
-    
-    const maxId = projects.length > 0 
-      ? Math.max(...projects.map((p: any) => p.id || 0)) 
-      : 0
-    
+
+    const maxId =
+      projects.length > 0 ? Math.max(...projects.map((p: any) => p.id || 0)) : 0
+
     const projectWithId = {
       ...newProject,
       id: maxId + 1,

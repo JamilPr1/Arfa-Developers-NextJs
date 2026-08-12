@@ -8,8 +8,23 @@ import { brand, gray } from './marketingPrimitives'
 export const marketingComponents: Components<Theme> = {
   MuiCssBaseline: {
     styleOverrides: {
+      html: {
+        fontFamily: '"Futura PT Book", "Futura PT", Futura, "Trebuchet MS", Arial, sans-serif',
+      },
       body: {
         backgroundColor: 'hsl(0, 0%, 99%)',
+        color: '#1F2733',
+        fontFamily: '"Futura PT Book", "Futura PT", Futura, "Trebuchet MS", Arial, sans-serif',
+        lineHeight: 1.3,
+        letterSpacing: '0.5px',
+      },
+      'p, h1, h2, h3, h4, h5, h6, a, li, label, span': {
+        fontFamily: '"Futura PT Book", "Futura PT", Futura, "Trebuchet MS", Arial, sans-serif',
+        lineHeight: 1.3,
+        letterSpacing: '0.5px',
+      },
+      'p, h1, h2, h3, h4, h5, h6, a, li, label': {
+        color: '#1F2733',
       },
     },
   },

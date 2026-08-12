@@ -22,7 +22,6 @@ import {
 } from '@mui/icons-material'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import CTA from '@/components/CTA'
 
 export default function JoinOurTeamPage() {
   const [formData, setFormData] = useState({
@@ -291,7 +290,6 @@ export default function JoinOurTeamPage() {
           </Paper>
         </Container>
       </Box>
-      <CTA />
       <Footer />
     </>
   )

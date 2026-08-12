@@ -14,7 +14,7 @@
   --gray-800: hsl(220, 30%, 6%);
   --gray-900: hsl(220, 35%, 3%);
 
-  --ink: var(--gray-800);
+  --ink: #1F2733;
   --ink-soft: var(--gray-700, hsl(220, 20%, 25%));
   --muted: var(--gray-600);
   --line: var(--gray-200);
@@ -31,8 +31,8 @@
   --radius-sm: 8px;
   --shadow: hsla(220, 30%, 5%, 0.07) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.07) 0px 8px 16px -5px;
   --shadow-hover: hsla(220, 30%, 5%, 0.1) 0px 6px 20px 0px;
-  --font-display: var(--font-inter), "Inter", Helvetica, Arial, sans-serif;
-  --font-body: var(--font-inter), "Inter", Helvetica, Arial, sans-serif;
+  --font-display: "Futura PT Book", "Futura PT", Futura, "Trebuchet MS", Arial, sans-serif;
+  --font-body: "Futura PT Book", "Futura PT", Futura, "Trebuchet MS", Arial, sans-serif;
 
   --brand-navy: var(--gray-800);
   --brand-blue: var(--brand-400);
@@ -62,20 +62,41 @@ body {
 }
 
 body {
-  color: var(--ink);
+  color: #1F2733;
   background: var(--canvas);
   font-family: var(--font-body);
+  line-height: 1.3;
+  letter-spacing: 0.5px;
   -webkit-font-smoothing: antialiased;
 }
 
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+li,
+label {
+  font-family: var(--font-body);
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+  color: #1F2733;
+}
+
 a {
-  color: inherit;
   text-decoration: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
 }
 
 .brand-gradient {

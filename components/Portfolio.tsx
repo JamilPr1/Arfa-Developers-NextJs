@@ -22,6 +22,7 @@ import { Close as CloseIcon, Launch as LaunchIcon } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import SimpleCarousel from './SimpleCarousel'
+import { getPublishedProjects } from '@/lib/projectsData'
 
 interface Project {
   id: number
@@ -35,11 +36,12 @@ interface Project {
 }
 
 const projectTypes = ['All', 'Web App', 'Mobile App', 'Enterprise']
+const FALLBACK_PROJECTS: Project[] = getPublishedProjects() as Project[]
 
 export default function Portfolio() {
   const [selectedType, setSelectedType] = useState('All')
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
+  const [projects, setProjects] = useState<Project[]>(FALLBACK_PROJECTS)
+  const [loading, setLoading] = useState(FALLBACK_PROJECTS.length === 0)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [openModal, setOpenModal] = useState(false)
 
@@ -49,11 +51,19 @@ export default function Portfolio() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('/api/projects')
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 8000)
+      const response = await fetch('/api/projects', { signal: controller.signal })
+      clearTimeout(timeout)
       const data = await response.json()
-      setProjects(data)
+      if (Array.isArray(data) && data.length > 0) {
+        setProjects(data as Project[])
+      } else if (FALLBACK_PROJECTS.length > 0) {
+        setProjects(FALLBACK_PROJECTS)
+      }
     } catch (error) {
       console.error('Error fetching projects:', error)
+      if (FALLBACK_PROJECTS.length > 0) setProjects(FALLBACK_PROJECTS)
     } finally {
       setLoading(false)
     }
