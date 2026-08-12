@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { processArfaQuery } from '@/lib/arfa/engine'
 import { enrichResponseWithNavigation } from '@/lib/arfa/navigation'
@@ -15,15 +15,22 @@ export type ArfaVoiceState = 'idle' | 'ready' | 'listening' | 'processing' | 'sp
 const ARFA_GREETING =
   "Hi! I'm Arfa, your AI assistant. Ask me about our web development services, pricing, project rescue, or how to get started."
 
+/** Prevents mic from picking up residual TTS / echo right after stop */
+const LISTEN_COOLDOWN_MS = 800
+
 export function useArfa() {
   const router = useRouter()
   const [messages, setMessages] = useState<TranscriptMessage[]>([])
   const [voiceState, setVoiceState] = useState<ArfaVoiceState>('ready')
   const [liveCaption, setLiveCaption] = useState('')
   const [isMuted, setIsMuted] = useState(false)
+  const [listenReady, setListenReady] = useState(true)
   const hasGreeted = useRef(false)
   const processingRef = useRef(false)
   const messagesRef = useRef<TranscriptMessage[]>([])
+  /** Invalidates in-flight process/speak when user stops or closes */
+  const turnIdRef = useRef(0)
+  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   messagesRef.current = messages
 
@@ -40,7 +47,23 @@ export function useArfa() {
     setOnSpeechEnd,
   } = useAudioAnalyzer()
 
-  const isListeningMode = voiceState === 'listening' && !isMuted && hasPermission
+  const blockListening = useCallback((ms = LISTEN_COOLDOWN_MS) => {
+    setListenReady(false)
+    if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current)
+    cooldownTimerRef.current = setTimeout(() => {
+      setListenReady(true)
+      cooldownTimerRef.current = null
+    }, ms)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current)
+    }
+  }, [])
+
+  const isListeningMode =
+    voiceState === 'listening' && !isMuted && hasPermission && listenReady
 
   const addMessage = useCallback((role: 'user' | 'assistant', content: string) => {
     setMessages((prev) => {
@@ -73,11 +96,18 @@ export function useArfa() {
     [router]
   )
 
+  const cancelActiveTurn = useCallback(() => {
+    turnIdRef.current += 1
+    processingRef.current = false
+    stopSpeaking()
+  }, [stopSpeaking])
+
   const processUtterance = useCallback(
     async (transcript: string, audioBlob: Blob | null) => {
       if (processingRef.current) return
       if (!transcript.trim() && !audioBlob) return
 
+      const turnId = ++turnIdRef.current
       processingRef.current = true
       setVoiceState('processing')
       setLiveCaption('')
@@ -103,17 +133,28 @@ export function useArfa() {
         response = enrichResponseWithNavigation(transcript, processArfaQuery(transcript || 'hello'))
       }
 
+      // User stopped while waiting for the model — do not speak
+      if (turnId !== turnIdRef.current) {
+        processingRef.current = false
+        return
+      }
+
       if (transcript.trim()) addMessage('user', transcript.trim())
       addMessage('assistant', response.text)
       setVoiceState('speaking')
       executeAction(response)
 
       speak(response.text, () => {
+        if (turnId !== turnIdRef.current) {
+          processingRef.current = false
+          return
+        }
         processingRef.current = false
+        blockListening()
         setVoiceState('listening')
       })
     },
-    [addMessage, speak, executeAction]
+    [addMessage, speak, executeAction, blockListening]
   )
 
   const { liveTranscript } = useTurnBasedVoice({
@@ -128,6 +169,7 @@ export function useArfa() {
   const activate = useCallback(async () => {
     try {
       setIsMuted(false)
+      setListenReady(true)
       await startMic()
       setVoiceState('listening')
       if (!hasGreeted.current) {
@@ -140,13 +182,17 @@ export function useArfa() {
   }, [startMic, addMessage])
 
   const deactivate = useCallback(() => {
+    cancelActiveTurn()
     stopMic()
-    stopSpeaking()
     setVoiceState('ready')
     setLiveCaption('')
     setIsMuted(false)
-    processingRef.current = false
-  }, [stopMic, stopSpeaking])
+    setListenReady(true)
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current)
+      cooldownTimerRef.current = null
+    }
+  }, [cancelActiveTurn, stopMic])
 
   const toggleMute = useCallback(() => setIsMuted((m) => !m), [])
 
@@ -156,12 +202,13 @@ export function useArfa() {
     } else if (isMuted) {
       setIsMuted(false)
       setVoiceState('listening')
-    } else if (voiceState === 'speaking') {
-      stopSpeaking()
-      processingRef.current = false
+    } else if (voiceState === 'speaking' || voiceState === 'processing') {
+      // Stop current reply — invalidate in-flight TTS so a second voice can't start
+      cancelActiveTurn()
+      blockListening()
       setVoiceState('listening')
     }
-  }, [hasPermission, voiceState, isMuted, activate, stopSpeaking])
+  }, [hasPermission, voiceState, isMuted, activate, cancelActiveTurn, blockListening])
 
   return {
     messages,

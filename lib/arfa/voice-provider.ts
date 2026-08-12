@@ -32,6 +32,7 @@ export interface VoiceProvider {
 class WebSpeechProvider implements VoiceProvider {
   private recognition: SpeechRecognition | null = null
   private synthesis: SpeechSynthesis | null = null
+  private speakGeneration = 0
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -106,7 +107,11 @@ class WebSpeechProvider implements VoiceProvider {
   speak(text: string, options: SpeakOptions = {}): void {
     if (!this.synthesis || !text.trim()) return
 
+    const generation = ++this.speakGeneration
+
     const doSpeak = () => {
+      if (generation !== this.speakGeneration) return
+
       this.synthesis!.cancel()
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.rate = options.rate ?? 1
@@ -121,9 +126,18 @@ class WebSpeechProvider implements VoiceProvider {
         voices.find((v) => v.lang.startsWith('en'))
       if (preferred) utterance.voice = preferred
 
-      utterance.onstart = () => options.onStart?.()
-      utterance.onend = () => options.onEnd?.()
+      utterance.onstart = () => {
+        if (generation !== this.speakGeneration) {
+          this.synthesis?.cancel()
+          return
+        }
+        options.onStart?.()
+      }
+      utterance.onend = () => {
+        if (generation === this.speakGeneration) options.onEnd?.()
+      }
       utterance.onerror = () => {
+        if (generation !== this.speakGeneration) return
         options.onError?.('speech-synthesis-error')
         options.onEnd?.()
       }
@@ -142,6 +156,7 @@ class WebSpeechProvider implements VoiceProvider {
   }
 
   stopSpeaking(): void {
+    this.speakGeneration++
     this.synthesis?.cancel()
   }
 
@@ -154,6 +169,8 @@ class HybridVoiceProvider implements VoiceProvider {
   private webSpeech = new WebSpeechProvider()
   private currentAudio: HTMLAudioElement | null = null
   private speaking = false
+  /** Bumps on every speak/stop so in-flight TTS fetch+play is discarded */
+  private speakGeneration = 0
 
   isSupported(): boolean {
     return this.webSpeech.isSupported()
@@ -174,47 +191,79 @@ class HybridVoiceProvider implements VoiceProvider {
   speak(text: string, options: SpeakOptions = {}): void {
     if (!text.trim()) return
     this.stopSpeaking()
-    this.speakWithOpenAI(text, options)
+    const generation = ++this.speakGeneration
+    void this.speakWithOpenAI(text, options, generation)
   }
 
-  private async speakWithOpenAI(text: string, options: SpeakOptions) {
+  private async speakWithOpenAI(text: string, options: SpeakOptions, generation: number) {
     try {
       const res = await fetch('/api/voice/speak', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
       })
+
+      // User stopped (or a newer speak started) while waiting for TTS
+      if (generation !== this.speakGeneration) return
+
       if (!res.ok) throw new Error('OpenAI TTS unavailable')
 
       const blob = await res.blob()
+      if (generation !== this.speakGeneration) return
+
       const url = URL.createObjectURL(blob)
       const audio = new Audio(url)
       this.currentAudio = audio
       this.speaking = true
 
-      audio.onplay = () => options.onStart?.()
+      audio.onplay = () => {
+        if (generation !== this.speakGeneration) {
+          audio.pause()
+          return
+        }
+        options.onStart?.()
+      }
       audio.onended = () => {
         URL.revokeObjectURL(url)
-        this.currentAudio = null
+        if (this.currentAudio === audio) this.currentAudio = null
         this.speaking = false
-        options.onEnd?.()
+        if (generation === this.speakGeneration) options.onEnd?.()
       }
       audio.onerror = () => {
         URL.revokeObjectURL(url)
-        this.currentAudio = null
+        if (this.currentAudio === audio) this.currentAudio = null
         this.speaking = false
+        if (generation !== this.speakGeneration) return
         this.webSpeech.speak(text, options)
       }
+
       await audio.play()
+
+      if (generation !== this.speakGeneration) {
+        audio.pause()
+        audio.src = ''
+        URL.revokeObjectURL(url)
+        if (this.currentAudio === audio) this.currentAudio = null
+        this.speaking = false
+      }
     } catch {
+      if (generation !== this.speakGeneration) return
       this.webSpeech.speak(text, options)
     }
   }
 
   stopSpeaking(): void {
+    this.speakGeneration++
     if (this.currentAudio) {
-      this.currentAudio.pause()
-      this.currentAudio.src = ''
+      try {
+        this.currentAudio.onended = null
+        this.currentAudio.onerror = null
+        this.currentAudio.onplay = null
+        this.currentAudio.pause()
+        this.currentAudio.src = ''
+      } catch {
+        // ignore
+      }
       this.currentAudio = null
     }
     this.speaking = false

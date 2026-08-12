@@ -3,7 +3,6 @@
 import { Box, Typography, IconButton, Tooltip } from '@mui/material'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import MicIcon from '@mui/icons-material/Mic'
-import CloseIcon from '@mui/icons-material/Close'
 import ArfaOrb from './ArfaOrb'
 import { useArfaContext } from '@/contexts/ArfaContext'
 
@@ -33,7 +32,6 @@ export default function ArfaVoicePanel() {
     micError,
     liveCaption,
     handleOrbClick,
-    deactivate,
     toggleMute,
   } = useArfaContext()
 
@@ -75,15 +73,7 @@ export default function ArfaVoicePanel() {
         }}
       />
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 1 }}>
-        <Tooltip title="End session">
-          <IconButton onClick={deactivate} size="small" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Box>
-
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, zIndex: 1 }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, zIndex: 1, pt: 1 }}>
         <ArfaOrb
           audioLevel={audioLevel}
           voiceState={voiceState}
