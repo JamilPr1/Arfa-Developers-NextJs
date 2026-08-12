@@ -25,22 +25,44 @@ function ArfaVoiceWidgetInner() {
   return (
     <>
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1.2, type: 'spring', stiffness: 200 }}
         style={{
           position: 'fixed',
           bottom: 20,
           right: 20,
           zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
         }}
       >
+        <AnimatePresence>
+          {!isOpen && (
+            <motion.button
+              type="button"
+              aria-label="Ask Arfa AI anything"
+              onClick={handleOpen}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 12 }}
+              transition={{ delay: 1.6, duration: 0.35 }}
+              className="arfa-fab-prompt"
+            >
+              <span className="arfa-fab-prompt-title">Ask me anything</span>
+              <span className="arfa-fab-prompt-sub">I can answer by voice</span>
+            </motion.button>
+          )}
+        </AnimatePresence>
+
         <Fab
           aria-label="Talk to Arfa AI"
           onClick={handleOpen}
           sx={{
             width: 60,
             height: 60,
+            flexShrink: 0,
             background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%)',
             boxShadow: '0 4px 16px rgba(124, 58, 237, 0.45)',
             '&:hover': {
