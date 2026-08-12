@@ -133,7 +133,7 @@ export default function FAQsPage() {
           title={
             <>
               Frequently Asked{' '}
-              <Box component="span" sx={{ color: '#F5D76E' }}>
+              <Box component="span" sx={{ color: 'primary.main' }}>
                 Questions
               </Box>
             </>

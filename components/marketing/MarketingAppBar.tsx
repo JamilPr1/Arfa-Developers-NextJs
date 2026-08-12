@@ -116,7 +116,7 @@ export default function MarketingAppBar() {
                     <Box key={link.label}>
                       <Button
                         size="small"
-                        color="info"
+                        color="primary"
                         endIcon={<ArrowDropDownIcon />}
                         onClick={(e) => setServicesAnchor(e.currentTarget)}
                         sx={{ color: 'text.primary', minWidth: 0 }}
@@ -147,7 +147,7 @@ export default function MarketingAppBar() {
                       component={Link}
                       href={link.href}
                       size="small"
-                      color="info"
+                      color="primary"
                       sx={{ color: 'text.primary', minWidth: 0 }}
                     >
                       {link.label}

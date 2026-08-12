@@ -114,7 +114,7 @@ export default function PortfolioPage() {
               }}
             >
               Our{' '}
-              <Box component="span" sx={{ color: '#1D4ED8' }}>
+              <Box component="span" sx={{ color: 'primary.main' }}>
                 Portfolio
               </Box>
             </Typography>

@@ -146,7 +146,7 @@ export default function WebDevelopmentAgencyUsaPage() {
                 color: '#0C1222',
               }}
             >
-              Web Development Agency <span style={{ color: 'hsl(210, 98%, 48%)' }}>USA</span>
+              Web Development Agency <span style={{ color: 'primary.main' }}>USA</span>
             </Typography>
             <Typography
               variant="h5"

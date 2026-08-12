@@ -21,6 +21,8 @@ import {
   AdsClick as GoogleAdsIcon,
   Article as ContentMarketingIcon,
   Email as EmailMarketingIcon,
+  SmartToy as AiIcon,
+  Hub as AutomationIcon,
 } from '@mui/icons-material'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
@@ -31,6 +33,34 @@ import { notFound } from 'next/navigation'
 import { keywordsForService, SITE_URL } from '@/lib/seoKeywords'
 
 const services = [
+  {
+    id: 'ai-ml-llm',
+    icon: <AiIcon sx={{ fontSize: 60 }} />,
+    title: 'AI / ML & LLM Apps',
+    shortDescription:
+      'OpenAI integrations, RAG chatbots, AI voice agents, and LLM-powered products wired into real business workflows.',
+    fullDescription:
+      'We build production AI systems — not demos. From grounded RAG assistants and sales voice agents to custom LLM workflows, we connect models to your data, CRM, and ops so AI actually drives revenue and saves time.',
+    features: [
+      'OpenAI / LLM app development with guardrails',
+      'RAG chatbots grounded on your docs and product data',
+      'AI voice agents for sales, support, and lead qualification',
+      'Embeddings, vector search, and knowledge-base pipelines',
+      'Prompt engineering, evaluation, and low-hallucination design',
+      'Tool calling into your APIs and CRM',
+      'WhatsApp & messaging AI with human handoff',
+      'Secure deployment with secrets, rate limits, and monitoring',
+    ],
+    technologies: ['OpenAI', 'GPT-4o', 'LangChain', 'RAG', 'Pinecone', 'pgvector', 'Whisper', 'Next.js', 'Python'],
+    useCases: [
+      'AI sales & support voice agents',
+      'Internal knowledge assistants',
+      'Customer-facing chatbots',
+      'Document Q&A helpers',
+      'Lead qualification copilots',
+      'Product recommendation agents',
+    ],
+  },
   {
     id: 'web-development',
     icon: <WebIcon sx={{ fontSize: 60 }} />,
@@ -49,7 +79,7 @@ const services = [
       'E-commerce Platform Development',
       'Real-time Applications with WebSockets',
     ],
-    technologies: ['React', 'Next.js', 'Vue.js', 'Angular', 'TypeScript', 'Node.js', 'Express', 'MongoDB', 'PostgreSQL'],
+    technologies: ['React', 'Next.js', 'TypeScript', 'Node.js', 'PostgreSQL', 'MongoDB', 'Prisma', 'Tailwind', 'Vercel', 'Supabase'],
     useCases: [
       'Business Web Applications',
       'Customer Portals',
@@ -57,6 +87,34 @@ const services = [
       'SaaS Platforms',
       'E-commerce Stores',
       'Content Management Systems',
+    ],
+  },
+  {
+    id: 'business-automation',
+    icon: <AutomationIcon sx={{ fontSize: 60 }} />,
+    title: 'Business Automation',
+    shortDescription:
+      'WhatsApp, Meta CRM, workflow automation, and AI drafts that cut manual ops for sales and support teams.',
+    fullDescription:
+      'We automate messaging flows, CRM sync, lead routing, follow-ups, and AI-assisted replies so your team focuses on conversations that need a human.',
+    features: [
+      'WhatsApp Business & Meta messaging automation',
+      'CRM sync, lead capture, and pipeline routing',
+      'AI draft replies with clear human escalation',
+      'n8n / Zapier / custom workflow orchestration',
+      'Appointment booking and reminder automation',
+      'Ops dashboards for automation health',
+      'Multi-channel inbox handoff',
+      'Error handling, retries, and audit logs',
+    ],
+    technologies: ['WhatsApp API', 'Meta CRM', 'n8n', 'Zapier', 'OpenAI', 'Node.js', 'Webhooks'],
+    useCases: [
+      'Sales follow-up automation',
+      'Support ticket triage',
+      'Lead qualification bots',
+      'Appointment & reminder flows',
+      'CRM enrichment pipelines',
+      'Internal ops alerts',
     ],
   },
   {

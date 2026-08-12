@@ -67,7 +67,7 @@ export default async function ProductsPage() {
           title={
             <>
               Software{' '}
-              <Box component="span" sx={{ color: '#1D4ED8' }}>
+              <Box component="span" sx={{ color: 'primary.main' }}>
                 Products
               </Box>
             </>

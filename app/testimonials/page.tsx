@@ -126,7 +126,7 @@ export default function TestimonialsPage() {
                 color: '#0C1222',
               }}
             >
-              Client <span style={{ color: 'hsl(210, 98%, 48%)' }}>Testimonials</span>
+              Client <span style={{ color: 'primary.main' }}>Testimonials</span>
             </Typography>
             <Typography
               variant="h5"

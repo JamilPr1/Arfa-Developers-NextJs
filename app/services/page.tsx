@@ -23,6 +23,8 @@ import {
   AdsClick as GoogleAdsIcon,
   Article as ContentMarketingIcon,
   Email as EmailMarketingIcon,
+  SmartToy as AiIcon,
+  Hub as AutomationIcon,
 } from '@mui/icons-material'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
@@ -32,31 +34,29 @@ import Link from 'next/link'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
-  title: 'Our Services - Web Development, Mobile Apps, Cloud Solutions | Arfa Developers',
-  description: 'Comprehensive web development services including custom web applications, mobile app development, cloud solutions, data analytics, security, and performance optimization. Serving USA, UK, Qatar, and Saudi Arabia.',
+  title: 'Our Services - AI/ML, LLM Apps, Web, Automation & Cloud | Arfa Developers',
+  description:
+    'US web development agency offering AI/ML & LLM apps, voice agents, business automation, Next.js/React development, mobile apps, cloud, and project rescue.',
   keywords: [
+    'AI ML LLM development',
+    'OpenAI integration services',
+    'RAG chatbot development',
+    'AI voice agents',
+    'business automation',
+    'WhatsApp automation',
     'web development services',
     'custom web applications',
     'mobile app development',
     'cloud solutions',
-    'data analytics services',
-    'security compliance',
-    'performance optimization',
-    'enterprise software development',
-    'ecommerce development',
-    'SaaS development',
-    'full stack development',
-    'react development',
-    'next.js development',
-    'node.js development',
+    'Next.js development',
+    'React development',
+    'project rescue USA',
     'web development company USA',
-    'web development company UK',
-    'web development Qatar',
-    'web development Saudi Arabia',
   ],
   openGraph: {
-    title: 'Our Services - Web Development, Mobile Apps, Cloud Solutions | Arfa Developers',
-    description: 'Expert web development services including custom web applications, mobile apps, cloud solutions, and enterprise software. Serving USA, UK, Qatar, and Saudi Arabia.',
+    title: 'Our Services - AI/ML, LLM, Automation & Web Development | Arfa Developers',
+    description:
+      'AI/ML & LLM apps, voice agents, automation, Next.js/React web apps, mobile, cloud, and project rescue for US businesses.',
     type: 'website',
     url: 'https://arfadevelopers.com/services',
   },
@@ -67,24 +67,78 @@ export const metadata: Metadata = {
 
 const services = [
   {
+    id: 'ai-ml-llm',
+    icon: <AiIcon sx={{ fontSize: 60 }} />,
+    title: 'AI / ML & LLM Apps',
+    shortDescription:
+      'OpenAI integrations, RAG chatbots, AI voice agents, and LLM-powered products wired into real business workflows.',
+    fullDescription:
+      'We build production AI systems — not demos. From grounded RAG assistants and sales voice agents to custom LLM workflows, we connect models to your data, CRM, and ops so AI actually drives revenue and saves time.',
+    features: [
+      'OpenAI / LLM app development with guardrails',
+      'RAG chatbots grounded on your docs and product data',
+      'AI voice agents for sales, support, and lead qualification',
+      'Embeddings, vector search, and knowledge-base pipelines',
+      'Prompt engineering, evaluation, and low-hallucination design',
+      'Tool calling / function calling into your APIs and CRM',
+      'WhatsApp & messaging AI with human handoff',
+      'Fine-tuning and retrieval strategies for domain accuracy',
+      'Analytics on AI usage, cost, and conversion impact',
+      'Secure deployment with secrets, rate limits, and monitoring',
+    ],
+    technologies: [
+      'OpenAI',
+      'GPT-4o',
+      'LangChain',
+      'RAG',
+      'Pinecone',
+      'pgvector',
+      'Whisper',
+      'TTS',
+      'Next.js',
+      'Python',
+    ],
+    useCases: [
+      'AI sales & support voice agents',
+      'Internal knowledge assistants',
+      'Customer-facing chatbots',
+      'Document Q&A and compliance helpers',
+      'Lead qualification copilots',
+      'Product recommendation agents',
+    ],
+  },
+  {
     id: 'web-development',
     icon: <WebIcon sx={{ fontSize: 60 }} />,
     title: 'Web Development',
-    shortDescription: 'Custom web applications built with modern frameworks like React, Next.js, and Vue.js. Scalable, fast, and user-friendly.',
-    fullDescription: 'We specialize in building custom web applications that are scalable, performant, and user-friendly. Our team leverages modern frameworks and technologies to deliver solutions that drive business growth.',
+    shortDescription:
+      'Custom web apps with React, Next.js, TypeScript, and modern APIs — scalable, SEO-ready, and production-grade.',
+    fullDescription:
+      'We specialize in building custom web applications that are scalable, performant, and user-friendly. Our team ships with Next.js App Router, React, TypeScript, and modern backends so your product is maintainable long after launch.',
     features: [
       'Custom Web Application Development',
-      'React, Next.js, Vue.js, and Angular Expertise',
+      'Next.js App Router, React Server Components & TypeScript',
       'Progressive Web Apps (PWA)',
       'Single Page Applications (SPA)',
-      'Server-Side Rendering (SSR)',
+      'Server-Side Rendering (SSR) & SEO-ready architecture',
       'Responsive Design & Mobile-First Approach',
       'API Integration & Third-Party Services',
-      'Content Management Systems (CMS)',
+      'Headless CMS & content platforms',
       'E-commerce Platform Development',
       'Real-time Applications with WebSockets',
     ],
-    technologies: ['React', 'Next.js', 'Vue.js', 'Angular', 'TypeScript', 'Node.js', 'Express', 'MongoDB', 'PostgreSQL'],
+    technologies: [
+      'React',
+      'Next.js',
+      'TypeScript',
+      'Node.js',
+      'PostgreSQL',
+      'MongoDB',
+      'Prisma',
+      'Tailwind',
+      'Vercel',
+      'Supabase',
+    ],
     useCases: [
       'Business Web Applications',
       'Customer Portals',
@@ -92,6 +146,36 @@ const services = [
       'SaaS Platforms',
       'E-commerce Stores',
       'Content Management Systems',
+    ],
+  },
+  {
+    id: 'business-automation',
+    icon: <AutomationIcon sx={{ fontSize: 60 }} />,
+    title: 'Business Automation',
+    shortDescription:
+      'WhatsApp, Meta CRM, workflow automation, and AI drafts that cut manual ops for sales and support teams.',
+    fullDescription:
+      'We automate the busywork — messaging flows, CRM sync, lead routing, follow-ups, and AI-assisted replies — so your team focuses on conversations that need a human. Built for US sales and support ops that need reliability, not fragile Zap spaghetti.',
+    features: [
+      'WhatsApp Business & Meta messaging automation',
+      'CRM sync, lead capture, and pipeline routing',
+      'AI draft replies with clear human escalation',
+      'n8n / Zapier / custom workflow orchestration',
+      'Appointment booking and reminder automation',
+      'Invoice, notification, and status update flows',
+      'Ops dashboards for automation health & volume',
+      'Multi-channel inbox handoff (web, chat, WhatsApp)',
+      'Error handling, retries, and audit logs',
+      'Integration with Stripe, calendars, and internal APIs',
+    ],
+    technologies: ['WhatsApp API', 'Meta CRM', 'n8n', 'Zapier', 'OpenAI', 'Make', 'Node.js', 'Webhooks', 'Slack'],
+    useCases: [
+      'Sales follow-up automation',
+      'Support ticket triage',
+      'Lead qualification bots',
+      'Appointment & reminder flows',
+      'CRM enrichment pipelines',
+      'Internal ops alerts',
     ],
   },
   {
@@ -140,7 +224,7 @@ const services = [
       'CI/CD Pipeline Setup',
       'Infrastructure as Code (IaC)',
     ],
-    technologies: ['AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes', 'Terraform', 'CloudFormation', 'Serverless Framework'],
+    technologies: ['AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes', 'Terraform', 'Vercel', 'CI/CD'],
     useCases: [
       'Cloud Migration Projects',
       'Scalable Web Applications',
@@ -153,9 +237,11 @@ const services = [
   {
     id: 'data-analytics',
     icon: <AnalyticsIcon sx={{ fontSize: 60 }} />,
-    title: 'Data Analytics',
-    shortDescription: 'Business intelligence and data analytics solutions. Transform your data into actionable insights.',
-    fullDescription: 'We transform raw data into actionable business insights. Our data analytics solutions help you make informed decisions, identify trends, and optimize business processes through comprehensive data analysis and visualization.',
+    title: 'Data Analytics & ML Insights',
+    shortDescription:
+      'Business intelligence, predictive analytics, and ML-powered dashboards that turn data into decisions.',
+    fullDescription:
+      'We transform raw data into actionable business insights. From BI dashboards to predictive models, we help you spot trends, forecast demand, and optimize operations with clear reporting.',
     features: [
       'Business Intelligence (BI) Solutions',
       'Data Warehousing & ETL Processes',
@@ -168,7 +254,7 @@ const services = [
       'Customer Analytics',
       'Financial Analytics & Reporting',
     ],
-    technologies: ['Python', 'R', 'SQL', 'Tableau', 'Power BI', 'Apache Spark', 'Hadoop', 'TensorFlow', 'Pandas', 'NumPy'],
+    technologies: ['Python', 'SQL', 'Tableau', 'Power BI', 'TensorFlow', 'Pandas', 'dbt', 'BigQuery'],
     useCases: [
       'Business Intelligence Dashboards',
       'Sales & Marketing Analytics',

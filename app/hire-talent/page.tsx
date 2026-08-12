@@ -188,7 +188,7 @@ export default function HireTalentPage() {
               data-aos="fade-up"
             >
               Hire Our{' '}
-              <Box component="span" sx={{ color: '#1D4ED8' }}>
+              <Box component="span" sx={{ color: 'primary.main' }}>
                 Top Talent
               </Box>
             </Typography>
@@ -409,7 +409,7 @@ export default function HireTalentPage() {
                                   position: 'absolute',
                                   top: 8,
                                   left: 8,
-                                  bgcolor: 'hsl(210, 98%, 48%)',
+                                  bgcolor: 'primary.main',
                                   color: '#0C1222',
                                   borderRadius: 1,
                                   px: 1.5,

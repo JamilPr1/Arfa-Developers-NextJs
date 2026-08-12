@@ -59,7 +59,7 @@ const useCases = [
     desc: 'Postgres, Supabase, Node.js services, and scalable architecture.',
   },
   {
-    icon: <AnalyticsIcon sx={{ fontSize: 46, color: 'hsl(210, 98%, 48%)' }} />,
+    icon: <AnalyticsIcon sx={{ fontSize: 46, color: 'primary.main' }} />,
     title: 'Dashboards & internal tools',
     desc: 'Operations tooling, reporting, workflows, and admin panels.',
   },
@@ -137,7 +137,7 @@ export default function CustomSoftwareDevelopmentUsaPage() {
                 letterSpacing: '-0.03em',
               }}
             >
-              Custom Software Development <span style={{ color: '#1D4ED8' }}>USA</span>
+              Custom Software Development <span style={{ color: 'primary.main' }}>USA</span>
             </Typography>
             <Typography
               variant="h5"

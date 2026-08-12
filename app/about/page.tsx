@@ -115,7 +115,7 @@ export default function AboutPage() {
           title={
             <>
               We{' '}
-              <Box component="span" sx={{ color: '#1D4ED8' }}>
+              <Box component="span" sx={{ color: 'primary.main' }}>
                 Rescue Projects
               </Box>{' '}
               from Failed Freelancers

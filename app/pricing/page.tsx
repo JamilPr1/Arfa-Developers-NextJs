@@ -148,7 +148,7 @@ export default function PricingPage() {
           title={
             <>
               Transparent{' '}
-              <Box component="span" sx={{ color: '#F5D76E' }}>
+              <Box component="span" sx={{ color: 'primary.main' }}>
                 Pricing
               </Box>
             </>

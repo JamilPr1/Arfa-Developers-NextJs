@@ -143,7 +143,7 @@ export default function HireNextJsDevelopersUsaPage() {
                 color: '#0C1222',
               }}
             >
-              Hire <span style={{ color: 'hsl(210, 98%, 48%)' }}>Next.js Developers</span> in the USA
+              Hire <span style={{ color: 'primary.main' }}>Next.js Developers</span> in the USA
             </Typography>
             <Typography
               variant="h5"
@@ -278,7 +278,7 @@ export default function HireNextJsDevelopersUsaPage() {
                     {outcomes.map((d) => (
                       <ListItem key={d} sx={{ px: 0, py: 1 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <CheckIcon sx={{ color: 'hsl(210, 98%, 48%)', fontSize: 22 }} />
+                          <CheckIcon sx={{ color: 'primary.main', fontSize: 22 }} />
                         </ListItemIcon>
                         <ListItemText primary={d} primaryTypographyProps={{ sx: { fontWeight: 700 } }} />
                       </ListItem>

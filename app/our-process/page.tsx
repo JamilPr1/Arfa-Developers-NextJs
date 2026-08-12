@@ -141,7 +141,7 @@ export default function OurProcessPage() {
                 color: '#0C1222',
               }}
             >
-              Our <span style={{ color: 'hsl(210, 98%, 48%)' }}>Process</span>
+              Our <span style={{ color: 'primary.main' }}>Process</span>
             </Typography>
             <Typography
               variant="h5"

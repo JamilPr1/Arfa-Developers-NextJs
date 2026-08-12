@@ -88,7 +88,7 @@ export default function ContactPage() {
           title={
             <>
               Get in{' '}
-              <Box component="span" sx={{ color: '#F5D76E' }}>
+              <Box component="span" sx={{ color: 'primary.main' }}>
                 Touch
               </Box>
             </>

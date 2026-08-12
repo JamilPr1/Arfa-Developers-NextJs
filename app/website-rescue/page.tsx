@@ -48,7 +48,7 @@ const commonProblems = [
     description: 'Projects left incomplete by freelancers or agencies. We assess, fix, and complete them.',
   },
   {
-    icon: <SpeedIcon sx={{ fontSize: 50, color: 'hsl(210, 98%, 48%)' }} />,
+    icon: <SpeedIcon sx={{ fontSize: 50, color: 'primary.main' }} />,
     title: 'Performance Issues',
     description: 'Slow loading times, crashes, and poor user experience. We optimize and fix performance problems.',
   },
@@ -125,7 +125,7 @@ export default function WebsiteRescuePage() {
                 color: '#0C1222',
               }}
             >
-              Website <span style={{ color: 'hsl(210, 98%, 48%)' }}>Rescue</span>
+              Website <span style={{ color: 'primary.main' }}>Rescue</span>
             </Typography>
             <Typography
               variant="h5"

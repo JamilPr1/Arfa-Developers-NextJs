@@ -141,7 +141,7 @@ export default function WebsiteMaintenanceSupportUsaPage() {
                 color: '#0C1222',
               }}
             >
-              Website <span style={{ color: 'hsl(210, 98%, 48%)' }}>Maintenance</span> & Support (USA)
+              Website <span style={{ color: 'primary.main' }}>Maintenance</span> & Support (USA)
             </Typography>
             <Typography
               variant="h5"
@@ -277,7 +277,7 @@ export default function WebsiteMaintenanceSupportUsaPage() {
                     {planNotes.map((d) => (
                       <ListItem key={d} sx={{ px: 0, py: 1 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <CheckIcon sx={{ color: 'hsl(210, 98%, 48%)', fontSize: 22 }} />
+                          <CheckIcon sx={{ color: 'primary.main', fontSize: 22 }} />
                         </ListItemIcon>
                         <ListItemText primary={d} primaryTypographyProps={{ sx: { fontWeight: 700 } }} />
                       </ListItem>
