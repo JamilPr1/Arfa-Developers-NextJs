@@ -192,6 +192,55 @@ export function getValidNavigationPaths(): string[] {
   return getAllPagesKnowledge().map((p) => p.path)
 }
 
+/** Match user speech like "take me to pricing" / "open school management" to a site path. */
+export function findPageForNavigation(query: string): PageKnowledge | null {
+  const lower = query.toLowerCase().trim()
+  if (!lower) return null
+
+  const pages = getAllPagesKnowledge()
+
+  // Explicit path spoken aloud
+  const pathMatch = lower.match(/\/[a-z0-9\-\/]+/)
+  if (pathMatch) {
+    const path = pathMatch[0].replace(/\/$/, '') || '/'
+    const found = pages.find((p) => p.path === path)
+    if (found) return found
+  }
+
+  let best: { page: PageKnowledge; score: number } | null = null
+
+  for (const page of pages) {
+    const title = page.title.toLowerCase()
+    const slugWords = page.path.replace(/^\//, '').replace(/\//g, ' ').replace(/-/g, ' ')
+    let score = 0
+
+    if (lower.includes(title) && title.length > 3) score = Math.max(score, 100)
+    if (slugWords && lower.includes(slugWords) && slugWords.length > 3) score = Math.max(score, 95)
+
+    // Token overlap against title + slug
+    const tokens = `${title} ${slugWords}`.split(/\s+/).filter((t) => t.length > 2)
+    const qTokens = lower.split(/\s+/).filter((t) => t.length > 2 && !STOP.has(t))
+    if (tokens.length && qTokens.length) {
+      const hit = qTokens.filter((t) => tokens.some((tok) => tok.includes(t) || t.includes(tok))).length
+      const ratio = hit / qTokens.length
+      if (ratio >= 0.5) score = Math.max(score, Math.round(ratio * 90))
+    }
+
+    // Prefer longer/more specific paths when scores tie
+    if (score > 0 && (!best || score > best.score || (score === best.score && page.path.length > best.page.path.length))) {
+      best = { page, score }
+    }
+  }
+
+  return best && best.score >= 50 ? best.page : null
+}
+
+const STOP = new Set([
+  'the', 'and', 'for', 'you', 'your', 'our', 'can', 'please', 'want', 'like', 'take', 'me', 'to', 'go',
+  'open', 'show', 'page', 'website', 'site', 'about', 'tell', 'what', 'where', 'how', 'is', 'are',
+  'a', 'an', 'of', 'on', 'in', 'my', 'this', 'that', 'navigate', 'bring',
+])
+
 function titleFromPath(path: string): string {
   return path
     .replace(/^\//, '')

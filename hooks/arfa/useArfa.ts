@@ -79,15 +79,18 @@ export function useArfa() {
         case 'navigate':
           if (response.action.payload?.url) {
             const url = response.action.payload.url
-            if (url.startsWith('http')) {
-              window.open(url, '_blank')
-            } else {
-              router.push(url)
-            }
+            // Slight delay so speech can start, then open the page in this tab
+            window.setTimeout(() => {
+              if (url.startsWith('http')) {
+                window.open(url, '_blank')
+              } else {
+                router.push(url)
+              }
+            }, 350)
           }
           break
         case 'open_contact':
-          router.push('/contact')
+          window.setTimeout(() => router.push('/contact'), 350)
           break
         default:
           break

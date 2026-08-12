@@ -2,6 +2,7 @@ import { buildKnowledgePrompt } from './knowledge-base'
 import { processArfaQuery } from './engine'
 import { formatBrainForPrompt, recallFromBrain, rememberExchange } from './brain'
 import { getValidNavigationPaths } from './pages-knowledge'
+import { normalizeAction } from './navigation'
 import type { ArfaResponse, ChatMessage } from './types'
 
 const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || 'gpt-4o-mini'
@@ -21,11 +22,14 @@ STRICT RULES:
 4. For unknown specifics say: "I don't have that exact information. I can connect you with our team for a free consultation."
 5. When the user wants to contact, get a quote, or schedule a consultation, append:
    ACTION: {"type":"open_contact"}
-6. When the user asks about a specific page or service, append:
-   ACTION: {"type":"navigate","url":"/path"}
+6. When the user asks to go to, open, show, or navigate to any page/product/service, you MUST append:
+   ACTION: {"type":"navigate","url":"/exact-path"}
+   Examples: "take me to pricing" → ACTION: {"type":"navigate","url":"/pricing"}
+   "open school management" → ACTION: {"type":"navigate","url":"/products/school-management-system"}
+   "go to contact" → ACTION: {"type":"navigate","url":"/contact"}
    Valid paths include: ${paths}
-7. When the user asks about software products, use the "products" array. Give name, price, short description, and 2-3 key features. Navigate to /products or /products/[slug].
-8. Keep responses short — this is a voice conversation.
+7. When the user asks about software products, use the "products" array. Give name, price, short description, and 2-3 key features. If they ask to open a product, navigate to /products/[slug].
+8. Keep responses short — this is a voice conversation. Confirm briefly that you are opening the page when navigating.
 
 ${brainContext ? `LEARNED MEMORY (prior user questions — reuse when relevant):\n${brainContext}\n` : ''}
 KNOWLEDGE BASE:
@@ -40,7 +44,8 @@ export function parseActionFromResponse(text: string): {
   if (!actionMatch) return { cleanText: text.trim() }
 
   try {
-    const action = JSON.parse(actionMatch[1]) as ArfaResponse['action']
+    const parsed = JSON.parse(actionMatch[1])
+    const action = normalizeAction(parsed)
     const cleanText = text.replace(/\s*ACTION:\s*\{.*\}\s*$/m, '').trim()
     return { cleanText, action }
   } catch {
