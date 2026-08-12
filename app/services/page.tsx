@@ -446,11 +446,37 @@ export default function ServicesPage() {
           ctaText="Get Free Consultation"
           ctaHref="/contact"
           actions={
-            <Button component={Link} href="/project-rescue" variant="outlined" size="large">
-              Project Rescue
-            </Button>
+            <>
+              <Button component={Link} href="/ai-automation" variant="contained" size="large">
+                AI / ML & Automation
+              </Button>
+              <Button component={Link} href="/project-rescue" variant="outlined" size="large">
+                Project Rescue
+              </Button>
+            </>
           }
         />
+
+        <Box sx={{ bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider', py: { xs: 4, md: 5 } }}>
+          <Container maxWidth="lg">
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={8}>
+                <Typography component="h2" variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                  New: AI automation, LLM apps &amp; n8n workflows
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+                  Production OpenAI/RAG chatbots, AI voice agents, WhatsApp automation, and n8n
+                  pipelines built for US teams that need results — not demos.
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={4} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                <Button component={Link} href="/ai-automation" variant="contained" size="large">
+                  Explore AI Automation
+                </Button>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
 
         {/* Hero Section with Pain Points — kept content below */}
         <Box

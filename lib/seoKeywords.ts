@@ -51,6 +51,29 @@ export const IN_DEMAND_STACKS = [
 
 /** Per-service SEO keywords (slug → meta keywords) */
 export const SERVICE_SEO_KEYWORDS: Record<string, string[]> = {
+  'ai-ml-llm': [
+    'AI ML LLM development',
+    'LLM application development',
+    'OpenAI integration services',
+    'RAG chatbot development',
+    'AI voice agents',
+    'LangChain development',
+    'custom GPT integration',
+    'generative AI development agency',
+    'conversational AI for business',
+    'AI software development USA',
+  ],
+  'business-automation': [
+    'business process automation AI',
+    'n8n automation',
+    'n8n workflow automation',
+    'WhatsApp AI automation',
+    'CRM automation with AI',
+    'AI workflow automation',
+    'Zapier alternative n8n',
+    'AI automation agency USA',
+    'Meta CRM automation',
+  ],
   'web-development': [
     'web development services USA',
     'custom web application development',

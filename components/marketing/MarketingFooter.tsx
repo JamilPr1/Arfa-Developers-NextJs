@@ -18,6 +18,7 @@ import ArfaLogo from '@/components/ArfaLogo'
 const productLinks = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services' },
+  { label: 'AI Automation', href: '/ai-automation' },
   { label: 'Products', href: '/products' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Portfolio', href: '/portfolio' },

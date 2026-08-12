@@ -40,6 +40,7 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 
 const navLinks = [
   { label: 'Services', href: '/services', hasDropdown: true },
+  { label: 'AI Automation', href: '/ai-automation' },
   { label: 'Project Rescue', href: '/project-rescue' },
   { label: 'Case Studies', href: '/case-studies' },
   { label: 'Products', href: '/products' },
@@ -50,6 +51,9 @@ const navLinks = [
 
 const serviceLinks = [
   { label: 'All Services', href: '/services' },
+  { label: 'AI Automation · LLM · n8n', href: '/ai-automation' },
+  { label: 'AI / ML & LLM Apps', href: '/services/ai-ml-llm' },
+  { label: 'Business Automation', href: '/services/business-automation' },
   { label: 'Project Rescue (USA)', href: '/project-rescue' },
   { label: 'Web Development', href: '/services/web-development' },
   { label: 'Website Redesign', href: '/services/website-redesign' },

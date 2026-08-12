@@ -4,6 +4,8 @@ export const SITE_BASE_URL = siteConfig.siteUrl
 
 /** All `/services/[slug]` routes (keep in sync with `app/services/[slug]/page.tsx`). */
 export const SERVICE_SLUGS = [
+  'ai-ml-llm',
+  'business-automation',
   'web-development',
   'mobile-app-development',
   'cloud-solutions',
@@ -29,6 +31,7 @@ export const STATIC_SITEMAP_PATHS = [
   '',
   '/about',
   '/services',
+  '/ai-automation',
   '/portfolio',
   '/products',
   '/case-studies',
@@ -61,6 +64,7 @@ const HIGH_PRIORITY_PATHS = new Set([
   '/custom-software-development-usa',
   '/hire-nextjs-developers-usa',
   '/website-maintenance-support-usa',
+  '/ai-automation',
   '/free-audit',
   '/services',
 ])
