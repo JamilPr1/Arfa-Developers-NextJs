@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
 import AOSInit from '@/components/AOSInit'
@@ -11,6 +12,12 @@ const LiveChat = dynamic(() => import('@/components/LiveChat'), { ssr: false })
 const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'), { ssr: false })
 const SlackChatWidget = dynamic(() => import('@/components/SlackChatWidget'), { ssr: false })
 const ArfaVoiceWidget = dynamic(() => import('@/components/ArfaVoiceWidget'), { ssr: false })
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Arfa Developers | Web Development Agency USA | Project Rescue, AI & Custom Web Apps',
@@ -129,7 +136,7 @@ if (window.cookiehub) { var cpm = {}; window.cookiehub.load(cpm); }
         <meta name="format-detection" content="telephone=no" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body className={inter.variable}>
         {/* Google Tag Manager */}
         <Script
           id="google-tag-manager"

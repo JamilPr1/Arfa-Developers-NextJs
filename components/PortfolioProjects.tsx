@@ -176,7 +176,7 @@ export default function PortfolioProjects() {
                         size="small"
                         sx={{
                           backgroundColor: '#F7F8FA',
-                          color: '#6B7280',
+                          color: '#374151',
                           fontSize: '0.75rem',
                         }}
                       />
@@ -217,7 +217,7 @@ export default function PortfolioProjects() {
           <IconButton
             onClick={() => setOpenModal(false)}
             sx={{
-              color: '#6B7280',
+              color: '#374151',
               '&:hover': {
                 backgroundColor: '#F3F4F6',
               },
@@ -275,7 +275,7 @@ export default function PortfolioProjects() {
                   variant="body1"
                   sx={{
                     mb: 0,
-                    color: '#6B7280',
+                    color: '#374151',
                     lineHeight: 1.8,
                   }}
                 >

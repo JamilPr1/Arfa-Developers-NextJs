@@ -73,7 +73,7 @@ export default function MarketingHighlights() {
           <Typography component="h2" variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
             Project Rescue highlights
           </Typography>
-          <Typography variant="body1" sx={{ color: 'grey.400' }}>
+          <Typography variant="body1" sx={{ color: 'grey.300' }}>
             We specialize in taking over failed builds and shipping what freelancers and agencies left unfinished.
           </Typography>
         </Box>
@@ -101,7 +101,7 @@ export default function MarketingHighlights() {
                   <Typography gutterBottom sx={{ fontWeight: 600 }}>
                     {item.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'grey.400' }}>
+                  <Typography variant="body2" sx={{ color: 'grey.300' }}>
                     {item.description}
                   </Typography>
                 </Box>

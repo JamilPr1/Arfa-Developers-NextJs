@@ -372,7 +372,7 @@ export default function Portfolio() {
           <IconButton
             onClick={() => setOpenModal(false)}
             sx={{
-              color: '#6B7280',
+              color: '#374151',
               '&:hover': {
                 backgroundColor: '#F3F4F6',
               },
@@ -430,7 +430,7 @@ export default function Portfolio() {
                   variant="body1"
                   sx={{
                     mb: 0,
-                    color: '#6B7280',
+                    color: '#374151',
                     lineHeight: 1.8,
                   }}
                 >

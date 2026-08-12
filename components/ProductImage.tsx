@@ -172,7 +172,7 @@ export function ProductGallery({ items, title = 'Product Screenshots' }: Product
               }}
             />
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#F7F8FA', borderTop: '1px solid #e5e7eb', lineHeight: 1.5 }}>
-              <Box component="p" sx={{ m: 0, fontSize: '0.875rem', color: '#6B7280', lineHeight: 1.5 }}>
+              <Box component="p" sx={{ m: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.5 }}>
                 {item.caption}
               </Box>
             </Box>

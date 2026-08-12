@@ -25,7 +25,7 @@ export function ResultsSummary({
         ))}
       </Box>
       {note ? (
-        <Typography variant="body2" sx={{ mt: 2, color: '#6B7280', lineHeight: 1.8 }}>
+        <Typography variant="body2" sx={{ mt: 2, color: '#374151', lineHeight: 1.8 }}>
           {note}
         </Typography>
       ) : null}
@@ -86,7 +86,7 @@ export function TestimonialBlock({
       </Typography>
 
       {disclaimer ? (
-        <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#6B7280' }}>
+        <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#374151' }}>
           {disclaimer}
         </Typography>
       ) : null}
